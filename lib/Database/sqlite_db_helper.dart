@@ -63,6 +63,8 @@ class SQLDatabaseHelper {
             ]);
       }
       await gyroBatch.commit();
+
+      
     });
   }
 

@@ -9,6 +9,7 @@ import 'package:pci_app/Functions/request_storage_permission.dart';
 import 'package:pci_app/Presentation/Themes/sensor_page_color.dart';
 import 'package:pci_app/Presentation/Widget.dart/circle_widget.dart';
 import '../../Database/sqlite_db_helper.dart';
+import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
 import '../Widget.dart/custom_appbar.dart';
 import '../Widget.dart/readings.dart';
@@ -77,20 +78,16 @@ class _HomePageState extends State<HomePage> {
                     updateAcceleration();
                     isRecordingData = true;
                     if (showStartButton) {
-                      await requestLocationPermission();
+                      getPositionStream();
+                      requestLocationMessage =
+                          await requestLocationPermission();
+
                       getPositionStream();
                       await localDatabase.deleteAlltables();
                       if (devicePosition.latitude == 0) {
-                        if (requestLocationMessage == '') {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                customSnackBar(locationErrorMessage));
-                          }
-                        } else if (requestLocationMessage != '') {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                customSnackBar(requestLocationMessage));
-                          }
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              customSnackBar(locationErrorMessage));
                         }
                       } else {
                         isRecordingData = true;
@@ -112,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                       if (kDebugMode) {
                         print('isRecordingData : $isRecordingData');
                       }
-                      Future.delayed(const Duration(milliseconds: 500), () {
+                      Future.delayed(const Duration(seconds: 1), () {
                         showStartButton = true;
                         scrollToMax();
                       });
@@ -194,7 +191,7 @@ class _HomePageState extends State<HomePage> {
 
   void updateAcceleration() {
     if (isRecordingData) {
-      accCallTimer = Timer.periodic(const Duration(milliseconds: 25), (timer) {
+      accCallTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
         setState(() {});
       });
     }
@@ -219,7 +216,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> databaseOperation(String fileName) async {
     await localDatabase.deleteAlltables();
     await localDatabase.insertData(accDataList, gyroDataList);
-    if (mounted) Navigator.of(context).pop();
     message = await localDatabase.exportToCSV(fileName);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(customSnackBar(message));
@@ -257,14 +253,13 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           TextButton(
                             onPressed: () {
-                              showReposeSheet = false;
-                              scrollToTop();
-                              setState(() {});
+                              selectedIndex = 1;
+                              sendDataToServer();
                             },
                             style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.noButton),
+                                backgroundColor: sensorScreencolor.yesButton),
                             child: Text(
-                              'No',
+                              'Yes',
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -275,13 +270,14 @@ class _HomePageState extends State<HomePage> {
                           const Gap(50),
                           TextButton(
                             onPressed: () {
-                              selectedIndex = 1;
+                              showReposeSheet = false;
+                              scrollToTop();
                               setState(() {});
                             },
                             style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.yesButton),
+                                backgroundColor: sensorScreencolor.noButton),
                             child: Text(
-                              'Yes',
+                              'No',
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -357,11 +353,10 @@ class _HomePageState extends State<HomePage> {
                           TextButton(
                             onPressed: () async {
                               filenameController.clear();
-                              setState(() {
-                                showReposeSheet = false;
-                                scrollToTop();
-                                selectedIndex = 0;
-                              });
+                              showReposeSheet = false;
+                              scrollToTop();
+                              selectedIndex = 0;
+                              setState(() {});
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.noButton),

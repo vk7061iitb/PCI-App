@@ -13,6 +13,19 @@ class AccData {
       required this.zAcc,
       required this.devicePosition,
       required this.accTime});
+
+   Map<String, dynamic> toJson() {
+    return {
+      'xAcc': xAcc,
+      'yAcc': yAcc,
+      'zAcc': zAcc,
+      'devicePosition': {
+        'latitude': devicePosition.latitude,
+        'longitude': devicePosition.longitude,
+      },
+      'accTime': accTime.toIso8601String(),
+    };
+  }
 }
 
 class GyroData {

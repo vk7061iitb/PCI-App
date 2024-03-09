@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
-Future<void> requestLocationPermission() async {
+Future<String> requestLocationPermission() async {
   LocationPermission permission = await Geolocator.checkPermission();
-
+  String message = '';
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
     permission = await Geolocator.requestPermission();
@@ -15,8 +15,11 @@ Future<void> requestLocationPermission() async {
       print('Location permission denied');
     }
   } else {
+    message = 'Location permission granted';
     if (kDebugMode) {
       print('Location permission granted');
     }
   }
+
+  return message;
 }
