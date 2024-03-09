@@ -254,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                           TextButton(
                             onPressed: () {
                               selectedIndex = 1;
-                              sendDataToServer();
+                              sendData();
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.yesButton),

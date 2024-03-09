@@ -1,28 +1,17 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
-void sendDataToServer() async {
-var url = 'http://127.0.0.1:3000/data'; // URL of your Node.js server
+import 'package:pci_app/Objects/data.dart';
+import 'package:web_socket_channel/io.dart';
 
-  // Sample JSON data to be sent to the server
-  var data = {'name': 'John', 'age': 30};
+import '../Objects/data_points.dart';
 
-  // Encoding JSON data
-  var body = jsonEncode(data);
+sendData() async {
+  List<AccData> accDataList = [] ;
+  accDataList.add(AccData(xAcc: -0.345, yAcc: -0.345, zAcc: -0.345, devicePosition: devicePosition, accTime: DateTime.now()));
+  List<Map<String, dynamic>> jsonList =
+      accDataList.map((accData) => accData.toJson()).toList();
+  String jsonString = jsonEncode(jsonList);
 
-  // Sending POST request to the server
-  var response = await http.post(
-    Uri.parse(url),
-    headers: {'Content-Type': 'application/json'},
-    body: body,
-  );
-
-  // Printing server response
-  if (kDebugMode) {
-    print('Response status: ${response.statusCode}');
-  }
-  if (kDebugMode) {
-    print('Response body: ${response.body}');
-  }
+  final channel = IOWebSocketChannel.connect('ws://10.96.24.203:3000/');
+  channel.sink.add(jsonString);
 }
