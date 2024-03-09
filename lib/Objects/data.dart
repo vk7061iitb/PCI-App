@@ -26,3 +26,4 @@ var yGyroscope = 0.0;
 var zGyroscope = 0.0;
 
 bool isRecordingData = false;
+bool showStartButton = true;

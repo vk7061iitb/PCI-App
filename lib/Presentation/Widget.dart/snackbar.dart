@@ -8,7 +8,7 @@ SnackBar customSnackBar(String message) {
       style: GoogleFonts.inter(
         color: Colors.white,
         fontWeight: FontWeight.normal,
-        fontSize: 12,
+        fontSize: 14,
       ),
     ),
     backgroundColor: Colors.black87,

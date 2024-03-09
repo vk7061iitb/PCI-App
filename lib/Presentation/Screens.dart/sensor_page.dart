@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
   String startMessage = 'Tap "Start" to collect data';
   String progressMessage = 'Collecting the data...';
   int currentPageIndex = 0; // Track the selected index
-  String gyroscopeImgPath = 'assets/Images/gyroscope.png';
-  String accelerationImgPath = 'assets/Images/speedometer.png';
+  String gyroscopeImgPath = 'lib/Assets/gyroscope.png';
+  String accelerationImgPath = 'lib/Assets/speedometer.png';
   bool isButtonTapped = false;
   String textInsideCircle = 'Start';
   Timer? accCallTimer;
@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
   TextEditingController filenameController = TextEditingController();
   bool showReposeSheet = false;
   int selectedIndex = 0;
-  bool showStartButton = true;
   String locationErrorMessage =
       "Sorry, we couldn't find your device location. Please press the start button and try again";
 
@@ -109,18 +108,19 @@ class _HomePageState extends State<HomePage> {
                       isRecordingData = false;
                       showReposeSheet = true;
                       updateAcceleration();
-                      // show progress bar
                       setState(() {});
                       if (kDebugMode) {
                         print('isRecordingData : $isRecordingData');
                       }
-                      showStartButton = true;
-                      scrollToMax();
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        showStartButton = true;
+                        scrollToMax();
+                      });
                     }
                     setState(() {});
                   })),
           Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 15),
+            padding: const EdgeInsets.only(top: 20, bottom: 20),
             child: Center(
               child: Text(
                 showStartButton ? startMessage : progressMessage,
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ReadingsWidget(
                   iconPath: accelerationImgPath,
@@ -141,6 +141,7 @@ class _HomePageState extends State<HomePage> {
                   xValue: !showStartButton ? xAcceleration : 0.0,
                   yValue: !showStartButton ? yAcceleration : 0.0,
                   zValue: !showStartButton ? zAcceleration : 0.0),
+              const Gap(15),
               ReadingsWidget(
                   iconPath: gyroscopeImgPath,
                   name: 'Gyroscope',
@@ -149,8 +150,9 @@ class _HomePageState extends State<HomePage> {
                   zValue: !showStartButton ? zGyroscope : 0.0),
             ],
           ),
+          const Gap(25),
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(10.0),
             child: Container(
               height: 200,
               width: 350,
@@ -239,33 +241,55 @@ class _HomePageState extends State<HomePage> {
                 Center(
                   child: Column(
                     children: [
-                      Text(
-                        'Do you want to save the file ?',
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
+                      Center(
+                        child: Text(
+                          'Do you want to save the collected readings?',
+                          style: GoogleFonts.inter(
+                            color: sensorScreencolor.updateMessage,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
+                      const Gap(15),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton(
                             onPressed: () {
-                              selectedIndex = 1;
+                              showReposeSheet = false;
+                              scrollToTop();
                               setState(() {});
                             },
-                            child: const Text('Yes'),
+                            style: TextButton.styleFrom(
+                                backgroundColor: sensorScreencolor.noButton),
+                            child: Text(
+                              'No',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                           const Gap(50),
                           TextButton(
-                              onPressed: () {
-                                showReposeSheet = false;
-                                setState(() {});
-                                scrollToTop();
-                                setState(() {});
-                              },
-                              child: const Text('No'))
+                            onPressed: () {
+                              selectedIndex = 1;
+                              setState(() {});
+                            },
+                            style: TextButton.styleFrom(
+                                backgroundColor: sensorScreencolor.yesButton),
+                            child: Text(
+                              'Yes',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Gap(10),
                         ],
                       ),
                     ],
@@ -276,34 +300,39 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       TextFormField(
                         controller: filenameController,
-                        style: GoogleFonts.openSans(
+                        style: GoogleFonts.inter(
                           color: Colors.black,
                           fontWeight: FontWeight.normal,
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
-                          border: const UnderlineInputBorder(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                            borderSide: const BorderSide(
+                                color: Colors.blue), // Remove the border side
+                          ),
                           labelText: 'Enter File Name',
                           hintText: 'Road ID',
-                          hintStyle: GoogleFonts.openSans(
+                          hintStyle: GoogleFonts.inter(
                             color: Colors.redAccent,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 12,
-                          ),
-                          labelStyle: GoogleFonts.openSans(
-                            color: Colors.black,
                             fontWeight: FontWeight.normal,
                             fontSize: 14,
                           ),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 8),
+                          labelStyle: GoogleFonts.inter(
+                            color: Colors.black,
+                            fontWeight: FontWeight.normal,
+                            fontSize: 16,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 20), // Adjust content padding
                         ),
                       ),
-                      const Gap(10),
+                      const Gap(20),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          OutlinedButton(
+                          TextButton(
                             onPressed: () async {
                               await databaseOperation(filenameController.text);
                               filenameController.clear();
@@ -313,16 +342,19 @@ class _HomePageState extends State<HomePage> {
                                 selectedIndex = 0;
                               });
                             },
+                            style: TextButton.styleFrom(
+                                backgroundColor: sensorScreencolor.yesButton),
                             child: Text(
                               'Save',
-                              style: GoogleFonts.openSans(
-                                color: Colors.blue,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
                           ),
-                          OutlinedButton(
+                          const Gap(50),
+                          TextButton(
                             onPressed: () async {
                               filenameController.clear();
                               setState(() {
@@ -331,15 +363,18 @@ class _HomePageState extends State<HomePage> {
                                 selectedIndex = 0;
                               });
                             },
+                            style: TextButton.styleFrom(
+                                backgroundColor: sensorScreencolor.noButton),
                             child: Text(
                               'Dicard',
-                              style: GoogleFonts.openSans(
-                                color: Colors.blue,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
                           ),
+                          const Gap(10),
                         ],
                       ),
                     ],

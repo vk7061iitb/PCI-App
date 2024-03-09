@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 import '../Themes/sensor_page_color.dart';
 
 class CircleWidget extends StatefulWidget {
@@ -23,14 +24,17 @@ class _CircleWidgetState extends State<CircleWidget> {
             width: 200,
             height: 200,
             decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
                 border: Border.all(
-                  width: 15,
+                  width: 22,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: sensorScreencolor.shadowColor,
-                    blurRadius: 10,
-                    spreadRadius: 1,
+                    blurRadius: 5,
+                    spreadRadius: 0,
+                    blurStyle: BlurStyle.normal
                   )
                 ]),
           ),
@@ -44,17 +48,20 @@ class _CircleWidgetState extends State<CircleWidget> {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 border: Border.all(
-                  color: sensorScreencolor.startCircle,
-                  width: 15,
+                  color: showStartButton? sensorScreencolor.startCircle : sensorScreencolor.endCircle,
+                  width: 22,
                 ),
               ),
-              child: Text(
-                widget.label,
-                style: GoogleFonts.inter(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+              child: Center(
+                child: Text(
+                  widget.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),

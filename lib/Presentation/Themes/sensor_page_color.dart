@@ -8,6 +8,8 @@ class SensorPageColor {
   Color saveButton = const Color(0xFF4285F4);
   Color disardButton = const Color(0xFFFF4444);
   Color shadowColor = Colors.black;
+  Color yesButton = const Color(0xFF4285F4);
+  Color noButton = const Color(0xFFFF4444);
 
 
 }

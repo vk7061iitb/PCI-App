@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ReadingsWidget extends StatelessWidget {
   final String iconPath;
@@ -16,6 +18,73 @@ class ReadingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    TextStyle style1 = GoogleFonts.inter(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: Colors.black,
+    );
+
+    TextStyle style2 = GoogleFonts.inter(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: Colors.black,
+    );
+
+    Widget rowWidget(String label, double value) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(
+            label,
+            style: style2,
+          ),
+          Container(
+            width: 90,
+            height: 25,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(15)),
+            child: Center(
+              child: Text(
+                value.toStringAsFixed(3),
+                style: style2,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      width: 165,
+      height: 175,
+      decoration: BoxDecoration(
+          color: const Color(0xFFE0E0E0),
+          borderRadius: BorderRadius.circular(15)),
+      child: Column(
+        children: [
+          const Gap(12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Image.asset(iconPath),
+              ),
+              Text(
+                name,
+                style: style1,
+              )
+            ],
+          ),
+          const Gap(12),
+          rowWidget('X', xValue),
+          const Gap(12),
+          rowWidget('Y', yValue),
+          const Gap(12),
+          rowWidget('Z', zValue),
+        ],
+      ),
+    );
   }
 }
