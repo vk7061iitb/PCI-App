@@ -8,6 +8,9 @@ environment:
 
 dependencies:
   csv: ^6.0.0
+  dart_hydrologis_utils: ^0.8.1+2
+  dart_jts: ^0.3.0+1
+  dart_shp: ^1.1.1
   flutter:
     sdk: flutter
   gap: ^3.0.1

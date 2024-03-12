@@ -57,6 +57,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  dart_hydrologis_utils:
+    dependency: "direct main"
+    description:
+      name: dart_hydrologis_utils
+      sha256: ce7d483bc1dc79abfceb4896c9fcf5ff4ae7f28be206d6bafeeb31d128d78c5f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.1+2"
+  dart_jts:
+    dependency: "direct main"
+    description:
+      name: dart_jts
+      sha256: f9cb8b359346f453b5bfa2186fcd7fb8a7e6fbc7e076cba46898b44edd6fd8c7
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0+1"
+  dart_shp:
+    dependency: "direct main"
+    description:
+      name: dart_shp
+      sha256: "1586626acde47d3ac07e4979a517e88cb38f474f2651c4f1e7223f674b4955ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -360,6 +384,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1"
+  petitparser:
+    dependency: transitive
+    description:
+      name: petitparser
+      sha256: c15605cd28af66339f8eb6fbe0e541bfe2d1b72d5825efc6598f3e0a31b9ad27
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
   platform:
     dependency: transitive
     description:
@@ -541,6 +573,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  xml:
+    dependency: transitive
+    description:
+      name: xml
+      sha256: b015a8ad1c488f66851d762d3090a21c600e479dc75e68328c52774040cf9226
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.5.0"
 sdks:
   dart: ">=3.3.1 <4.0.0"
   flutter: ">=3.19.2"

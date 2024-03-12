@@ -7,13 +7,13 @@ import 'package:pci_app/Functions/get_sensor_data.dart';
 import 'package:pci_app/Functions/request_location_permission.dart';
 import 'package:pci_app/Functions/request_storage_permission.dart';
 import 'package:pci_app/Presentation/Themes/sensor_page_color.dart';
-import 'package:pci_app/Presentation/Widget.dart/circle_widget.dart';
+import 'package:pci_app/Presentation/Widget/circle_widget.dart';
 import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
-import '../Widget.dart/custom_appbar.dart';
-import '../Widget.dart/readings.dart';
-import '../Widget.dart/snackbar.dart';
+import '../Widget/custom_appbar.dart';
+import '../Widget/readings.dart';
+import '../Widget/snackbar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
