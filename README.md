@@ -3,7 +3,7 @@
 There exists no systematic way to centrally organize road development in Maharashtra, and much of India. This project aims to contribute to change this by automating the assessment of road pavement conditions. 
 
 ## Overview
-SmartRoads is a project dedicated to improving road infrastructure management by leveraging modern technology. By utilizing in-built smartphone sensors such as accelerometers and GPS, along with textual inputs like pothole counts, SmartRoads aims to compute the Pavement Condition Index (PCI). The PCI will serve as a crucial parameter for informing budget allocation and road quality improvement strategies.
+This project dedicated to improving road infrastructure management by leveraging modern technology. By utilizing in-built smartphone sensors such as accelerometers and GPS, along with textual inputs like pothole counts, SmartRoads aims to compute the Pavement Condition Index (PCI). The PCI will serve as a crucial parameter for informing budget allocation and road quality improvement strategies.
 
 ## Goals
 - Automate the assessment of road pavement conditions
