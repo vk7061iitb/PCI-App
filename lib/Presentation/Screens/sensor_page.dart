@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
   String locationErrorMessage =
       "Sorry, we couldn't find your device location. Please press the start button and try again";
+  
 
   @override
   void dispose() async {
@@ -177,6 +178,7 @@ class _HomePageState extends State<HomePage> {
             label: 'Home',
           ),
           NavigationDestination(
+            selectedIcon: Icon(Icons.map),
             icon: Icon(Icons.map_outlined),
             label: 'Maps',
           ),

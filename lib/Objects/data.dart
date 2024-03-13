@@ -27,3 +27,9 @@ var zGyroscope = 0.0;
 
 bool isRecordingData = false;
 bool showStartButton = true;
+
+// Map Page Data
+String geoJsonData = '';
+Map<String, dynamic> jsonData = {};
+List<dynamic> features = [];
+List<dynamic> coordinates = [];
