@@ -3,12 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../Functions/load_geo_json.dart';
 import '../../Objects/data.dart';
-import '../Widget/custom_appbar.dart';
+import '../../Objects/polyline_obj.dart';
 import '../Widget/feature_widget.dart';
-
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -19,14 +17,11 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController? mapController;
-  List<LatLng> polylineCoordinates = [];
-  Set<Polyline> polylines = {};
   Color polylineColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(),
       body: Stack(
         children: [
           Positioned.fill(
@@ -62,7 +57,7 @@ class _MapPageState extends State<MapPage> {
                     }
                   },
                   child: Text(
-                    'Load GeoJson File',
+                    'Open File',
                     style: GoogleFonts.inter(
                       color: Colors.black,
                       fontWeight: FontWeight.w600,
@@ -101,21 +96,20 @@ class _MapPageState extends State<MapPage> {
   }
 
   void plotMap() {
-    polylineCoordinates.clear();
     polylines.clear();
+    polylineObj.clear();
     features = jsonData['features'];
     for (int i = 0; i < features.length; i++) {
       List<LatLng> points = [];
       Map<String, dynamic> feature = features[i];
       List<dynamic> coordinates = feature['geometry']['coordinates'];
+      Map<String, dynamic> myMap = feature['properties'];
       for (var data in coordinates) {
-        polylineCoordinates.add(
-          LatLng(data[1], data[0]),
-        );
         points.add(
           LatLng(data[1], data[0]),
         );
       }
+
       Polyline tempPolyline = Polyline(
           consumeTapEvents: true,
           polylineId: PolylineId('polyline$i'),
@@ -125,14 +119,26 @@ class _MapPageState extends State<MapPage> {
           onTap: () {
             if (kDebugMode) {
               print('Polyline tapped!');
-              setState(() {});
+              print('$i');
+              
               showModalBottomSheet(
                   context: context,
                   builder: (BuildContext context) {
-                    return bottomSheetContent(context);
+                    return bottomSheetContent(context, i);
                   });
+                setState(() {});
             }
           });
+
+      Properties featureProperties = Properties(
+          keyList: myMap.keys.toList(), valuesList: myMap.values.toList());
+
+      polylineObj.add(
+        PolylinObj(
+            polyline: tempPolyline,
+            polylineIndex: i,
+            properties: featureProperties),
+      );
       polylines.add(tempPolyline);
     }
     jsonData.clear;
@@ -141,14 +147,14 @@ class _MapPageState extends State<MapPage> {
   }
 
   void animateToLocation() async {
-    Map<String, dynamic> jsonData = jsonDecode(geoJsonData);
-    List<dynamic> features = jsonData['features'];
+    jsonData = jsonDecode(geoJsonData);
+    features = jsonData['features'];
     LatLng point = LatLng(
         features[features.length ~/ 2]['geometry']['coordinates'][0][1],
         features[features.length ~/ 2]['geometry']['coordinates'][0][0]);
 
     mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(point, 11),
+      CameraUpdate.newLatLngZoom(point, 12),
     );
   }
 
@@ -161,23 +167,5 @@ class _MapPageState extends State<MapPage> {
       }
       return;
     }
-  }
-
-  List<LatLng> getGeoJsonCoordinates(){
-    List<LatLng>points = [];
-    for (int i = 0; i < features.length; i++) {
-      List<LatLng> points = [];
-      Map<String, dynamic> feature = features[i];
-      List<dynamic> coordinates = feature['geometry']['coordinates'];
-      for (var data in coordinates) {
-        polylineCoordinates.add(
-          LatLng(data[1], data[0]),
-        );
-        points.add(
-          LatLng(data[1], data[0]),
-        );
-      }
-    }
-    return points;
   }
 }

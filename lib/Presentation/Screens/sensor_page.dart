@@ -8,21 +8,21 @@ import 'package:pci_app/Functions/request_location_permission.dart';
 import 'package:pci_app/Functions/request_storage_permission.dart';
 import 'package:pci_app/Presentation/Themes/sensor_page_color.dart';
 import 'package:pci_app/Presentation/Widget/circle_widget.dart';
+import 'package:pci_app/Presentation/Widget/custom_appbar.dart';
 import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
-import '../Widget/custom_appbar.dart';
 import '../Widget/readings.dart';
 import '../Widget/snackbar.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class SensorPage extends StatefulWidget {
+  const SensorPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<SensorPage> createState() => _SensorPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SensorPageState extends State<SensorPage> {
   SensorPageColor sensorScreencolor = SensorPageColor();
   String startMessage = 'Tap "Start" to collect data';
   String progressMessage = 'Collecting the data...';
@@ -66,127 +66,104 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(),
-      body: ListView(
-        controller: scrollController,
-        children: [
-          const SizedBox(
-            height: 20,
-          ),
-          Center(
-              child: CircleWidget(
-                  label: showStartButton ? "Start" : "End",
-                  onPressed: () async {
-                    updateAcceleration();
-                    isRecordingData = true;
-                    if (showStartButton) {
-                      getPositionStream();
-                      requestLocationMessage =
-                          await requestLocationPermission();
-
-                      getPositionStream();
-                      await localDatabase.deleteAlltables();
-                      if (devicePosition.latitude == 0) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              customSnackBar(locationErrorMessage));
+      body: SafeArea(
+        child: ListView(
+          controller: scrollController,
+          children: [
+            const SizedBox(
+              height: 20,
+            ),
+            Center(
+                child: CircleWidget(
+                    label: showStartButton ? "Start" : "End",
+                    onPressed: () async {
+                      updateAcceleration();
+                      isRecordingData = true;
+                      if (showStartButton) {
+                        getPositionStream();
+                        requestLocationMessage =
+                            await requestLocationPermission();
+        
+                        getPositionStream();
+                        await localDatabase.deleteAlltables();
+                        if (devicePosition.latitude == 0) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                customSnackBar(locationErrorMessage));
+                          }
+                        } else {
+                          isRecordingData = true;
+                          scrollToTop();
+                          accDataList.clear();
+                          gyroDataList.clear();
+                          updateAcceleration();
+                          showStartButton = false;
+                          if (kDebugMode) {
+                            print('isRecordingData : $isRecordingData');
+                          }
                         }
                       } else {
-                        isRecordingData = true;
-                        scrollToTop();
-                        accDataList.clear();
-                        gyroDataList.clear();
+                        accCallTimer?.cancel();
+                        isRecordingData = false;
+                        showReposeSheet = true;
                         updateAcceleration();
-                        showStartButton = false;
+                        setState(() {});
                         if (kDebugMode) {
                           print('isRecordingData : $isRecordingData');
                         }
+                        Future.delayed(const Duration(seconds: 1), () {
+                          showStartButton = true;
+                          scrollToMax();
+                        });
                       }
-                    } else {
-                      accCallTimer?.cancel();
-                      isRecordingData = false;
-                      showReposeSheet = true;
-                      updateAcceleration();
                       setState(() {});
-                      if (kDebugMode) {
-                        print('isRecordingData : $isRecordingData');
-                      }
-                      Future.delayed(const Duration(seconds: 1), () {
-                        showStartButton = true;
-                        scrollToMax();
-                      });
-                    }
-                    setState(() {});
-                  })),
-          Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 20),
-            child: Center(
-              child: Text(
-                showStartButton ? startMessage : progressMessage,
-                style: GoogleFonts.inter(
-                  color: sensorScreencolor.updateMessage,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18,
+                    })),
+            Padding(
+              padding: const EdgeInsets.only(top: 20, bottom: 20),
+              child: Center(
+                child: Text(
+                  showStartButton ? startMessage : progressMessage,
+                  style: GoogleFonts.inter(
+                    color: sensorScreencolor.updateMessage,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ReadingsWidget(
-                  iconPath: accelerationImgPath,
-                  name: 'Accleration',
-                  xValue: !showStartButton ? xAcceleration : 0.0,
-                  yValue: !showStartButton ? yAcceleration : 0.0,
-                  zValue: !showStartButton ? zAcceleration : 0.0),
-              const Gap(15),
-              ReadingsWidget(
-                  iconPath: gyroscopeImgPath,
-                  name: 'Gyroscope',
-                  xValue: !showStartButton ? xGyroscope : 0.0,
-                  yValue: !showStartButton ? yGyroscope : 0.0,
-                  zValue: !showStartButton ? zGyroscope : 0.0),
-            ],
-          ),
-          const Gap(25),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Container(
-              height: 200,
-              width: 350,
-              decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
-                  borderRadius: BorderRadius.circular(15)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ReadingsWidget(
+                    iconPath: accelerationImgPath,
+                    name: 'Accleration',
+                    xValue: !showStartButton ? xAcceleration : 0.0,
+                    yValue: !showStartButton ? yAcceleration : 0.0,
+                    zValue: !showStartButton ? zAcceleration : 0.0),
+                const Gap(15),
+                ReadingsWidget(
+                    iconPath: gyroscopeImgPath,
+                    name: 'Gyroscope',
+                    xValue: !showStartButton ? xGyroscope : 0.0,
+                    yValue: !showStartButton ? yGyroscope : 0.0,
+                    zValue: !showStartButton ? zGyroscope : 0.0),
+              ],
             ),
-          ),
-          const Gap(20),
-          showReposeSheet ? responsheeet() : const SizedBox(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        indicatorColor: Colors.green.shade200,
-        selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.map),
-            icon: Icon(Icons.map_outlined),
-            label: 'Maps',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu),
-            label: 'Menu',
-          ),
-        ],
+            const Gap(25),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Container(
+                height: 200,
+                width: 350,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(15)),
+              ),
+            ),
+            const Gap(20),
+            showReposeSheet ? responsheeet() : const SizedBox(),
+          ],
+        ),
       ),
     );
   }

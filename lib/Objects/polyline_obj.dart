@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class PolylinObj {
   Polyline polyline;
   int polylineIndex;
-  List<Properties> properties;
+  Properties properties;
 
   PolylinObj(
       {required this.polyline,
@@ -12,8 +12,8 @@ class PolylinObj {
 }
 
 class Properties {
-  String key;
-  String value;
+  List<String> keyList;
+  List<dynamic> valuesList;
 
-  Properties({required this.key, required this.value});
+  Properties({required this.keyList, required this.valuesList});
 }

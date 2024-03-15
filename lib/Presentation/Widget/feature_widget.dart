@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 
-Widget bottomSheetContent(BuildContext context) {
+Widget bottomSheetContent(BuildContext context, int polylineIndex) {
+  TextStyle style01 = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: Colors.black,
+  );
+  TextStyle style02 = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: Colors.blueGrey,
+  );
   return Container(
     height: MediaQuery.of(context).size.height * 0.5,
     padding: const EdgeInsets.all(20.0),
@@ -13,40 +24,47 @@ Widget bottomSheetContent(BuildContext context) {
       ),
     ),
     child: Column(
-        children: [
-          Text(
-            'Features',
-            style: GoogleFonts.inter(
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-              fontSize: 24,
-            ),
+      children: [
+        Text(
+          'Features',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            fontSize: 24,
           ),
-          ListTile(
-            leading: const Icon(Icons.add_road_outlined),
-            title: const Text('Road ID'),
-            onTap: () {
-              // Handle the tap on "Photos"
-              Navigator.pop(context);
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: polylineObj[polylineIndex].properties.keyList.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: const Color(0xFFF3EDF5),
+                      borderRadius: BorderRadius.circular(20)),
+                  child: ListTile(
+                    title: Text(
+                      polylineObj[polylineIndex]
+                          .properties
+                          .keyList[index]
+                          .toString(),
+                      style: style01,
+                    ),
+                    trailing: Text(
+                      polylineObj[polylineIndex]
+                          .properties
+                          .valuesList[index]
+                          .toString(),
+                      style: style02,
+                    ),
+                  ),
+                ),
+              );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.speed_outlined),
-            title: const Text('Avg. Speed'),
-            onTap: () {
-              // Handle the tap on "Music"
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Total Length'),
-            onTap: () {
-              // Handle the tap on "Videos"
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
+        ),
+      ],
+    ),
   );
 }
