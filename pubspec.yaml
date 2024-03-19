@@ -8,12 +8,10 @@ environment:
 
 dependencies:
   csv: ^6.0.0
-  dart_hydrologis_utils: ^0.8.1+2
-  dart_jts: ^0.3.0+1
-  dart_shp: ^1.1.1
   file_picker: ^6.2.0
   flutter:
     sdk: flutter
+  flutter_map_math: ^0.1.7
   gap: ^3.0.1
   geolocator: ^11.0.0
   google_fonts: ^6.2.1
@@ -24,6 +22,7 @@ dependencies:
   path_provider: ^2.1.2
   permission_handler: ^11.3.0
   sensors_plus: ^4.0.2
+  share_plus: ^7.2.2
   sqflite: ^2.3.2
   web_socket_channel: ^2.4.4
 

@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Objects/data_points.dart';
-
 import 'polyline_obj.dart';
 
 Position devicePosition = Position(
@@ -38,3 +38,15 @@ List<dynamic> features = []; // Extracts the features of the jsonData
 List<dynamic> coordinates = []; // Stores the cooedinate of features(a list)
 Set<Polyline> polylines = {};
 List<PolylinObj> polylineObj = [];
+
+// Sensor Page Data
+Timer? accCallTimer;
+Timer? locationCallTimer;
+String message = '';
+String requestLocationMessage = '';
+String gyroscopeImgPath = 'lib/Assets/gyroscope.png';
+String accelerationImgPath = 'lib/Assets/speedometer.png';
+String startMessage = 'Tap "Start" to collect data';
+String progressMessage = 'Collecting the data...';
+String locationErrorMessage =
+      "Sorry, we couldn't find your device location. Please press the start button and try again";

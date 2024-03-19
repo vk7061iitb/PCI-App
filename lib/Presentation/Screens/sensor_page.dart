@@ -2,16 +2,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Functions/get_sensor_data.dart';
-import 'package:pci_app/Functions/request_location_permission.dart';
-import 'package:pci_app/Functions/request_storage_permission.dart';
 import 'package:pci_app/Presentation/Themes/sensor_page_color.dart';
 import 'package:pci_app/Presentation/Widget/circle_widget.dart';
 import 'package:pci_app/Presentation/Widget/custom_appbar.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import '../../Database/sqlite_db_helper.dart';
-import '../../Functions/send_data_to_server.dart';
+import '../../Functions/request_location_permission.dart';
 import '../../Objects/data.dart';
+import '../../Objects/data_points.dart';
 import '../Widget/readings.dart';
 import '../Widget/snackbar.dart';
 
@@ -24,43 +24,12 @@ class SensorPage extends StatefulWidget {
 
 class _SensorPageState extends State<SensorPage> {
   SensorPageColor sensorScreencolor = SensorPageColor();
-  String startMessage = 'Tap "Start" to collect data';
-  String progressMessage = 'Collecting the data...';
-  int currentPageIndex = 0; // Track the selected index
-  String gyroscopeImgPath = 'lib/Assets/gyroscope.png';
-  String accelerationImgPath = 'lib/Assets/speedometer.png';
-  bool isButtonTapped = false;
-  String textInsideCircle = 'Start';
-  Timer? accCallTimer;
-  String message = '';
-  String requestLocationMessage = '';
+  final _streamSubscriptions = <StreamSubscription<dynamic>>[];
   late SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
   late ScrollController scrollController;
   TextEditingController filenameController = TextEditingController();
   bool showReposeSheet = false;
   int selectedIndex = 0;
-  String locationErrorMessage =
-      "Sorry, we couldn't find your device location. Please press the start button and try again";
-  
-
-  @override
-  void dispose() async {
-    accCallTimer?.cancel();
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getAccStream();
-    getGyroStream();
-    getPositionStream();
-    requestLocationPermission();
-    requestStoragePermission();
-    localDatabase.initDB();
-    scrollController = ScrollController();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,54 +39,54 @@ class _SensorPageState extends State<SensorPage> {
         child: ListView(
           controller: scrollController,
           children: [
-            const SizedBox(
-              height: 20,
-            ),
+            const Gap(20),
             Center(
-                child: CircleWidget(
-                    label: showStartButton ? "Start" : "End",
-                    onPressed: () async {
-                      updateAcceleration();
-                      isRecordingData = true;
-                      if (showStartButton) {
-                        getPositionStream();
-                        requestLocationMessage =
-                            await requestLocationPermission();
-        
-                        getPositionStream();
-                        await localDatabase.deleteAlltables();
-                        if (devicePosition.latitude == 0) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                customSnackBar(locationErrorMessage));
-                          }
-                        } else {
-                          isRecordingData = true;
-                          scrollToTop();
-                          accDataList.clear();
-                          gyroDataList.clear();
-                          updateAcceleration();
-                          showStartButton = false;
-                          if (kDebugMode) {
-                            print('isRecordingData : $isRecordingData');
-                          }
-                        }
-                      } else {
-                        accCallTimer?.cancel();
-                        isRecordingData = false;
-                        showReposeSheet = true;
-                        updateAcceleration();
-                        setState(() {});
-                        if (kDebugMode) {
-                          print('isRecordingData : $isRecordingData');
-                        }
-                        Future.delayed(const Duration(seconds: 1), () {
-                          showStartButton = true;
-                          scrollToMax();
-                        });
+              child: CircleWidget(
+                label: showStartButton ? "Start" : "End",
+                onPressed: () async {
+                  if (showStartButton) {
+                    requestLocationPermission();
+                    await localDatabase.deleteAlltables();
+                    if (devicePosition.latitude == 0) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(customSnackBar(locationErrorMessage));
                       }
-                      setState(() {});
-                    })),
+                    } else {
+                      scrollToTop();
+                      isRecordingData = true;
+                      showStartButton = false;
+                      updateAcceleration();
+                      updatePosition();
+                      accDataList.clear();
+                      gyroDataList.clear();
+                      if (kDebugMode) {
+                        print('isRecordingData : $isRecordingData');
+                      }
+                    }
+                  } else {
+                    // This operation will be done when end button will be tapped
+                    accCallTimer?.cancel();
+                    locationCallTimer?.cancel();
+                    isRecordingData = false;
+                    showReposeSheet = true;
+                    showStartButton = true;
+                    setState(() {});
+                    if (kDebugMode) {
+                      print('isRecordingData : $isRecordingData');
+                      print(
+                          'Acceleration Frequency : ${accDataList.length / (accDataList[accDataList.length - 1].accTime.difference(accDataList[0].accTime).inSeconds)}');
+                      print(
+                          'Gyroscope Frequency : ${gyroDataList.length / (gyroDataList[gyroDataList.length - 1].gyroTime.difference(gyroDataList[0].gyroTime).inSeconds)}');
+                    }
+                    Future.delayed(const Duration(seconds: 1), () {
+                      scrollToMax();
+                    });
+                  }
+                  setState(() {});
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 20, bottom: 20),
               child: Center(
@@ -151,15 +120,14 @@ class _SensorPageState extends State<SensorPage> {
             ),
             const Gap(25),
             Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container(
-                height: 200,
-                width: 350,
-                decoration: BoxDecoration(
-                    color: const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(15)),
-              ),
-            ),
+                padding: const EdgeInsets.all(10.0),
+                child: PositionReadings(
+                    latitude:
+                        !showStartButton ? devicePosition.latitude : 0.000,
+                    longitude:
+                        !showStartButton ? devicePosition.latitude : 0.000,
+                    locationAcurrary:
+                        !showStartButton ? devicePosition.accuracy : 0.000)),
             const Gap(20),
             showReposeSheet ? responsheeet() : const SizedBox(),
           ],
@@ -168,12 +136,107 @@ class _SensorPageState extends State<SensorPage> {
     );
   }
 
+  @override
+  void dispose() async {
+    accCallTimer?.cancel();
+    locationCallTimer?.cancel();
+    scrollController.dispose();
+    for (final subscription in _streamSubscriptions) {
+      subscription.cancel();
+    }
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    requestLocationPermission();
+    localDatabase.initDB();
+    updatePosition();
+    scrollController = ScrollController();
+    _streamSubscriptions.add(userAccelerometerEventStream(
+            samplingPeriod: const Duration(milliseconds: 1000))
+        .listen(
+      (UserAccelerometerEvent event) {
+        if (isRecordingData) {
+          accDataList.add(
+            AccData(
+              xAcc: event.x,
+              yAcc: event.y,
+              zAcc: event.z,
+              devicePosition: devicePosition,
+              accTime: DateTime.now(),
+            ),
+          );
+
+          xAcceleration = event.x;
+          yAcceleration = event.y;
+          zAcceleration = event.z;
+        }
+      },
+      onError: (e) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return const AlertDialog(
+                title: Text("Sensor Not Found"),
+                content: Text(
+                    "It seems that your device doesn't support User Accelerometer Sensor"),
+              );
+            });
+      },
+      cancelOnError: true,
+    ));
+
+    _streamSubscriptions.add(gyroscopeEventStream(
+      samplingPeriod: const Duration(milliseconds: 1000),
+    ).listen(
+      (event) {
+        if (isRecordingData) {
+          gyroDataList.add(
+            GyroData(
+              xGyro: event.x,
+              yGyro: event.y,
+              zGyro: event.z,
+              gyroTime: DateTime.now(),
+            ),
+          );
+
+          xGyroscope = event.x;
+          yGyroscope = event.y;
+          zGyroscope = event.z;
+        }
+      },
+      onError: (e) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return const AlertDialog(
+                title: Text("Gyroscope Sensor Not Found"),
+                content: Text(
+                    "It seems that your device doesn't support User Gyroscope Sensor"),
+              );
+            });
+      },
+      cancelOnError: true,
+    ));
+  }
+
   void updateAcceleration() {
     if (isRecordingData) {
-      accCallTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      accCallTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
         setState(() {});
       });
     }
+  }
+
+  void updatePosition() {
+    locationCallTimer =
+        Timer.periodic(const Duration(seconds: 1), (timer) async {
+      devicePosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+    });
   }
 
   void scrollToMax() {
@@ -193,13 +256,22 @@ class _SensorPageState extends State<SensorPage> {
   }
 
   Future<void> databaseOperation(String fileName) async {
+    setState(() {
+      selectedIndex = 2;
+    });
+
     await localDatabase.deleteAlltables();
     await localDatabase.insertData(accDataList, gyroDataList);
     message = await localDatabase.exportToCSV(fileName);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(customSnackBar(message));
     }
-    setState(() {});
+    setState(() {
+      selectedIndex = 0;
+      filenameController.clear();
+      showReposeSheet = false;
+      scrollToTop();
+    });
   }
 
   Widget responsheeet() {
@@ -233,7 +305,8 @@ class _SensorPageState extends State<SensorPage> {
                           TextButton(
                             onPressed: () {
                               selectedIndex = 1;
-                              sendData();
+                              setState(() {});
+                              // sendData();
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.yesButton),
@@ -249,9 +322,40 @@ class _SensorPageState extends State<SensorPage> {
                           const Gap(50),
                           TextButton(
                             onPressed: () {
-                              showReposeSheet = false;
-                              scrollToTop();
-                              setState(() {});
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                      'Are you sure you want to discard the file?',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    content: const Text(
+                                      'If you discard the file, any recorded data will be lost.',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text("Don't Discard"),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text("Yes, Discard"),
+                                        onPressed: () {
+                                          showReposeSheet = false;
+                                          scrollToTop();
+
+                                          Navigator.of(context).pop();
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.noButton),
@@ -310,12 +414,6 @@ class _SensorPageState extends State<SensorPage> {
                           TextButton(
                             onPressed: () async {
                               await databaseOperation(filenameController.text);
-                              filenameController.clear();
-                              setState(() {
-                                showReposeSheet = false;
-                                scrollToTop();
-                                selectedIndex = 0;
-                              });
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.yesButton),
@@ -331,11 +429,41 @@ class _SensorPageState extends State<SensorPage> {
                           const Gap(50),
                           TextButton(
                             onPressed: () async {
-                              filenameController.clear();
-                              showReposeSheet = false;
-                              scrollToTop();
-                              selectedIndex = 0;
-                              setState(() {});
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                      'Are you sure you want to discard the file?',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    content: const Text(
+                                      'If you discard the file, any recorded data will be lost.',
+                                      style: TextStyle(color: Colors.blueGrey),
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text("Don't Discard"),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text("Yes, Discard"),
+                                        onPressed: () {
+                                          filenameController.clear();
+                                          showReposeSheet = false;
+                                          scrollToTop();
+                                          selectedIndex = 0;
+                                          Navigator.of(context).pop();
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.noButton),
@@ -352,6 +480,27 @@ class _SensorPageState extends State<SensorPage> {
                         ],
                       ),
                     ],
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        const CircularProgressIndicator(),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Text(
+                            "Saving your recorded data",
+                            style: GoogleFonts.inter(
+                              color: sensorScreencolor.updateMessage,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

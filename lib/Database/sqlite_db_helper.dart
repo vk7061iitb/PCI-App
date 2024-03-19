@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Functions/request_storage_permission.dart';
 import '../Objects/data_points.dart';
@@ -11,7 +12,7 @@ import '../Objects/data_points.dart';
 class SQLDatabaseHelper {
   late Database _database;
 
-    Future<void> initDB() async {
+  Future<void> initDB() async {
     var dbPath = await getDatabasesPath();
     String path = join(dbPath, 'localDB.db');
 
@@ -63,8 +64,6 @@ class SQLDatabaseHelper {
             ]);
       }
       await gyroBatch.commit();
-
-      
     });
   }
 
@@ -76,16 +75,20 @@ class SQLDatabaseHelper {
   Future<String> exportToCSV(String fileName) async {
     try {
       await requestStoragePermission();
-      String rawData = "Sensor Data";
+      String rawData = "Acceleration Data";
+      String gyroDataFolder = "Acceleration Data";
       Directory? appExternalStorageDir = await getExternalStorageDirectory();
-      Directory dataDirectory =
+      Directory accDataDirectory =
           await Directory(join(appExternalStorageDir!.path, rawData))
+              .create(recursive: true);
+      Directory gyroaccDataDirectory =
+          await Directory(join(appExternalStorageDir.path, gyroDataFolder))
               .create(recursive: true);
 
       // Check if folders exist
-      if (await dataDirectory.exists()) {
+      if (await accDataDirectory.exists()) {
         debugPrint('Folder Already Exists');
-        debugPrint("$dataDirectory.path");
+        debugPrint("$accDataDirectory.path");
       } else {
         debugPrint('Folder Created');
       }
@@ -118,12 +121,13 @@ class SQLDatabaseHelper {
       String gyroCSV = const ListToCsvConverter().convert(gyroCSVdata);
 
       String accFileName =
-          '${fileName}accData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv';
-      String accPath = '${dataDirectory.path}/$accFileName';
+          '${fileName}AccData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv';
+      String accPath = '${accDataDirectory.path}/$accFileName';
 
       String gyroFileName =
-          '${fileName}gyroData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv'; // Corrected filename
-      String gyroPath = '${dataDirectory.path}/$gyroFileName'; // Corrected path
+          '${fileName}GyroData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv'; // Corrected filename
+      String gyroPath =
+          '${gyroaccDataDirectory.path}/$gyroFileName'; // Corrected path
 
       File accFile = File(accPath);
       File gyroFile = File(gyroPath);
@@ -132,8 +136,13 @@ class SQLDatabaseHelper {
       await gyroFile.writeAsString(gyroCSV);
 
       debugPrint(
-          'CSV files exported to path : ${dataDirectory.path}'); // Updated debug message
-      return 'CSV files exported to path : ${dataDirectory.path}'; // Updated return message
+          'CSV files exported to path : ${appExternalStorageDir.path}'); // Updated debug message
+
+      // Share the file
+      // ignore: deprecated_member_use
+      await Share.shareFiles([accPath, gyroPath]);
+
+      return 'CSV files exported to path : ${appExternalStorageDir.path}'; // Updated return message
     } catch (e) {
       debugPrint(e.toString());
       return e.toString();

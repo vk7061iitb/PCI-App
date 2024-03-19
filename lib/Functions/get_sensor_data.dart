@@ -1,49 +1,31 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/Objects/data_points.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
-void getAccStream() {
-  accelerometerEventStream().listen((event) {
-    if (isRecordingData) {
-      accDataList.add(
-        AccData(
-          xAcc: event.x,
-          yAcc: event.y,
-          zAcc: event.z,
-          devicePosition: devicePosition,
-          accTime: DateTime.now(),
+Future<void> getPositionStream() async {
+  try {
+    Geolocator.getPositionStream(
+      locationSettings: AndroidSettings(
+        distanceFilter: 0,
+        accuracy: LocationAccuracy.best,
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          enableWakeLock: true,
+          notificationTitle: 'Location',
+          notificationText: 'PCI App is using Location',
         ),
-      );
-
-      xAcceleration = event.x;
-      yAcceleration = event.y;
-      zAcceleration = event.z;
+      ),
+    ).listen(
+      (Position currentPosition) {
+        devicePosition = currentPosition;
+        if (kDebugMode) {
+          print('Latitude :${devicePosition.latitude}, Longitude :${devicePosition.longitude}');
+        }
+      },
+    );
+  } catch (e) {
+    // Handle any errors that occur during stream listening
+    if (kDebugMode) {
+      print('Error occurred while listening to position stream: $e');
     }
-  });
-}
-
-void getGyroStream() {
-  gyroscopeEventStream().listen((event) {
-    if (isRecordingData) {
-      gyroDataList.add(
-        GyroData(
-          xGyro: event.x,
-          yGyro: event.y,
-          zGyro: event.z,
-          gyroTime: DateTime.now(),
-        ),
-      );
-
-      xGyroscope = event.x;
-      yGyroscope = event.y;
-      zGyroscope = event.z;
-    }
-  });
-}
-
-void getPositionStream() {
-  Geolocator.getPositionStream().listen((Position currentPosition) {
-    devicePosition = currentPosition;
-  });
+  }
 }

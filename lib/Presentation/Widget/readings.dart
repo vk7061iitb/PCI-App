@@ -18,42 +18,6 @@ class ReadingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle style1 = GoogleFonts.inter(
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-      color: Colors.black,
-    );
-
-    TextStyle style2 = GoogleFonts.inter(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: Colors.black,
-    );
-
-    Widget rowWidget(String label, double value) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            label,
-            style: style2,
-          ),
-          Container(
-            width: 90,
-            height: 25,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(15)),
-            child: Center(
-              child: Text(
-                value.toStringAsFixed(3),
-                style: style2,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
     return Container(
       width: 165,
       height: 175,
@@ -88,3 +52,63 @@ class ReadingsWidget extends StatelessWidget {
     );
   }
 }
+
+class PositionReadings extends StatelessWidget {
+  final double latitude;
+  final double longitude;
+  final double locationAcurrary;
+  const PositionReadings(
+      {required this.latitude,
+      required this.longitude,
+      required this.locationAcurrary,
+      super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      width: 350,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE0E0E0),
+        borderRadius: BorderRadius.circular(15),
+      ),
+
+    );
+  }
+}
+
+Widget rowWidget(String label, double value) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      Text(
+        label,
+        style: style2,
+      ),
+      Container(
+        width: 90,
+        height: 25,
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(15)),
+        child: Center(
+          child: Text(
+            value.toStringAsFixed(3),
+            style: style2,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+TextStyle style1 = GoogleFonts.inter(
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+  color: Colors.black,
+);
+
+TextStyle style2 = GoogleFonts.inter(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  color: Colors.black,
+);

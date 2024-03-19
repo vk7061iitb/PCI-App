@@ -24,18 +24,17 @@ class _CircleWidgetState extends State<CircleWidget> {
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
+                color: Colors.white,
+                shape: BoxShape.circle,
                 border: Border.all(
                   width: 22,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: sensorScreencolor.shadowColor,
-                    blurRadius: 5,
-                    spreadRadius: 0,
-                    blurStyle: BlurStyle.normal
-                  )
+                      color: sensorScreencolor.shadowColor,
+                      blurRadius: 5,
+                      spreadRadius: 0,
+                      blurStyle: BlurStyle.normal)
                 ]),
           ),
         ),
@@ -50,7 +49,9 @@ class _CircleWidgetState extends State<CircleWidget> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: showStartButton? sensorScreencolor.startCircle : sensorScreencolor.endCircle,
+                  color: showStartButton
+                      ? sensorScreencolor.startCircle
+                      : sensorScreencolor.endCircle,
                   width: 22,
                 ),
               ),
