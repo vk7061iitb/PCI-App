@@ -154,10 +154,10 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     updatePosition();
     scrollController = ScrollController();
-    _streamSubscriptions.add(userAccelerometerEventStream(
-            samplingPeriod: const Duration(milliseconds: 1000))
+    _streamSubscriptions.add(accelerometerEventStream(
+            samplingPeriod: SensorInterval.gameInterval)
         .listen(
-      (UserAccelerometerEvent event) {
+      (AccelerometerEvent event) {
         if (isRecordingData) {
           accDataList.add(
             AccData(
@@ -189,7 +189,7 @@ class _SensorPageState extends State<SensorPage> {
     ));
 
     _streamSubscriptions.add(gyroscopeEventStream(
-      samplingPeriod: const Duration(milliseconds: 1000),
+      samplingPeriod: SensorInterval.gameInterval,
     ).listen(
       (event) {
         if (isRecordingData) {
@@ -224,7 +224,7 @@ class _SensorPageState extends State<SensorPage> {
 
   void updateAcceleration() {
     if (isRecordingData) {
-      accCallTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      accCallTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
         setState(() {});
       });
     }
