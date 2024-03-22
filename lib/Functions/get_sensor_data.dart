@@ -18,7 +18,8 @@ Future<void> getPositionStream() async {
       (Position currentPosition) {
         devicePosition = currentPosition;
         if (kDebugMode) {
-          print('Latitude :${devicePosition.latitude}, Longitude :${devicePosition.longitude}');
+          print(
+              'Latitude :${devicePosition.latitude}, Longitude :${devicePosition.longitude}');
         }
       },
     );
