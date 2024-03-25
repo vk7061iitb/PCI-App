@@ -10,6 +10,7 @@ import 'package:pci_app/Presentation/Widget/custom_appbar.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/request_location_permission.dart';
+import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
 import '../../Objects/data_points.dart';
 import '../Widget/readings.dart';
@@ -227,6 +228,7 @@ class _SensorPageState extends State<SensorPage> {
 
     await localDatabase.deleteAlltables();
     await localDatabase.insertData(accDataList, gyroDataList);
+    sendData();
     message = await localDatabase.exportToCSV(fileName);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(customSnackBar(message));
