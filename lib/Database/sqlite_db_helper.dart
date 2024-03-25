@@ -12,6 +12,7 @@ import '../Objects/data_points.dart';
 class SQLDatabaseHelper {
   late Database _database;
 
+  // Initialize the database
   Future<void> initDB() async {
     var dbPath = await getDatabasesPath();
     String path = join(dbPath, 'localDB.db');
@@ -20,10 +21,9 @@ class SQLDatabaseHelper {
       _database = await openDatabase(
         path,
         onCreate: (db, version) {
+          // Create the AccTable
           db.execute(
               'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Time TIMESTAMP)');
-          db.execute(
-              'CREATE TABLE GyroTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_Gyro REAL, y_Gyro REAL, z_Gyro REAL, Time TIMESTAMP)');
         },
         version: 1,
       );
@@ -34,6 +34,7 @@ class SQLDatabaseHelper {
     }
   }
 
+  // Insert data into the database
   Future<void> insertData(
       List<AccData> accdata, List<GyroData> gyrodata) async {
     await _database.transaction((txn) async {
@@ -51,38 +52,22 @@ class SQLDatabaseHelper {
             ]);
       }
       await accBatch.commit();
-
-      var gyroBatch = txn.batch();
-      for (var data in gyrodata) {
-        gyroBatch.rawInsert(
-            'INSERT INTO GyroTable(x_Gyro, y_Gyro, z_Gyro, Time) VALUES(?,?,?,?)',
-            [
-              data.xGyro,
-              data.yGyro,
-              data.zGyro,
-              DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.gyroTime)
-            ]);
-      }
-      await gyroBatch.commit();
     });
   }
 
+  // Delete all tables in the database
   Future<void> deleteAlltables() async {
     await _database.delete('AccTable');
-    await _database.delete('GyroTable');
   }
 
+  // Export data to CSV file
   Future<String> exportToCSV(String fileName) async {
     try {
       await requestStoragePermission();
       String rawData = "Acceleration Data";
-      String gyroDataFolder = "Acceleration Data";
       Directory? appExternalStorageDir = await getExternalStorageDirectory();
       Directory accDataDirectory =
           await Directory(join(appExternalStorageDir!.path, rawData))
-              .create(recursive: true);
-      Directory gyroaccDataDirectory =
-          await Directory(join(appExternalStorageDir.path, gyroDataFolder))
               .create(recursive: true);
 
       // Check if folders exist
@@ -93,11 +78,11 @@ class SQLDatabaseHelper {
         debugPrint('Folder Created');
       }
 
+      // Query the AccTable
       List<Map<String, dynamic>> accTableQuery =
           await _database.query('AccTable');
-      List<Map<String, dynamic>> gyroTableQuery =
-          await _database.query('GyroTable');
 
+      // Convert query result to CSV data
       List<List<dynamic>> accCSVdata = [
         ['x_acc', 'y_acc', 'z_acc', 'Latitude', 'Longitude', 'accTime'],
         for (var row in accTableQuery)
@@ -111,37 +96,24 @@ class SQLDatabaseHelper {
           ],
       ];
 
-      List<List<dynamic>> gyroCSVdata = [
-        ['x_Gyro', 'y_Gyro', 'z_Gyro', 'Time'],
-        for (var row in gyroTableQuery)
-          [row['x_Gyro'], row['y_Gyro'], row['z_Gyro'], row['Time']],
-      ];
-
+      // Convert CSV data to string
       String accCSV = const ListToCsvConverter().convert(accCSVdata);
-      String gyroCSV = const ListToCsvConverter().convert(gyroCSVdata);
 
+      // Generate file name and path
       String accFileName =
           '${fileName}AccData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv';
       String accPath = '${accDataDirectory.path}/$accFileName';
 
-      String gyroFileName =
-          '${fileName}GyroData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv'; // Corrected filename
-      String gyroPath =
-          '${gyroaccDataDirectory.path}/$gyroFileName'; // Corrected path
-
+      // Create and write CSV file
       File accFile = File(accPath);
-      File gyroFile = File(gyroPath);
-
       await accFile.writeAsString(accCSV);
-      await gyroFile.writeAsString(gyroCSV);
 
       debugPrint(
           'CSV files exported to path : ${appExternalStorageDir.path}'); // Updated debug message
 
       // Share the file
       // ignore: deprecated_member_use
-      await Share.shareFiles([accPath, gyroPath]);
-
+      await Share.shareFiles([accPath]);
       return 'CSV files exported to path : ${appExternalStorageDir.path}'; // Updated return message
     } catch (e) {
       debugPrint(e.toString());

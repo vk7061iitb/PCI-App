@@ -1,3 +1,4 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "cmake.sourceDirectory": "C:/Users/vk706/OneDrive/Documents/Projects-Flutter/PCI App/pci_app/linux"
 }

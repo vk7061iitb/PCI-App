@@ -76,8 +76,6 @@ class _SensorPageState extends State<SensorPage> {
                       print('isRecordingData : $isRecordingData');
                       print(
                           'Acceleration Frequency : ${accDataList.length / (accDataList[accDataList.length - 1].accTime.difference(accDataList[0].accTime).inSeconds)}');
-                      print(
-                          'Gyroscope Frequency : ${gyroDataList.length / (gyroDataList[gyroDataList.length - 1].gyroTime.difference(gyroDataList[0].gyroTime).inSeconds)}');
                     }
                     Future.delayed(const Duration(seconds: 1), () {
                       scrollToMax();
@@ -154,9 +152,9 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     updatePosition();
     scrollController = ScrollController();
-    _streamSubscriptions.add(accelerometerEventStream(
-            samplingPeriod: SensorInterval.gameInterval)
-        .listen(
+    _streamSubscriptions.add(
+        accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval)
+            .listen(
       (AccelerometerEvent event) {
         if (isRecordingData) {
           accDataList.add(
@@ -182,39 +180,6 @@ class _SensorPageState extends State<SensorPage> {
                 title: Text("Sensor Not Found"),
                 content: Text(
                     "It seems that your device doesn't support User Accelerometer Sensor"),
-              );
-            });
-      },
-      cancelOnError: true,
-    ));
-
-    _streamSubscriptions.add(gyroscopeEventStream(
-      samplingPeriod: SensorInterval.gameInterval,
-    ).listen(
-      (event) {
-        if (isRecordingData) {
-          gyroDataList.add(
-            GyroData(
-              xGyro: event.x,
-              yGyro: event.y,
-              zGyro: event.z,
-              gyroTime: DateTime.now(),
-            ),
-          );
-
-          xGyroscope = event.x;
-          yGyroscope = event.y;
-          zGyroscope = event.z;
-        }
-      },
-      onError: (e) {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                title: Text("Gyroscope Sensor Not Found"),
-                content: Text(
-                    "It seems that your device doesn't support User Gyroscope Sensor"),
               );
             });
       },

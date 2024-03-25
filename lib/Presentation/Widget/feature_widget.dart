@@ -15,6 +15,7 @@ Widget bottomSheetContent(BuildContext context, int polylineIndex) {
   );
   return Container(
     height: MediaQuery.of(context).size.height * 0.5,
+    width: MediaQuery.of(context).size.width,
     padding: const EdgeInsets.all(20.0),
     decoration: const BoxDecoration(
       color: Colors.white,
