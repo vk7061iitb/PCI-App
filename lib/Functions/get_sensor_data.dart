@@ -8,11 +8,6 @@ Future<void> getPositionStream() async {
       locationSettings: AndroidSettings(
         distanceFilter: 0,
         accuracy: LocationAccuracy.best,
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          enableWakeLock: true,
-          notificationTitle: 'Location',
-          notificationText: 'PCI App is using Location',
-        ),
       ),
     ).listen(
       (Position currentPosition) {
