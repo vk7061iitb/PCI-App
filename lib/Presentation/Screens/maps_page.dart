@@ -3,10 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pci_app/Functions/pci_data.dart';
 import '../../Functions/load_geo_json.dart';
 import '../../Objects/data.dart';
 import '../../Objects/polyline_obj.dart';
-import '../Widget/feature_widget.dart';
+import '../Widget/path_feature.dart';
+import '../Widget/maptype_dropdown.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -17,7 +19,26 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController? mapController;
-  Color polylineColor = Colors.black;
+
+  // Function to get road color based on quality
+  Color getRoadColor(String quality) {
+    switch (quality) {
+      case '1':
+        return const Color(0xFF388E3C); // Best quality
+      case '2':
+        return const Color(0xFFCDDC39);
+      case '3':
+        return const Color(0xFF1A237E);
+      case '4':
+        return const Color(0xFF795548);
+      case '5':
+        return const Color(0xFFF44336);
+      case '6':
+        return const Color(0xFF448AFF); // Worst quality
+      default:
+        return Colors.black; // Default color
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +47,9 @@ class _MapPageState extends State<MapPage> {
         children: [
           Positioned.fill(
             child: SizedBox(
-              child: GoogleMap(
+              child: SizedBox(
+                child: GoogleMap(
+                  mapType: googleMapType,
                   initialCameraPosition: const CameraPosition(
                     target: LatLng(19.133623, 72.911895),
                     zoom: 15,
@@ -34,7 +57,16 @@ class _MapPageState extends State<MapPage> {
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
                   },
-                  polylines: polylines),
+                  polylines: polylines,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 50,
+            right: 10,
+            child: MapTypeDropdown(
+              onChanged: (p0) => setState(() {}),
             ),
           ),
           Positioned(
@@ -48,7 +80,6 @@ class _MapPageState extends State<MapPage> {
                   onPressed: () async {
                     try {
                       geoJsonData = await loadGeoJsonFromFile();
-                      decodeJsonFile();
                       setState(() {});
                     } catch (error) {
                       if (kDebugMode) {
@@ -69,9 +100,10 @@ class _MapPageState extends State<MapPage> {
                   onPressed: () async {
                     if (geoJsonData.isNotEmpty) {
                       plotMap();
-                      setState(() {
-                        animateToLocation();
-                      });
+                      Future.delayed(const Duration(milliseconds: 500)).then(
+                        (value) => animateToLocation(),
+                      );
+                      setState(() {});
                     } else {
                       if (kDebugMode) {
                         print('Please load GeoJSON data first.');
@@ -89,15 +121,17 @@ class _MapPageState extends State<MapPage> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
+  // Function to plot the map with polylines
   void plotMap() {
     polylines.clear();
     polylineObj.clear();
+    jsonData = jsonDecode(convertToFirstJsonFormat2(geoJsonData));
     features = jsonData['features'];
     for (int i = 0; i < features.length; i++) {
       List<LatLng> points = [];
@@ -110,62 +144,62 @@ class _MapPageState extends State<MapPage> {
         );
       }
 
-      Polyline tempPolyline = Polyline(
-          consumeTapEvents: true,
-          polylineId: PolylineId('polyline$i'),
-          color: polylineColor,
-          width: 2,
-          points: points,
-          onTap: () {
-            if (kDebugMode) {
-              print('Polyline tapped!');
-              print('$i');
-              
-              showModalBottomSheet(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return bottomSheetContent(context, i);
-                  });
-                setState(() {});
-            }
-          });
+      Polyline temporaryPolyline = Polyline(
+        consumeTapEvents: true,
+        polylineId: PolylineId('polyline$i'),
+        color: getRoadColor(feature['properties']['PCI'].toString()),
+        width: 10,
+        endCap: Cap.roundCap,
+        startCap: Cap.roundCap,
+        jointType: JointType.round,
+        points: points,
+        onTap: () {
+          if (kDebugMode) {
+            print('Polyline$i tapped!');
+          }
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return PolylineFeature(
+                polylineIndex: i,
+              );
+            },
+          );
+          setState(() {});
+        },
+      );
 
       Properties featureProperties = Properties(
-          keyList: myMap.keys.toList(), valuesList: myMap.values.toList());
+        keyList: myMap.keys.toList(),
+        valuesList: myMap.values.toList(),
+      );
 
       polylineObj.add(
         PolylinObj(
-            polyline: tempPolyline,
-            polylineIndex: i,
-            properties: featureProperties),
+          polyline: temporaryPolyline,
+          polylineIndex: i,
+          properties: featureProperties,
+        ),
       );
-      polylines.add(tempPolyline);
+      polylines.add(temporaryPolyline);
     }
     jsonData.clear;
-
     setState(() {});
   }
 
+  // Function to animate the camera to the location of the polylines
   void animateToLocation() async {
-    jsonData = jsonDecode(geoJsonData);
-    features = jsonData['features'];
-    LatLng point = LatLng(
-        features[features.length ~/ 2]['geometry']['coordinates'][0][1],
-        features[features.length ~/ 2]['geometry']['coordinates'][0][0]);
-
-    mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(point, 12),
+    LatLngBounds bounds = LatLngBounds(
+      southwest: LatLng(
+        features[0]['geometry']['coordinates'][0][1],
+        features[0]['geometry']['coordinates'][0][0],
+      ),
+      northeast: LatLng(
+        features[features.length - 1]['geometry']['coordinates'][0][1],
+        features[features.length - 1]['geometry']['coordinates'][0][0],
+      ),
     );
-  }
 
-  void decodeJsonFile() async {
-    try {
-      jsonData = await jsonDecode(geoJsonData);
-    } on FormatException catch (error) {
-      if (kDebugMode) {
-        print('Error parsing GeoJSON data: $error');
-      }
-      return;
-    }
+    mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 10));
   }
 }
