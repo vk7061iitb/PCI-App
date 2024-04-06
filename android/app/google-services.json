@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "94412646522",
+    "project_id": "pci-app-6be73",
+    "storage_bucket": "pci-app-6be73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:94412646522:android:9269ed825d42a01e0eb3c3",
+        "android_client_info": {
+          "package_name": "com.example.pci_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCof0Jiw77HWM_PlWG8n0_Yf2XrRzAsBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
