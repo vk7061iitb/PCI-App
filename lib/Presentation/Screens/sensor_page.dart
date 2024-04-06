@@ -9,10 +9,11 @@ import 'package:pci_app/Presentation/Widget/circle_widget.dart';
 import 'package:pci_app/Presentation/Widget/custom_appbar.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../Database/sqlite_db_helper.dart';
+import '../../Functions/analysis.dart';
 import '../../Functions/request_location_permission.dart';
-import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
 import '../../Objects/data_points.dart';
+import '../Widget/dropdown_widget.dart';
 import '../Widget/readings.dart';
 import '../Widget/snackbar.dart';
 
@@ -31,6 +32,7 @@ class _SensorPageState extends State<SensorPage> {
   TextEditingController filenameController = TextEditingController();
   bool showReposeSheet = false;
   int selectedIndex = 0;
+  List<AccData> filteredAccData = [];
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,6 @@ class _SensorPageState extends State<SensorPage> {
                 onPressed: () async {
                   if (showStartButton) {
                     requestLocationPermission();
-                    await localDatabase.deleteAlltables();
                     if (devicePosition.latitude == 0) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context)
@@ -151,30 +152,56 @@ class _SensorPageState extends State<SensorPage> {
     super.initState();
     requestLocationPermission();
     localDatabase.initDB();
-    updatePosition();
     scrollController = ScrollController();
-    _streamSubscriptions.add(
-        accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval)
-            .listen(
-      (AccelerometerEvent event) {
-        if (isRecordingData) {
-          accDataList.add(
-            AccData(
-              xAcc: event.x,
-              yAcc: event.y,
-              zAcc: event.z,
-              devicePosition: devicePosition,
-              accTime: DateTime.now(),
-            ),
-          );
 
-          xAcceleration = event.x;
-          yAcceleration = event.y;
-          zAcceleration = event.z;
-        }
-      },
-      onError: (e) {
-        showDialog(
+    streamSubscriptions.add(
+      Geolocator.getPositionStream(
+          locationSettings: AndroidSettings(
+        forceLocationManager: false,
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+        intervalDuration: const Duration(milliseconds: 250),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'PCI App',
+          notificationText: 'Collecting Location Data',
+          notificationChannelName: 'PCI App',
+          setOngoing: true,
+          enableWakeLock: true,
+          color: Colors.blueAccent,
+        ),
+      )).listen(
+        (event) {
+          if (isRecordingData) {
+            devicePosition = event;
+            if (kDebugMode) {
+              print("${devicePosition.latitude} ${devicePosition.longitude}");
+            }
+          }
+        },
+      ),
+    );
+
+    streamSubscriptions.add(
+      accelerometerEventStream(samplingPeriod: Duration.zero).listen(
+        (AccelerometerEvent event) {
+          if (isRecordingData) {
+            accDataList.add(
+              AccData(
+                xAcc: event.x,
+                yAcc: event.y,
+                zAcc: event.z,
+                devicePosition: devicePosition,
+                accTime: DateTime.now(),
+              ),
+            );
+
+            xAcceleration = event.x;
+            yAcceleration = event.y;
+            zAcceleration = event.z;
+          }
+        },
+        onError: (e) {
+          showDialog(
             context: context,
             builder: (context) {
               return const AlertDialog(
@@ -182,10 +209,12 @@ class _SensorPageState extends State<SensorPage> {
                 content: Text(
                     "It seems that your device doesn't support User Accelerometer Sensor"),
               );
-            });
-      },
-      cancelOnError: true,
-    ));
+            },
+          );
+        },
+        cancelOnError: true,
+      ),
+    );
   }
 
   void updateAcceleration() {
@@ -221,18 +250,17 @@ class _SensorPageState extends State<SensorPage> {
     );
   }
 
-  Future<void> databaseOperation(String fileName) async {
+  Future<void> databaseOperation(String fileName, String vehicleTYpe) async {
     setState(() {
       selectedIndex = 2;
     });
-
     await localDatabase.deleteAlltables();
-    await localDatabase.insertData(accDataList, gyroDataList);
-    sendData();
-    message = await localDatabase.exportToCSV(fileName);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(customSnackBar(message));
+    await localDatabase.insertData(filteredAccData, gyroDataList);
+    if (kDebugMode) {
+      print(
+          'Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
     }
+    // sendData();
     setState(() {
       selectedIndex = 0;
       filenameController.clear();
@@ -244,7 +272,7 @@ class _SensorPageState extends State<SensorPage> {
   Widget responsheeet() {
     return SizedBox(
       width: 0.9 * MediaQuery.of(context).size.width,
-      height: 200,
+      height: 250,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -252,6 +280,7 @@ class _SensorPageState extends State<SensorPage> {
             IndexedStack(
               index: selectedIndex,
               children: [
+                // Confirmation message for saving data
                 Center(
                   child: Column(
                     children: [
@@ -269,10 +298,14 @@ class _SensorPageState extends State<SensorPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          // Button to confirm saving data
                           TextButton(
                             onPressed: () {
                               selectedIndex = 1;
-                              setState(() {});
+                              setState(() {
+                                filteredAccData =
+                                    correctSamplingRate(accDataList);
+                              });
                               // sendData();
                             },
                             style: TextButton.styleFrom(
@@ -287,6 +320,7 @@ class _SensorPageState extends State<SensorPage> {
                             ),
                           ),
                           const Gap(50),
+                          // Button to discard data
                           TextButton(
                             onPressed: () {
                               showDialog(
@@ -314,7 +348,6 @@ class _SensorPageState extends State<SensorPage> {
                                         onPressed: () {
                                           showReposeSheet = false;
                                           scrollToTop();
-
                                           Navigator.of(context).pop();
                                           setState(() {});
                                         },
@@ -341,114 +374,158 @@ class _SensorPageState extends State<SensorPage> {
                     ],
                   ),
                 ),
+                // Form for entering filename and selecting vehicle type
                 Center(
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: filenameController,
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontWeight: FontWeight.normal,
-                          fontSize: 14,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 1),
                         ),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                            borderSide: const BorderSide(
-                                color: Colors.blue), // Remove the border side
-                          ),
-                          labelText: 'Enter File Name',
-                          hintText: 'Road ID',
-                          hintStyle: GoogleFonts.inter(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                          ),
-                          labelStyle: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 20), // Adjust content padding
-                        ),
-                      ),
-                      const Gap(20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () async {
-                              await databaseOperation(filenameController.text);
-                            },
-                            style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.yesButton),
-                            child: Text(
-                              'Save',
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Select Vehicle Type',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const Gap(20),
+                                const VehicleTypeDropdown(),
+                              ],
+                            ),
+                            const Gap(20),
+                            TextFormField(
+                              controller: filenameController,
                               style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                                fontWeight: FontWeight.normal,
                                 fontSize: 14,
                               ),
-                            ),
-                          ),
-                          const Gap(50),
-                          TextButton(
-                            onPressed: () async {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text(
-                                      'Are you sure you want to discard the file?',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    content: const Text(
-                                      'If you discard the file, any recorded data will be lost.',
-                                      style: TextStyle(color: Colors.blueGrey),
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: const Text("Don't Discard"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text("Yes, Discard"),
-                                        onPressed: () {
-                                          filenameController.clear();
-                                          showReposeSheet = false;
-                                          scrollToTop();
-                                          selectedIndex = 0;
-                                          Navigator.of(context).pop();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.noButton),
-                            child: Text(
-                              'Dicard',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  borderSide: const BorderSide(
+                                      color: Colors
+                                          .blue), // Remove the border side
+                                ),
+                                labelText: 'Enter File Name',
+                                hintText: 'Road ID',
+                                hintStyle: GoogleFonts.inter(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                ),
+                                labelStyle: GoogleFonts.inter(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 16,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 20), // Adjust content padding
                               ),
                             ),
-                          ),
-                          const Gap(10),
-                        ],
+                            const Gap(20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // Button to save data
+                                TextButton(
+                                  onPressed: () async {
+                                    await databaseOperation(
+                                        filenameController.text, dropdownValue);
+                                  },
+                                  style: TextButton.styleFrom(
+                                      backgroundColor:
+                                          sensorScreencolor.yesButton),
+                                  child: Text(
+                                    'Save',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                const Gap(50),
+                                // Button to discard data
+                                TextButton(
+                                  onPressed: () async {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Text(
+                                            'Are you sure you want to discard the file?',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          content: const Text(
+                                            'If you discard the file, any recorded data will be lost.',
+                                            style: TextStyle(
+                                                color: Colors.blueGrey),
+                                          ),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              child:
+                                                  const Text("Don't Discard"),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                            TextButton(
+                                              child: const Text("Yes, Discard"),
+                                              onPressed: () {
+                                                filenameController.clear();
+                                                showReposeSheet = false;
+                                                scrollToTop();
+                                                selectedIndex = 0;
+                                                Navigator.of(context).pop();
+                                                setState(() {});
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  style: TextButton.styleFrom(
+                                      backgroundColor:
+                                          sensorScreencolor.noButton),
+                                  child: Text(
+                                    'Dicard',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                const Gap(10),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
+                // Progress indicator while saving data
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
