@@ -33,11 +33,27 @@ bool showStartButton = true;
 
 // Map Page Data
 String geoJsonData = ''; // String reperesentation of selected file
-Map<String, dynamic> jsonData = {}; // A map obtained from jsonDecode of geoJsonData
+Map<String, dynamic> jsonData =
+    {}; // A map obtained from jsonDecode of geoJsonData
 List<dynamic> features = []; // Extracts the features of the jsonData
 List<dynamic> coordinates = []; // Stores the cooedinate of features(a list)
 Set<Polyline> polylines = {};
 List<PolylinObj> polylineObj = [];
+const List<String> mapType = [
+  'Normal',
+  'Satellite',
+  'Hybrid',
+  'Teraain',
+  'None'
+];
+const List<MapType> googlemapType = [
+  MapType.normal,
+  MapType.satellite,
+  MapType.hybrid,
+  MapType.terrain,
+  MapType.none
+];
+MapType googleMapType = MapType.normal;
 
 // Sensor Page Data
 Timer? accCallTimer;
@@ -49,4 +65,13 @@ String accelerationImgPath = 'lib/Assets/speedometer.png';
 String startMessage = 'Tap "Start" to collect data';
 String progressMessage = 'Collecting the data...';
 String locationErrorMessage =
-      "Sorry, we couldn't find your device location. Please press the start button and try again";
+    "Sorry, we couldn't find your device location. Please press the start button and try again";
+const List<String> vehicleType = <String>[
+  'Bike',
+  'Car',
+  'Auto',
+  'Bus',
+  'Others'
+];
+String dropdownValue = vehicleType.first;
+final streamSubscriptions = <StreamSubscription<dynamic>>[];
