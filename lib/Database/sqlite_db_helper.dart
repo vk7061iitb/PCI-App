@@ -23,7 +23,7 @@ class SQLDatabaseHelper {
         onCreate: (db, version) {
           // Create the AccTable
           db.execute(
-              'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Time TIMESTAMP)');
+              'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Altitude REAL, Speed REAL, Time TIMESTAMP)');
         },
         version: 1,
       );
@@ -41,13 +41,15 @@ class SQLDatabaseHelper {
       var accBatch = txn.batch();
       for (var data in accdata) {
         accBatch.rawInsert(
-            'INSERT INTO AccTable(x_acc, y_acc, z_acc, Latitude, Longitude, Time) VALUES(?,?,?,?,?,?)',
+            'INSERT INTO AccTable(x_acc, y_acc, z_acc, Latitude, Longitude, Altitude, Speed, Time) VALUES(?,?,?,?,?,?,?,?)',
             [
               data.xAcc,
               data.yAcc,
               data.zAcc,
               data.devicePosition.latitude,
               data.devicePosition.longitude,
+              data.devicePosition.altitude,
+              data.devicePosition.speed,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -61,7 +63,7 @@ class SQLDatabaseHelper {
   }
 
   // Export data to CSV file
-  Future<String> exportToCSV(String fileName) async {
+  Future<String> exportToCSV(String fileName, String vehicleType) async {
     try {
       await requestStoragePermission();
       String rawData = "Acceleration Data";
@@ -84,7 +86,16 @@ class SQLDatabaseHelper {
 
       // Convert query result to CSV data
       List<List<dynamic>> accCSVdata = [
-        ['x_acc', 'y_acc', 'z_acc', 'Latitude', 'Longitude', 'accTime'],
+        [
+          'x_acc',
+          'y_acc',
+          'z_acc',
+          'Latitude',
+          'Longitude',
+          'Altitude',
+          'Speed',
+          'accTime'
+        ],
         for (var row in accTableQuery)
           [
             row['x_acc'],
@@ -92,6 +103,8 @@ class SQLDatabaseHelper {
             row['z_acc'],
             row['Latitude'],
             row['Longitude'],
+            row['Altitude'],
+            row['Speed'],
             row['Time']
           ],
       ];
@@ -101,7 +114,7 @@ class SQLDatabaseHelper {
 
       // Generate file name and path
       String accFileName =
-          '${fileName}AccData${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}.csv';
+          '${fileName}_AccData_${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}_$vehicleType.csv';
       String accPath = '${accDataDirectory.path}/$accFileName';
 
       // Create and write CSV file
