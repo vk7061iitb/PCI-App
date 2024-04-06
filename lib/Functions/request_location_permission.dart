@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:pci_app/Objects/data.dart';
 
 Future<String> requestLocationPermission() async {
   bool serviceEnabled;
@@ -20,13 +21,14 @@ Future<String> requestLocationPermission() async {
 
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
-        Geolocator.openLocationSettings();
+    Geolocator.openLocationSettings();
     if (kDebugMode) {
       print('Location permission denied');
       message = 'Location permission denied';
     }
   } else {
     message = 'Location permission granted';
+    devicePosition = await Geolocator.getCurrentPosition();
   }
   return message;
 }
