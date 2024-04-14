@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:pci_app/Functions/request_storage_permission.dart';
 import 'package:pci_app/Presentation/Screens/maps_page.dart';
 import 'package:pci_app/Presentation/Screens/sensor_page.dart';
 import '../../Functions/request_location_permission.dart';
+import '../../Objects/data.dart';
+import '../Widget/custom_drawer.dart';
 import 'show_history.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,26 +22,61 @@ class _HomePageState extends State<HomePage> {
   static const List<Widget> _widgetOptions = <Widget>[
     SensorPage(),
     MapPage(),
-    HistoryDataPage()
+    HistoryDataPage(),
   ];
+
+  @override
+  void dispose() {
+    for (final subscription in streamSubscriptions) {
+      subscription.cancel();
+      super.dispose();
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    locationPermission();
-    requestStoragePermission();
+    checkPermission();
+    streamSubscriptions.add(
+      Geolocator.getPositionStream(
+          locationSettings: AndroidSettings(
+        forceLocationManager: false,
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+        intervalDuration: const Duration(milliseconds: 250),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'PCI App',
+          notificationText: 'Collecting Location Data',
+          notificationChannelName: 'PCI App',
+          setOngoing: true,
+          enableWakeLock: true,
+          color: Colors.blueAccent,
+        ),
+      )).listen(
+        (event) {
+          if (isRecordingData) {
+            devicePosition = event;
+            if (kDebugMode) {
+              print("${devicePosition.latitude} ${devicePosition.longitude}");
+            }
+          }
+        },
+      ),
+    );
   }
 
-  void locationPermission() async {
+  void checkPermission() async {
     await requestLocationPermission();
+    await requestStoragePermission();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const CustomDrawer(),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: NavigationBar(
-        animationDuration: const Duration(seconds: 1),
+        animationDuration: const Duration(milliseconds: 500),
         height: 0.18 * MediaQuery.of(context).size.width,
         onDestinationSelected: (int index) {
           setState(() {
