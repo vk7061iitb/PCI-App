@@ -14,7 +14,7 @@ import '../../Functions/request_location_permission.dart';
 import '../../Objects/data.dart';
 import '../../Objects/data_points.dart';
 import '../Widget/dropdown_widget.dart';
-import '../Widget/readings.dart';
+import '../Widget/sensor_readings.dart';
 import '../Widget/snackbar.dart';
 
 class SensorPage extends StatefulWidget {
@@ -26,7 +26,6 @@ class SensorPage extends StatefulWidget {
 
 class _SensorPageState extends State<SensorPage> {
   SensorPageColor sensorScreencolor = SensorPageColor();
-  final _streamSubscriptions = <StreamSubscription<dynamic>>[];
   late SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
   late ScrollController scrollController;
   TextEditingController filenameController = TextEditingController();
@@ -103,14 +102,14 @@ class _SensorPageState extends State<SensorPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ReadingsWidget(
+                LiveSensorReadings(
                     iconPath: accelerationImgPath,
                     name: 'Accleration',
                     xValue: !showStartButton ? xAcceleration : 0.0,
                     yValue: !showStartButton ? yAcceleration : 0.0,
                     zValue: !showStartButton ? zAcceleration : 0.0),
                 const Gap(15),
-                ReadingsWidget(
+                LiveSensorReadings(
                     iconPath: gyroscopeImgPath,
                     name: 'Gyroscope',
                     xValue: !showStartButton ? xGyroscope : 0.0,
@@ -141,46 +140,14 @@ class _SensorPageState extends State<SensorPage> {
     accCallTimer?.cancel();
     locationCallTimer?.cancel();
     scrollController.dispose();
-    for (final subscription in _streamSubscriptions) {
-      subscription.cancel();
-    }
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    requestLocationPermission();
     localDatabase.initDB();
     scrollController = ScrollController();
-
-    streamSubscriptions.add(
-      Geolocator.getPositionStream(
-          locationSettings: AndroidSettings(
-        forceLocationManager: false,
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 0,
-        intervalDuration: const Duration(milliseconds: 250),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationTitle: 'PCI App',
-          notificationText: 'Collecting Location Data',
-          notificationChannelName: 'PCI App',
-          setOngoing: true,
-          enableWakeLock: true,
-          color: Colors.blueAccent,
-        ),
-      )).listen(
-        (event) {
-          if (isRecordingData) {
-            devicePosition = event;
-            if (kDebugMode) {
-              print("${devicePosition.latitude} ${devicePosition.longitude}");
-            }
-          }
-        },
-      ),
-    );
-
     streamSubscriptions.add(
       accelerometerEventStream(samplingPeriod: Duration.zero).listen(
         (AccelerometerEvent event) {
@@ -258,7 +225,7 @@ class _SensorPageState extends State<SensorPage> {
     await localDatabase.insertData(filteredAccData, gyroDataList);
     if (kDebugMode) {
       print(
-          'Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
+          'Filtered Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
     }
     // sendData();
     setState(() {
