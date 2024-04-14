@@ -20,22 +20,24 @@ class _CircleWidgetState extends State<CircleWidget> {
       children: [
         Center(
           child: AnimatedContainer(
-            duration: const Duration(seconds: 1),
+            duration: const Duration(milliseconds: 500),
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 22,
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(
+                width: 22,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: sensorScreencolor.shadowColor,
+                  blurRadius: 5,
+                  spreadRadius: 0,
+                  blurStyle: BlurStyle.normal,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                      color: sensorScreencolor.shadowColor,
-                      blurRadius: 5,
-                      spreadRadius: 0,
-                      blurStyle: BlurStyle.normal)
-                ]),
+              ],
+            ),
           ),
         ),
         Center(
