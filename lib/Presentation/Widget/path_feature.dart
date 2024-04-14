@@ -1,8 +1,9 @@
+// This file contains the code for the feature list of the polyline
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 
-// Function to build the content of the bottom sheet
 class PolylineFeature extends StatelessWidget {
   final int polylineIndex;
   const PolylineFeature({super.key, required this.polylineIndex});
@@ -10,17 +11,16 @@ class PolylineFeature extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define text styles
-    TextStyle style01 = GoogleFonts.inter(
+    TextStyle listTileTitleStyle = GoogleFonts.inter(
       fontSize: 16,
       fontWeight: FontWeight.w600,
       color: Colors.black,
     );
-    TextStyle style02 = GoogleFonts.inter(
+    TextStyle listTileTralingStyle = GoogleFonts.inter(
       fontSize: 16,
       fontWeight: FontWeight.normal,
       color: Colors.blueGrey,
     );
-
     return Container(
       height: MediaQuery.of(context).size.height * 0.5,
       width: MediaQuery.of(context).size.width,
@@ -62,7 +62,7 @@ class PolylineFeature extends StatelessWidget {
                               .properties
                               .keyList[index]
                               .toString(),
-                          style: style01,
+                          style: listTileTitleStyle,
                         ),
                       ),
                       // Value
@@ -73,7 +73,7 @@ class PolylineFeature extends StatelessWidget {
                               .properties
                               .valuesList[index]
                               .toStringAsFixed(2),
-                          style: style02,
+                          style: listTileTralingStyle,
                         ),
                       ),
                     ),
