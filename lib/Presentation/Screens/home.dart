@@ -53,8 +53,8 @@ class _HomePageState extends State<HomePage> {
         ),
       )).listen(
         (event) {
+          devicePosition = event;
           if (isRecordingData) {
-            devicePosition = event;
             if (kDebugMode) {
               print("${devicePosition.latitude} ${devicePosition.longitude}");
             }

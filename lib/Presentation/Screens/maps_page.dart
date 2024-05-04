@@ -57,6 +57,7 @@ class _MapPageState extends State<MapPage> {
                     mapController = controller;
                   },
                   polylines: polylines,
+                  zoomControlsEnabled: false,
                 ),
               ),
             ),
@@ -112,6 +113,21 @@ class _MapPageState extends State<MapPage> {
                     ),
                   ),
                 ),
+                ElevatedButton(
+                  onPressed: () async {
+                    polylines.clear();
+                    polylineObj.clear();
+                    setState(() {});
+                  },
+                  child: Text(
+                    'Clear',
+                    style: GoogleFonts.inter(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -122,8 +138,6 @@ class _MapPageState extends State<MapPage> {
 
   // Function to plot the map with polylines
   void plotMap() {
-    polylines.clear();
-    polylineObj.clear();
     features = jsonData['features'];
     for (int i = 0; i < features.length; i++) {
       List<LatLng> points = [];
