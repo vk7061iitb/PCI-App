@@ -49,7 +49,7 @@ class SQLDatabaseHelper {
               data.devicePosition.latitude,
               data.devicePosition.longitude,
               data.devicePosition.altitude,
-              data.devicePosition.speed,
+              data.devicePosition.speed*3.6,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -123,7 +123,6 @@ class SQLDatabaseHelper {
 
       debugPrint(
           'CSV files exported to path : ${appExternalStorageDir.path}'); // Updated debug message
-
       // Share the file
       // ignore: deprecated_member_use
       await Share.shareFiles([accPath]);
