@@ -6,7 +6,6 @@ import 'package:pci_app/Presentation/Screens/maps_page.dart';
 import 'package:pci_app/Presentation/Screens/sensor_page.dart';
 import '../../Functions/request_location_permission.dart';
 import '../../Objects/data.dart';
-import '../Widget/custom_drawer.dart';
 import 'show_history.dart';
 
 class HomePage extends StatefulWidget {
@@ -73,7 +72,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const CustomDrawer(),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         animationDuration: const Duration(milliseconds: 500),

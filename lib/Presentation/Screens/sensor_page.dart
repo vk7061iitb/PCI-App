@@ -29,7 +29,7 @@ class _SensorPageState extends State<SensorPage> {
   late SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
   late ScrollController scrollController;
   TextEditingController filenameController = TextEditingController();
-  bool showReposeSheet = false;
+  bool showResponseSheet = false;
   int selectedIndex = 0;
   List<AccData> filteredAccData = [];
 
@@ -70,7 +70,7 @@ class _SensorPageState extends State<SensorPage> {
                     accCallTimer?.cancel();
                     locationCallTimer?.cancel();
                     isRecordingData = false;
-                    showReposeSheet = true;
+                    showResponseSheet = true;
                     showStartButton = true;
                     setState(() {});
                     if (kDebugMode) {
@@ -128,7 +128,7 @@ class _SensorPageState extends State<SensorPage> {
                     locationAcurrary:
                         !showStartButton ? devicePosition.accuracy : 0.000)),
             const Gap(20),
-            showReposeSheet ? responsheeet() : const SizedBox(),
+            showResponseSheet ? responsheeet() : const SizedBox(),
           ],
         ),
       ),
@@ -223,6 +223,7 @@ class _SensorPageState extends State<SensorPage> {
     });
     await localDatabase.deleteAlltables();
     await localDatabase.insertData(filteredAccData, gyroDataList);
+    await localDatabase.exportToCSV(fileName, vehicleTYpe);
     if (kDebugMode) {
       print(
           'Filtered Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
@@ -231,7 +232,7 @@ class _SensorPageState extends State<SensorPage> {
     setState(() {
       selectedIndex = 0;
       filenameController.clear();
-      showReposeSheet = false;
+      showResponseSheet = false;
       scrollToTop();
     });
   }
@@ -313,7 +314,7 @@ class _SensorPageState extends State<SensorPage> {
                                       TextButton(
                                         child: const Text("Yes, Discard"),
                                         onPressed: () {
-                                          showReposeSheet = false;
+                                          showResponseSheet = false;
                                           scrollToTop();
                                           Navigator.of(context).pop();
                                           setState(() {});
@@ -459,7 +460,7 @@ class _SensorPageState extends State<SensorPage> {
                                               child: const Text("Yes, Discard"),
                                               onPressed: () {
                                                 filenameController.clear();
-                                                showReposeSheet = false;
+                                                showResponseSheet = false;
                                                 scrollToTop();
                                                 selectedIndex = 0;
                                                 Navigator.of(context).pop();

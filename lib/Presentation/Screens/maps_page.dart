@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Functions/pci_data.dart';
 import '../../Functions/load_geo_json.dart';
 import '../../Objects/data.dart';
 import '../../Objects/polyline_obj.dart';
@@ -50,8 +48,9 @@ class _MapPageState extends State<MapPage> {
               child: SizedBox(
                 child: GoogleMap(
                   mapType: googleMapType,
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(19.133623, 72.911895),
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                        devicePosition.latitude, devicePosition.longitude),
                     zoom: 15,
                   ),
                   onMapCreated: (GoogleMapController controller) {
@@ -79,7 +78,7 @@ class _MapPageState extends State<MapPage> {
                 ElevatedButton(
                   onPressed: () async {
                     try {
-                      geoJsonData = await loadGeoJsonFromFile();
+                      await loadGeoJsonFromFile();
                       setState(() {});
                     } catch (error) {
                       if (kDebugMode) {
@@ -98,17 +97,11 @@ class _MapPageState extends State<MapPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (geoJsonData.isNotEmpty) {
-                      plotMap();
-                      Future.delayed(const Duration(milliseconds: 500)).then(
-                        (value) => animateToLocation(),
-                      );
-                      setState(() {});
-                    } else {
-                      if (kDebugMode) {
-                        print('Please load GeoJSON data first.');
-                      }
-                    }
+                    plotMap();
+                    Future.delayed(const Duration(milliseconds: 500)).then(
+                      (value) => animateToLocation(),
+                    );
+                    setState(() {});
                   },
                   child: Text(
                     'Plot Map',
@@ -131,7 +124,6 @@ class _MapPageState extends State<MapPage> {
   void plotMap() {
     polylines.clear();
     polylineObj.clear();
-    jsonData = jsonDecode(convertToFirstJsonFormat2(geoJsonData));
     features = jsonData['features'];
     for (int i = 0; i < features.length; i++) {
       List<LatLng> points = [];
@@ -189,17 +181,30 @@ class _MapPageState extends State<MapPage> {
 
   // Function to animate the camera to the location of the polylines
   void animateToLocation() async {
+    double minLat = features[0]['geometry']['coordinates'][0][1];
+    double minLng = features[0]['geometry']['coordinates'][0][0];
+    double maxLat =
+        features[features.length - 1]['geometry']['coordinates'][0][1];
+    double maxLng =
+        features[features.length - 1]['geometry']['coordinates'][0][0];
+
+    if (minLat > maxLat) {
+      double temp = minLat;
+      minLat = maxLat;
+      maxLat = temp;
+    }
+
+    if (minLng > maxLng) {
+      double temp = minLng;
+      minLng = maxLng;
+      maxLng = temp;
+    }
+
     LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(
-        features[0]['geometry']['coordinates'][0][1],
-        features[0]['geometry']['coordinates'][0][0],
-      ),
-      northeast: LatLng(
-        features[features.length - 1]['geometry']['coordinates'][0][1],
-        features[features.length - 1]['geometry']['coordinates'][0][0],
-      ),
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
     );
 
-    mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 10));
+    mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 11));
   }
 }

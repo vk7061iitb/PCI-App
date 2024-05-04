@@ -73,5 +73,9 @@ const List<String> vehicleType = <String>[
   'Bus',
   'Others'
 ];
+
 String dropdownValue = vehicleType.first;
 final streamSubscriptions = <StreamSubscription<dynamic>>[];
+
+// Settings Page Data
+LocationAccuracy geolocatorLocationAccuracy = LocationAccuracy.best;
