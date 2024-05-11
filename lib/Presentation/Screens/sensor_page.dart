@@ -149,7 +149,7 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     scrollController = ScrollController();
     streamSubscriptions.add(
-      accelerometerEventStream(samplingPeriod: Duration.zero).listen(
+      accelerometerEventStream(samplingPeriod: SensorInterval.fastestInterval).listen(
         (AccelerometerEvent event) {
           if (isRecordingData) {
             accDataList.add(
