@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import '../Objects/pci_object.dart';
 
 String convertToFirstJsonFormat2(String fileContent) {
@@ -109,8 +108,5 @@ String convertToGeoJsonFormat(List<PciData> pciDataList) {
   };
   // Convert the FeatureCollection dictionary to JSON format
   String jsonString = jsonEncode(featureCollection);
-  if (kDebugMode) {
-    print(jsonString);
-  }
   return jsonString;
 }
