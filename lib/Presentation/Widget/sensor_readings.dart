@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
+
+class SensorReading extends StatelessWidget {
+  final List<double> accData;
+  final List<double> gyroData;
+  const SensorReading({required this.accData, required this.gyroData, super.key});
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          LiveSensorReadings(
+            iconPath: accelerationImgPath,
+            name: "Acceleration",
+            dataList: accData,
+          ),
+          const Gap(5),
+          LiveSensorReadings(
+            iconPath: gyroscopeImgPath,
+            name: "Gyroscope",
+            dataList: gyroData,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class LiveSensorReadings extends StatelessWidget {
   final String iconPath;
   final String name;
-  final double xValue;
-  final double yValue;
-  final double zValue;
+  final List<double> dataList;
   const LiveSensorReadings(
       {required this.iconPath,
       required this.name,
-      required this.xValue,
-      required this.yValue,
-      required this.zValue,
+      required this.dataList,
       super.key});
 
   @override
@@ -24,81 +48,70 @@ class LiveSensorReadings extends StatelessWidget {
       decoration: BoxDecoration(
           color: const Color(0xFFE0E0E0),
           borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        children: [
-          const Gap(12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: Image.asset(iconPath),
-              ),
-              Text(
-                name,
-                style: style1,
-              )
-            ],
-          ),
-          const Gap(12),
-          rowWidget('X', xValue),
-          const Gap(12),
-          rowWidget('Y', yValue),
-          const Gap(12),
-          rowWidget('Z', zValue),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Image.asset(iconPath),
+                ),
+                Text(
+                  name,
+                  style: style1,
+                )
+              ],
+            ),
+            RowWidget(label: "X", value: dataList[0]),
+            RowWidget(label: "Y", value: dataList[1]),
+            RowWidget(label: "Z", value: dataList[2]),
+          ],
+        ),
       ),
     );
   }
 }
 
-class PositionReadings extends StatelessWidget {
-  final double latitude;
-  final double longitude;
-  final double locationAcurrary;
-  const PositionReadings(
-      {required this.latitude,
-      required this.longitude,
-      required this.locationAcurrary,
-      super.key});
+class RowWidget extends StatefulWidget {
+  final String label;
+  final double value;
+
+  const RowWidget({super.key, required this.label, required this.value});
+
+  @override
+  State<RowWidget> createState() => RowWidgetState();
+}
+
+class RowWidgetState extends State<RowWidget> {
+  void changeState() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      width: 350,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE0E0E0),
-        borderRadius: BorderRadius.circular(15),
-      ),
-
-    );
-  }
-}
-
-Widget rowWidget(String label, double value) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: [
-      Text(
-        label,
-        style: style2,
-      ),
-      Container(
-        width: 90,
-        height: 25,
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(15)),
-        child: Center(
-          child: Text(
-            value.toStringAsFixed(3),
-            style: style2,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text(widget.label, style: style2),
+        Container(
+          width: 90,
+          height: 25,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Center(
+            child: Text(widget.value.toStringAsFixed(3), style: style2),
           ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 TextStyle style1 = GoogleFonts.inter(
