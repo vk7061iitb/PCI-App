@@ -20,23 +20,17 @@ Position devicePosition = Position(
 List<AccData> accDataList = [];
 List<GyroData> gyroDataList = [];
 
-var xAcceleration = 0.0;
-var yAcceleration = 0.0;
-var zAcceleration = 0.0;
-
-var xGyroscope = 0.0;
-var yGyroscope = 0.0;
-var zGyroscope = 0.0;
+List<double> accData = [0, 0, 0];
+List<double> gyroData = [0, 0, 0];
 
 bool isRecordingData = false;
 bool showStartButton = true;
 
 // Map Page Data
-String geoJsonData = ''; // String reperesentation of selected file
-Map<String, dynamic> jsonData =
-    {}; // A map obtained from jsonDecode of geoJsonData
-List<dynamic> features = []; // Extracts the features of the jsonData
-List<dynamic> coordinates = []; // Stores the cooedinate of features(a list)
+String geoJsonData = '';
+Map<String, dynamic> jsonData = {};
+List<dynamic> features = [];
+List<dynamic> coordinates = [];
 Set<Polyline> polylines = {};
 List<PolylinObj> polylineObj = [];
 const List<String> mapType = [
