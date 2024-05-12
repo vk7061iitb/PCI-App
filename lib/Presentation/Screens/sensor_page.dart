@@ -11,6 +11,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/analysis.dart';
 import '../../Functions/request_location_permission.dart';
+import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
 import '../../Objects/data_points.dart';
 import '../Widget/dropdown_widget.dart';
@@ -32,6 +33,8 @@ class _SensorPageState extends State<SensorPage> {
   bool showResponseSheet = false;
   int selectedIndex = 0;
   List<AccData> filteredAccData = [];
+
+  GlobalKey<RowWidgetState> rowWidgetKey = GlobalKey<RowWidgetState>();
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +70,14 @@ class _SensorPageState extends State<SensorPage> {
                     }
                   } else {
                     // This operation will be done when end button will be tapped
+                    accData = [0, 0, 0];
+                    gyroData = [0, 0, 0];
                     accCallTimer?.cancel();
                     locationCallTimer?.cancel();
                     isRecordingData = false;
                     showResponseSheet = true;
                     showStartButton = true;
+                    await sendData();
                     setState(() {});
                     if (kDebugMode) {
                       print('isRecordingData : $isRecordingData');
@@ -99,34 +105,7 @@ class _SensorPageState extends State<SensorPage> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                LiveSensorReadings(
-                    iconPath: accelerationImgPath,
-                    name: 'Accleration',
-                    xValue: !showStartButton ? xAcceleration : 0.0,
-                    yValue: !showStartButton ? yAcceleration : 0.0,
-                    zValue: !showStartButton ? zAcceleration : 0.0),
-                const Gap(15),
-                LiveSensorReadings(
-                    iconPath: gyroscopeImgPath,
-                    name: 'Gyroscope',
-                    xValue: !showStartButton ? xGyroscope : 0.0,
-                    yValue: !showStartButton ? yGyroscope : 0.0,
-                    zValue: !showStartButton ? zGyroscope : 0.0),
-              ],
-            ),
-            const Gap(25),
-            Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: PositionReadings(
-                    latitude:
-                        !showStartButton ? devicePosition.latitude : 0.000,
-                    longitude:
-                        !showStartButton ? devicePosition.latitude : 0.000,
-                    locationAcurrary:
-                        !showStartButton ? devicePosition.accuracy : 0.000)),
+            SensorReading(accData: accData, gyroData: gyroData),
             const Gap(20),
             showResponseSheet ? responsheeet() : const SizedBox(),
           ],
@@ -149,7 +128,8 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     scrollController = ScrollController();
     streamSubscriptions.add(
-      accelerometerEventStream(samplingPeriod: SensorInterval.fastestInterval).listen(
+      accelerometerEventStream(samplingPeriod: SensorInterval.fastestInterval)
+          .listen(
         (AccelerometerEvent event) {
           if (isRecordingData) {
             accDataList.add(
@@ -162,9 +142,9 @@ class _SensorPageState extends State<SensorPage> {
               ),
             );
 
-            xAcceleration = event.x;
-            yAcceleration = event.y;
-            zAcceleration = event.z;
+            accData[0] = event.x;
+            accData[1] = event.y;
+            accData[2] = event.z;
           }
         },
         onError: (e) {
