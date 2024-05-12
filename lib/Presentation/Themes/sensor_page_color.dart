@@ -11,5 +11,4 @@ class SensorPageColor {
   Color yesButton = const Color(0xFF4285F4);
   Color noButton = const Color(0xFFFF4444);
 
-
 }
