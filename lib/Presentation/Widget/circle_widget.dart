@@ -27,7 +27,7 @@ class _CircleWidgetState extends State<CircleWidget> {
               color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                width: 22,
+                width: 25,
               ),
               boxShadow: [
                 BoxShadow(
@@ -54,7 +54,9 @@ class _CircleWidgetState extends State<CircleWidget> {
                   color: showStartButton
                       ? sensorScreencolor.startCircle
                       : sensorScreencolor.endCircle,
-                  width: 22,
+                  width: 25,
+                  style: BorderStyle.solid,
+                  strokeAlign: BorderSide.strokeAlignInside
                 ),
               ),
               child: Center(
