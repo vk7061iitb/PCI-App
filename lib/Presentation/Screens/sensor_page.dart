@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,7 +12,6 @@ import 'package:sensors_plus/sensors_plus.dart';
 import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/analysis.dart';
 import '../../Functions/request_location_permission.dart';
-import '../../Functions/send_data_to_server.dart';
 import '../../Objects/data.dart';
 import '../../Objects/data_points.dart';
 import '../Widget/dropdown_widget.dart';
@@ -53,8 +53,9 @@ class _SensorPageState extends State<SensorPage> {
                     requestLocationPermission();
                     if (devicePosition.latitude == 0) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(customSnackBar(locationErrorMessage));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          customSnackBar(locationErrorMessage),
+                        );
                       }
                     } else {
                       scrollToTop();
@@ -77,8 +78,7 @@ class _SensorPageState extends State<SensorPage> {
                     isRecordingData = false;
                     showResponseSheet = true;
                     showStartButton = true;
-                    await sendData();
-                    setState(() {});
+                    // await sendData();
                     if (kDebugMode) {
                       print('isRecordingData : $isRecordingData');
                       print(
@@ -95,12 +95,15 @@ class _SensorPageState extends State<SensorPage> {
             Padding(
               padding: const EdgeInsets.only(top: 20, bottom: 20),
               child: Center(
-                child: Text(
-                  showStartButton ? startMessage : progressMessage,
-                  style: GoogleFonts.inter(
-                    color: sensorScreencolor.updateMessage,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
+                child: Animate(
+                  effects: const [FadeEffect()],
+                  child: Text(
+                    showStartButton ? startMessage : progressMessage,
+                    style: GoogleFonts.inter(
+                      color: sensorScreencolor.updateMessage,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),
@@ -203,12 +206,19 @@ class _SensorPageState extends State<SensorPage> {
     });
     await localDatabase.deleteAlltables();
     await localDatabase.insertData(filteredAccData, gyroDataList);
-    await localDatabase.exportToCSV(fileName, vehicleTYpe);
+    String dbMessage = await localDatabase.exportToCSV(fileName, vehicleTYpe);
+
+    if (context.mounted) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        customSnackBar(dbMessage),
+      );
+    }
     if (kDebugMode) {
       print(
           'Filtered Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
     }
-    // sendData();
+
     setState(() {
       selectedIndex = 0;
       filenameController.clear();
