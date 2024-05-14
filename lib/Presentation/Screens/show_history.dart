@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -49,8 +48,8 @@ class _HistoryDataPageState extends State<HistoryDataPage> {
 
   Future<void> shareFile(File file) async {
     try {
-      // ignore: deprecated_member_use
-      await Share.shareFiles([file.path]);
+      XFile xFile = XFile(file.path);
+      await Share.shareXFiles([xFile]);
     } catch (e) {
       if (kDebugMode) {
         print("Error sharing file: $e");
