@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,8 +32,6 @@ class _SensorPageState extends State<SensorPage> {
   bool showResponseSheet = false;
   int selectedIndex = 0;
   List<AccData> filteredAccData = [];
-
-  GlobalKey<RowWidgetState> rowWidgetKey = GlobalKey<RowWidgetState>();
 
   @override
   Widget build(BuildContext context) {
@@ -95,15 +92,12 @@ class _SensorPageState extends State<SensorPage> {
             Padding(
               padding: const EdgeInsets.only(top: 20, bottom: 20),
               child: Center(
-                child: Animate(
-                  effects: const [FadeEffect()],
-                  child: Text(
-                    showStartButton ? startMessage : progressMessage,
-                    style: GoogleFonts.inter(
-                      color: sensorScreencolor.updateMessage,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
-                    ),
+                child: Text(
+                  showStartButton ? startMessage : progressMessage,
+                  style: GoogleFonts.inter(
+                    color: sensorScreencolor.updateMessage,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
                   ),
                 ),
               ),
