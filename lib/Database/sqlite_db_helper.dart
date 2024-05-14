@@ -118,15 +118,16 @@ class SQLDatabaseHelper {
       String accPath = '${accDataDirectory.path}/$accFileName';
 
       // Create and write CSV file
+      XFile accFile1 = XFile(accPath);
       File accFile = File(accPath);
       await accFile.writeAsString(accCSV);
 
       debugPrint(
-          'CSV files exported to path : ${appExternalStorageDir.path}'); // Updated debug message
-      // Share the file
-      // ignore: deprecated_member_use
-      await Share.shareFiles([accPath]);
-      return 'CSV files exported to path : ${appExternalStorageDir.path}'; // Updated return message
+          'CSV files exported to path : ${appExternalStorageDir.path}');
+
+      await Share.shareXFiles([accFile1]);
+      
+      return 'CSV files exported to path : ${appExternalStorageDir.path}';
     } catch (e) {
       debugPrint(e.toString());
       return e.toString();
