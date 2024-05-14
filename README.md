@@ -27,7 +27,7 @@ This project dedicated to improving road infrastructure management by leveraging
 - **Cost-Effectiveness**: By targeting areas with the highest PCI, resources can be allocated more effectively, maximizing impact while minimizing costs.
 
 ## Future Developments
-SmartRoads is committed to continuous improvement. Future developments may include:
+PT Master is committed to continuous improvement. Future developments may include:
 - Integration with additional sensors for more comprehensive data collection
 - Implementation of machine learning algorithms for predictive analysis
 - Collaboration with local authorities for widespread implementation
@@ -36,6 +36,6 @@ SmartRoads is committed to continuous improvement. Future developments may inclu
 We welcome contributions from developers, data scientists, and infrastructure experts. If you're passionate about improving road infrastructure management, join us in making SmartRoads a reality!
 
 ## Contact
-For inquiries and collaboration opportunities, please contact [insert email or contact information].
+For inquiries and collaboration opportunities, please contact [vk5418232@gmail.com].
 
 Let's pave the way to smarter roads together! 🛣️✨
