@@ -55,6 +55,7 @@ Timer? locationCallTimer;
 String message = '';
 String requestLocationMessage = '';
 String gyroscopeImgPath = 'lib/Assets/gyroscope.png';
+String locationImgPath = 'lib/Assets/location.png';
 String accelerationImgPath = 'lib/Assets/speedometer.png';
 String startMessage = 'Tap "Start" to collect data';
 String progressMessage = 'Collecting the data...';
