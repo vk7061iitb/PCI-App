@@ -11,9 +11,17 @@ SnackBar customSnackBar(String message) {
         fontSize: 14,
       ),
     ),
-    backgroundColor: Colors.black87,
     showCloseIcon: true,
+    behavior: SnackBarBehavior.floating,
     closeIconColor: Colors.white,
+    padding: const EdgeInsets.all(12),
     duration: const Duration(seconds: 5),
+    elevation: 5,
+    shape: const RoundedRectangleBorder(
+      side: BorderSide.none,
+      borderRadius: BorderRadius.all(
+        Radius.circular(20),
+      ),
+    ),
   );
 }

@@ -7,13 +7,17 @@ environment:
   sdk: '>=3.3.1 <4.0.0'
 
 dependencies:
+  auto_size_text: ^3.0.0
+  cross_file: ^0.3.4+1
   csv: ^6.0.0
+  cupertino_icons: ^1.0.8
   file_picker: ^8.0.0+1
   firebase_analytics: ^10.10.0
   firebase_core: ^2.28.0
   firebase_crashlytics: ^3.5.0
   flutter:
     sdk: flutter
+  flutter_animate: ^4.5.0
   flutter_map_math: ^0.1.7
   gap: ^3.0.1
   geolocator: ^11.0.0
@@ -25,18 +29,22 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.2
   permission_handler: ^11.3.0
+  postgres: ^3.2.0
+  provider: ^6.1.2
   sensors_plus: ^5.0.0
-  share_plus: ^8.0.2
+  share_plus: ^9.0.0
   sqflite: ^2.3.2
-  web_socket_channel: ^2.4.4
+  web_socket_channel: ^3.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
   assets:
     - lib\Assets\gyroscope.png
     - lib\Assets\speedometer.png
+    - lib\Assets\location.png
+    - lib\Assets\Roads\road_drrp.geojson
