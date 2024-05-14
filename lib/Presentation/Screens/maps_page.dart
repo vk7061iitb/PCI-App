@@ -1,16 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../Functions/get_road_color.dart';
 import '../../Functions/load_geo_json.dart';
+import '../../Functions/plot_drrp_layer.dart';
 import '../../Objects/data.dart';
 import '../../Objects/polyline_obj.dart';
 import '../Widget/path_feature.dart';
 import '../Widget/maptype_dropdown.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -21,26 +20,6 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController? mapController;
-
-  // Function to get road color based on quality
-  Color getRoadColor(String quality) {
-    switch (quality) {
-      case '1':
-        return const Color(0xFF388E3C); // Best quality
-      case '2':
-        return const Color(0xFFCDDC39);
-      case '3':
-        return const Color(0xFF1A237E);
-      case '4':
-        return const Color(0xFF795548);
-      case '5':
-        return const Color(0xFFF44336);
-      case '6':
-        return const Color(0xFF448AFF); // Worst quality
-      default:
-        return Colors.black; // Default color
-    }
-  }
 
   bool isDrrpLayerVisible = false;
 
@@ -95,10 +74,11 @@ class _MapPageState extends State<MapPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(2.5),
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
                           isDrrpLayerVisible = !isDrrpLayerVisible;
                           if (isDrrpLayerVisible) {
-                            plotDRRPLayer();
+                            await plotDRRPLayer();
+                            setState(() {});
                           } else {
                             List<Polyline> polylinesToAdd = [];
                             for (var element in polylines) {
@@ -109,8 +89,8 @@ class _MapPageState extends State<MapPage> {
                             }
                             polylines.clear();
                             polylines.addAll(polylinesToAdd);
+                            setState(() {});
                           }
-                          setState(() {});
                         },
                         child: Row(
                           children: [
@@ -176,7 +156,6 @@ class _MapPageState extends State<MapPage> {
                     onPressed: () async {
                       try {
                         await loadGeoJsonFromFile();
-                        setState(() {});
                       } catch (error) {
                         if (kDebugMode) {
                           print('Error loading GeoJSON file: $error');
@@ -287,55 +266,6 @@ class _MapPageState extends State<MapPage> {
       polylines.add(temporaryPolyline);
     }
     jsonData = {};
-    setState(() {});
-  }
-
-  Future<void> plotDRRPLayer() async{
-    await readDrrpRoadFile();
-    features = jsonData['features'];
-    List<Polyline> polylinesToAdd = [];
-    for (var element in polylines) {
-      if (element.polylineId.value.contains("plotted_polyline")) {
-        polylinesToAdd.add(element);
-      }
-    }
-    polylines.clear();
-
-    for (int i = 0; i < features.length; i++) {
-      List<LatLng> points = [];
-      Map<String, dynamic> feature = features[i];
-      List<dynamic> coordinates = feature['geometry']['coordinates'];
-      for (var data in coordinates) {
-        points.add(
-          LatLng(data[1], data[0]),
-        );
-      }
-
-      Polyline temporaryPolyline = Polyline(
-        polylineId: PolylineId('drrp_polyline$i'),
-        color: getRoadColor(feature['properties']['PCI'].toString()),
-        width: 5,
-        endCap: Cap.roundCap,
-        startCap: Cap.roundCap,
-        jointType: JointType.round,
-        points: points,
-        patterns: [
-          PatternItem.dash(10),
-          PatternItem.gap(10),
-        ],
-      );
-
-      polylines.add(temporaryPolyline);
-      polylines.addAll(polylinesToAdd);
-    }
-    jsonData = {};
-    setState(() {});
-  }
-
-  Future<void> readDrrpRoadFile() async {
-    String jsonString =
-        await rootBundle.loadString("lib/Assets/Roads/road_drrp.geojson");
-    jsonData = jsonDecode(jsonString);
   }
 
   // Function to animate the camera to the location of the polylines
