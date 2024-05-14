@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/Objects/pci_object.dart';
-
 import 'pci_data.dart';
 
 Future<void> loadGeoJsonFromFile() async {
@@ -18,18 +17,17 @@ Future<void> loadGeoJsonFromFile() async {
     String fileType = filePath.split('.').last;
     String fileContent = await file.readAsString();
 
-    if (kDebugMode) {
-      print('Selected File Type:$fileType');
-    }
-
     if (fileType == 'geojson' || fileType == 'json') {
-
       jsonData = jsonDecode(fileContent);
-
-    }  else if (fileType == 'csv') {
+    } else if (fileType == 'csv') {
       List<List<dynamic>> csvData =
           const CsvToListConverter().convert(fileContent);
 
+      List<dynamic> headerList = csvData[0];
+      for (var data in headerList) {
+        debugPrint(data.toString());
+      }
+      
       List<PciData> pciDataList = [];
       for (int i = 1; i < csvData.length; i++) {
         PciData pciData = PciData(
@@ -41,7 +39,7 @@ Future<void> loadGeoJsonFromFile() async {
         );
         pciDataList.add(pciData);
       }
-      jsonData = jsonDecode(convertToGeoJsonFormat(pciDataList));
+      jsonData = convertToGeoJsonFormat(pciDataList);
     }
   } else {
     if (kDebugMode) {
