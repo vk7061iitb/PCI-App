@@ -55,94 +55,91 @@ class _MapPageState extends State<MapPage> {
                 color: Colors.white,
                 height: MediaQuery.of(context).size.height * 0.08,
                 width: MediaQuery.of(context).size.width,
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).size.height * 0.02,
-              right: MediaQuery.of(context).size.width * 0.05,
-              left: MediaQuery.of(context).size.width * 0.05,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDrrpLayerVisible
-                          ? Colors.blue.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.5),
-                      child: InkWell(
-                        onTap: () async {
-                          isDrrpLayerVisible = !isDrrpLayerVisible;
-                          if (isDrrpLayerVisible) {
-                            await plotDRRPLayer();
-                            setState(() {});
-                          } else {
-                            List<Polyline> polylinesToAdd = [];
-                            for (var element in polylines) {
-                              if (element.polylineId.value
-                                  .contains("plotted_polyline")) {
-                                polylinesToAdd.add(element);
-                              }
-                            }
-                            polylines.clear();
-                            polylines.addAll(polylinesToAdd);
-                            setState(() {});
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            const Gap(10),
-                            Text(
-                              "DRRP Roads",
-                              style: GoogleFonts.inter(
-                                color: isDrrpLayerVisible
-                                    ? Colors.blue
-                                    : Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const Gap(10),
-                          ],
-                        ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDrrpLayerVisible
+                            ? Colors.blue.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Gap(10),
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(15)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.5),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.5),
+                        child: InkWell(
+                          onTap: () async {
+                            isDrrpLayerVisible = !isDrrpLayerVisible;
+                            if (isDrrpLayerVisible) {
+                              await plotDRRPLayer();
+                              setState(() {});
+                            } else {
+                              List<Polyline> polylinesToAdd = [];
+                              for (var element in polylines) {
+                                if (element.polylineId.value
+                                    .contains("plotted_polyline")) {
+                                  polylinesToAdd.add(element);
+                                }
+                              }
+                              polylines.clear();
+                              polylines.addAll(polylinesToAdd);
+                              setState(() {});
+                            }
+                          },
                           child: Row(
                             children: [
                               const Gap(10),
                               Text(
-                                "Map Type ",
+                                "DRRP Roads",
                                 style: GoogleFonts.inter(
-                                  color: Colors.black,
+                                  color: isDrrpLayerVisible
+                                      ? Colors.blue
+                                      : Colors.black,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 16,
+                                  fontSize: MediaQuery.textScalerOf(context)
+                                      .scale(16),
                                 ),
-                              ),
-                              const Gap(5),
-                              MapTypeDropdown(
-                                onChanged: (p0) => setState(() {}),
                               ),
                               const Gap(10),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                  )
-                ],
+                    ),
+                    Row(
+                      children: [
+                        const Gap(10),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.5),
+                            child: Row(
+                              children: [
+                                const Gap(10),
+                                Text(
+                                  "Map Type ",
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: MediaQuery.textScalerOf(context)
+                                        .scale(16),
+                                  ),
+                                ),
+                                const Gap(5),
+                                MapTypeDropdown(
+                                  onChanged: (p0) => setState(() {}),
+                                ),
+                                const Gap(10),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
             Positioned(
@@ -167,7 +164,7 @@ class _MapPageState extends State<MapPage> {
                       style: GoogleFonts.inter(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: MediaQuery.textScalerOf(context).scale(16),
                       ),
                     ),
                   ),
@@ -184,7 +181,7 @@ class _MapPageState extends State<MapPage> {
                       style: GoogleFonts.inter(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: MediaQuery.textScalerOf(context).scale(16),
                       ),
                     ),
                   ),
@@ -199,7 +196,7 @@ class _MapPageState extends State<MapPage> {
                       style: GoogleFonts.inter(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: MediaQuery.textScalerOf(context).scale(16),
                       ),
                     ),
                   ),
