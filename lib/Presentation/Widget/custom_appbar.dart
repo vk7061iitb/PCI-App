@@ -10,18 +10,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
       elevation: 0, // Remove the shadow
       title: Text(
         'PCI App',
         style: GoogleFonts.inter(
           color: Colors.black,
           fontWeight: FontWeight.w800,
-          fontSize: 32.0,
+          fontSize: MediaQuery.textScalerOf(context).scale(32),
         ),
       ),
     );
   }
 }
-
-
