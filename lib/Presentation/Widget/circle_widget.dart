@@ -19,22 +19,21 @@ class _CircleWidgetState extends State<CircleWidget> {
     return Stack(
       children: [
         Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            width: 200,
-            height: 200,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.5,
+            height: MediaQuery.of(context).size.width * 0.5,
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                width: 25,
+                width: MediaQuery.of(context).size.width * 0.06,
               ),
               boxShadow: [
                 BoxShadow(
                   color: sensorScreencolor.shadowColor,
-                  blurRadius: 5,
+                  blurRadius: 2,
                   spreadRadius: 0,
-                  blurStyle: BlurStyle.normal,
+                  blurStyle: BlurStyle.outer,
                 ),
               ],
             ),
@@ -43,27 +42,25 @@ class _CircleWidgetState extends State<CircleWidget> {
         Center(
           child: InkWell(
             onTap: widget.onPressed,
-            radius: 50,
-            child: AnimatedContainer(
-              duration: const Duration(seconds: 1),
-              width: 200,
-              height: 200,
+            borderRadius: BorderRadius.circular(85),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              height: MediaQuery.of(context).size.width * 0.5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: showStartButton
-                      ? sensorScreencolor.startCircle
-                      : sensorScreencolor.endCircle,
-                  width: 25,
-                  style: BorderStyle.solid,
-                  strokeAlign: BorderSide.strokeAlignInside
-                ),
+                    color: showStartButton
+                        ? sensorScreencolor.startCircle
+                        : sensorScreencolor.endCircle,
+                    width: MediaQuery.of(context).size.width * 0.06,
+                    style: BorderStyle.solid,
+                    strokeAlign: BorderSide.strokeAlignInside),
               ),
               child: Center(
                 child: Text(
                   widget.label,
                   style: GoogleFonts.inter(
-                    fontSize: 36,
+                    fontSize: MediaQuery.textScalerOf(context).scale(36),
                     fontWeight: FontWeight.w700,
                     color: Colors.black,
                   ),
