@@ -1,21 +1,21 @@
-import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Presentation/Themes/sensor_page_color.dart';
 import 'package:pci_app/Presentation/Widget/circle_widget.dart';
 import 'package:pci_app/Presentation/Widget/custom_appbar.dart';
-import 'package:sensors_plus/sensors_plus.dart';
-import '../../Database/sqlite_db_helper.dart';
 import '../../Functions/analysis.dart';
 import '../../Functions/request_location_permission.dart';
-import '../../Objects/data.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import '../../Database/sqlite_db_helper.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../Objects/data_points.dart';
 import '../Widget/dropdown_widget.dart';
 import '../Widget/sensor_readings.dart';
 import '../Widget/snackbar.dart';
+import '../../Objects/data.dart';
+import 'package:gap/gap.dart';
+import 'dart:async';
 
 class SensorPage extends StatefulWidget {
   const SensorPage({super.key});
@@ -97,7 +97,7 @@ class _SensorPageState extends State<SensorPage> {
                   style: GoogleFonts.inter(
                     color: sensorScreencolor.updateMessage,
                     fontWeight: FontWeight.w500,
-                    fontSize: 18,
+                    fontSize: MediaQuery.textScalerOf(context).scale(18),
                   ),
                 ),
               ),
@@ -125,7 +125,7 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     scrollController = ScrollController();
     streamSubscriptions.add(
-      accelerometerEventStream(samplingPeriod: SensorInterval.fastestInterval)
+      accelerometerEventStream(samplingPeriod: const Duration(milliseconds: 10))
           .listen(
         (AccelerometerEvent event) {
           if (isRecordingData) {
@@ -207,10 +207,6 @@ class _SensorPageState extends State<SensorPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         customSnackBar(dbMessage),
       );
-    }
-    if (kDebugMode) {
-      print(
-          'Filtered Acceleration Frequency : ${filteredAccData.length / (filteredAccData[filteredAccData.length - 1].accTime.difference(filteredAccData[0].accTime).inSeconds)}');
     }
 
     setState(() {

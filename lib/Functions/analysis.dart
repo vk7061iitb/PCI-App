@@ -2,7 +2,7 @@ import '../Objects/data_points.dart';
 
 List<AccData> correctSamplingRate(List<AccData> accData) {
   List<AccData> correctedAccData = [];
-  correctedAccData.add(accData[0]); // Add the first data point
+  correctedAccData.add(accData[0]);
 
   for (int i = 1; i < accData.length; i++) {
     double timeDifference = accData[i]
@@ -10,6 +10,7 @@ List<AccData> correctSamplingRate(List<AccData> accData) {
         .difference(correctedAccData.last.accTime)
         .inMilliseconds
         .toDouble();
+
     if (timeDifference >= 15) {
       correctedAccData.add(accData[i]);
     }

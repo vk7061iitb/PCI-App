@@ -49,7 +49,7 @@ class SQLDatabaseHelper {
               data.devicePosition.latitude,
               data.devicePosition.longitude,
               data.devicePosition.altitude,
-              data.devicePosition.speed*3.6,
+              data.devicePosition.speed * 3.6,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -122,11 +122,10 @@ class SQLDatabaseHelper {
       File accFile = File(accPath);
       await accFile.writeAsString(accCSV);
 
-      debugPrint(
-          'CSV files exported to path : ${appExternalStorageDir.path}');
+      debugPrint('CSV files exported to path : ${appExternalStorageDir.path}');
 
       await Share.shareXFiles([accFile1]);
-      
+
       return 'CSV files exported to path : ${appExternalStorageDir.path}';
     } catch (e) {
       debugPrint(e.toString());
