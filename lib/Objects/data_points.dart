@@ -1,17 +1,19 @@
-import 'package:geolocator/geolocator.dart';
-
 class AccData {
   final double xAcc;
   final double yAcc;
   final double zAcc;
-  Position devicePosition;
+  final double latitude;
+  final double longitude;
+  final double speed;
   DateTime accTime;
 
   AccData(
       {required this.xAcc,
       required this.yAcc,
       required this.zAcc,
-      required this.devicePosition,
+      required this.latitude,
+      required this.longitude,
+      required this.speed,
       required this.accTime});
 
   Map<String, dynamic> toJson() {
@@ -19,8 +21,9 @@ class AccData {
       'xAcc': xAcc,
       'yAcc': yAcc,
       'zAcc': zAcc,
-      'latitude': devicePosition.latitude,
-      'longitude': devicePosition.longitude,
+      'latitude': latitude,
+      'longitude': longitude,
+      'speed': speed,
       'accTime': accTime.toIso8601String()
     };
   }
