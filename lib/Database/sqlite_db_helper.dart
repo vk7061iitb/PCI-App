@@ -23,7 +23,7 @@ class SQLDatabaseHelper {
         onCreate: (db, version) {
           // Create the AccTable
           db.execute(
-              'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Altitude REAL, Speed REAL, Time TIMESTAMP)');
+              'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
         },
         version: 1,
       );
@@ -41,15 +41,14 @@ class SQLDatabaseHelper {
       var accBatch = txn.batch();
       for (var data in accdata) {
         accBatch.rawInsert(
-            'INSERT INTO AccTable(x_acc, y_acc, z_acc, Latitude, Longitude, Altitude, Speed, Time) VALUES(?,?,?,?,?,?,?,?)',
+            'INSERT INTO AccTable(x_acc, y_acc, z_acc, Latitude, Longitude, Speed, Time) VALUES(?,?,?,?,?,?,?)',
             [
               data.xAcc,
               data.yAcc,
               data.zAcc,
-              data.devicePosition.latitude,
-              data.devicePosition.longitude,
-              data.devicePosition.altitude,
-              data.devicePosition.speed * 3.6,
+              data.latitude,
+              data.longitude,
+              data.speed * 3.6,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -92,7 +91,6 @@ class SQLDatabaseHelper {
           'z_acc',
           'Latitude',
           'Longitude',
-          'Altitude',
           'Speed',
           'accTime'
         ],
@@ -103,7 +101,6 @@ class SQLDatabaseHelper {
             row['z_acc'],
             row['Latitude'],
             row['Longitude'],
-            row['Altitude'],
             row['Speed'],
             row['Time']
           ],
