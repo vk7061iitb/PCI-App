@@ -1,11 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:csv/csv.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
-import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/Objects/pci_object.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:pci_app/Objects/data.dart';
+import 'package:flutter/foundation.dart';
+import 'package:csv/csv.dart';
+import 'dart:convert';
 import 'pci_data.dart';
+import 'dart:io';
 
 Future<void> loadGeoJsonFromFile() async {
   FilePickerResult? result =
@@ -27,7 +27,7 @@ Future<void> loadGeoJsonFromFile() async {
       for (var data in headerList) {
         debugPrint(data.toString());
       }
-      
+
       List<PciData> pciDataList = [];
       for (int i = 1; i < csvData.length; i++) {
         PciData pciData = PciData(
