@@ -62,6 +62,7 @@ class _SensorPageState extends State<SensorPage> {
                       updatePosition();
                       accDataList.clear();
                       gyroDataList.clear();
+                      await localDatabase.deleteAlltables();
                       if (kDebugMode) {
                         print('isRecordingData : $isRecordingData');
                       }
@@ -75,11 +76,9 @@ class _SensorPageState extends State<SensorPage> {
                     isRecordingData = false;
                     showResponseSheet = true;
                     showStartButton = true;
-                    // await sendData();
+                    filteredAccData = downsampleTo50Hz(accDataList);
                     if (kDebugMode) {
                       print('isRecordingData : $isRecordingData');
-                      print(
-                          'Acceleration Frequency : ${accDataList.length / (accDataList[accDataList.length - 1].accTime.difference(accDataList[0].accTime).inSeconds)}');
                     }
                     Future.delayed(const Duration(seconds: 1), () {
                       scrollToMax();
@@ -125,8 +124,9 @@ class _SensorPageState extends State<SensorPage> {
     localDatabase.initDB();
     scrollController = ScrollController();
     streamSubscriptions.add(
-      accelerometerEventStream(samplingPeriod: const Duration(milliseconds: 10))
-          .listen(
+      accelerometerEventStream(
+        samplingPeriod: const Duration(microseconds: 100),
+      ).listen(
         (AccelerometerEvent event) {
           if (isRecordingData) {
             accDataList.add(
@@ -134,7 +134,9 @@ class _SensorPageState extends State<SensorPage> {
                 xAcc: event.x,
                 yAcc: event.y,
                 zAcc: event.z,
-                devicePosition: devicePosition,
+                latitude: devicePosition.latitude,
+                longitude: devicePosition.longitude,
+                speed: devicePosition.speed,
                 accTime: DateTime.now(),
               ),
             );
@@ -198,10 +200,8 @@ class _SensorPageState extends State<SensorPage> {
     setState(() {
       selectedIndex = 2;
     });
-    await localDatabase.deleteAlltables();
     await localDatabase.insertData(filteredAccData, gyroDataList);
     String dbMessage = await localDatabase.exportToCSV(fileName, vehicleTYpe);
-
     if (context.mounted) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
@@ -250,11 +250,7 @@ class _SensorPageState extends State<SensorPage> {
                           TextButton(
                             onPressed: () {
                               selectedIndex = 1;
-                              setState(() {
-                                filteredAccData =
-                                    correctSamplingRate(accDataList);
-                              });
-                              // sendData();
+                              setState(() {});
                             },
                             style: TextButton.styleFrom(
                                 backgroundColor: sensorScreencolor.yesButton),
