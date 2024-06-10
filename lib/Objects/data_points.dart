@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class AccData {
   final double xAcc;
   final double yAcc;
@@ -18,13 +20,13 @@ class AccData {
 
   Map<String, dynamic> toJson() {
     return {
-      'xAcc': xAcc,
-      'yAcc': yAcc,
-      'zAcc': zAcc,
-      'latitude': latitude,
-      'longitude': longitude,
+      'x_acc': xAcc,
+      'y_acc': yAcc,
+      'z_acc': zAcc,
+      'Latitude': latitude,
+      'Longitude': longitude,
       'speed': speed,
-      'accTime': accTime.toIso8601String()
+      'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(accTime),
     };
   }
 }
