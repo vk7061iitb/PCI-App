@@ -1,63 +1,46 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Objects/data.dart';
 
 class VehicleTypeDropdown extends StatefulWidget {
-  const VehicleTypeDropdown({super.key});
+  final ValueChanged<String> onPressed;
+  final String dropdownValue;
+  const VehicleTypeDropdown(
+      {required this.onPressed, required this.dropdownValue, super.key});
 
   @override
   State<VehicleTypeDropdown> createState() => _VehicleTypeDropdownState();
 }
 
 class _VehicleTypeDropdownState extends State<VehicleTypeDropdown> {
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 1),
-          ),
-        ],
+    return DropdownButton<String>(
+      icon: const Icon(Icons.arrow_drop_down_circle_outlined),
+      value: widget.dropdownValue,
+      alignment: Alignment.center,
+      onChanged: (String? newValue) {
+        widget.onPressed(newValue!);
+      },
+      elevation: 1,
+      underline: Container(
+        height: 0,
       ),
-      child: DropdownButton<String>(
-        value: dropdownValue,
-        onChanged: (String? value) {
-          // This is called when the user selects an item.
-          setState(() {
-            dropdownValue = value!;
-            if (kDebugMode) {
-              print('Vehicle Type: $dropdownValue');
-            }
-          });
-        },
-        elevation: 1,
-        underline: const SizedBox(),
-        borderRadius: BorderRadius.circular(20),
-        items: vehicleType.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Text(
-                value,
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-              ),
+      borderRadius: BorderRadius.circular(15),
+      items: vehicleType.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          alignment: AlignmentDirectional.centerStart,
+          value: value,
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.blue,
+              fontWeight: FontWeight.w500,
+              fontSize: 18,
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
