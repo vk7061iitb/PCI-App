@@ -9,6 +9,7 @@ import 'Functions/request_location_permission.dart';
 import 'Functions/request_storage_permission.dart';
 import 'Objects/data.dart';
 import 'Presentation/Screens/maps_page.dart';
+import 'Presentation/Screens/output_data.dart';
 import 'Presentation/Screens/sensor_page.dart';
 import 'Presentation/Screens/show_history.dart';
 
@@ -37,11 +38,19 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   int _selectedIndex = 0;
+
   static const List<Widget> _widgetOptions = <Widget>[
     SensorPage(),
     MapPage(),
     HistoryDataPage(),
+    OutputDataPage(),
   ];
+
+  void _onTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void dispose() {
@@ -56,6 +65,7 @@ class _MainAppState extends State<MainApp> {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     checkPermission();
+    localDatabase.initDB();
     streamSubscriptions.add(
       Geolocator.getPositionStream(
           locationSettings: AndroidSettings(
@@ -99,11 +109,7 @@ class _MainAppState extends State<MainApp> {
         bottomNavigationBar: NavigationBar(
           animationDuration: const Duration(milliseconds: 500),
           height: 0.18 * MediaQuery.of(context).size.width,
-          onDestinationSelected: (int index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
+          onDestinationSelected: _onTapped,
           indicatorColor: Colors.blue.shade100,
           selectedIndex: _selectedIndex,
           destinations: const <Widget>[
@@ -125,6 +131,12 @@ class _MainAppState extends State<MainApp> {
                   Icon(Icons.file_present_rounded, color: Colors.blueAccent),
               icon: Icon(Icons.file_present_outlined),
               label: 'Saved Files',
+            ),
+            NavigationDestination(
+              selectedIcon:
+                  Icon(Icons.data_array_rounded, color: Colors.blueAccent),
+              icon: Icon(Icons.data_array_outlined),
+              label: 'Output Files',
             ),
           ],
         ),
