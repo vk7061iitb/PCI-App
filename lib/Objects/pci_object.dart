@@ -1,4 +1,4 @@
-class PciData{
+class PciData {
   double latitude;
   double longitude;
   double velocity;
@@ -14,3 +14,18 @@ class PciData{
   });
 }
 
+class PciData2 {
+  int outuputDataID;
+  double latitude;
+  double longitude;
+  double velocity;
+  double prediction;
+
+  PciData2({
+    required this.outuputDataID,
+    required this.latitude,
+    required this.longitude,
+    required this.velocity,
+    required this.prediction,
+  });
+}
