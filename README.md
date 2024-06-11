@@ -19,7 +19,7 @@ This project dedicated to improving road infrastructure management by leveraging
 
 2. **Pavement Condition Index (PCI) Computation**: By processing the collected data, SmartRoads will compute the PCI, providing a quantitative measure of road pavement conditions.
 
-3. **Database Management**: A central database will be created to store the collected data securely. This database will facilitate analysis and decision-making processes.
+3. **Database Management**: A central database will be created to store the collected data. This database will facilitate analysis and decision-making processes.
 
 4. **Analysis and Decision Making**: With the computed PCI, authorities can make informed decisions regarding budget allocation and road maintenance strategies. This will lead to more efficient and effective road infrastructure management.
 
@@ -37,7 +37,5 @@ PCI App is committed to continuous improvement. Future developments may include:
 - Integration with additional sensors for more comprehensive data collection
 - Implementation of machine learning algorithms for predictive analysis
 - Collaboration with local authorities for widespread implementation
-
-Let's pave the way to smarter roads together! 🛣️✨
 
 ---
