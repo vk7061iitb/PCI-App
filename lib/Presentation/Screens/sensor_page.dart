@@ -5,12 +5,11 @@ import '../../Functions/analysis.dart';
 import '../../Functions/request_location_permission.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import '../../Database/sqlite_db_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../Objects/data_points.dart';
-import '../Widget/dropdown_widget.dart';
+import '../Widget/response_sheet.dart';
 import '../Widget/sensor_readings.dart';
 import '../Widget/snackbar.dart';
 import '../../Objects/data.dart';
@@ -25,104 +24,19 @@ class SensorPage extends StatefulWidget {
 }
 
 class _SensorPageState extends State<SensorPage> {
-  SensorPageColor sensorScreencolor = SensorPageColor();
-  late SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
-  late ScrollController scrollController;
-  TextEditingController filenameController = TextEditingController();
-  bool showResponseSheet = false;
-  int selectedIndex = 0;
   List<AccData> filteredAccData = [];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(),
-      body: SafeArea(
-        child: ListView(
-          controller: scrollController,
-          children: [
-            const Gap(20),
-            Center(
-              child: CircleWidget(
-                label: showStartButton ? "Start" : "End",
-                onPressed: () async {
-                  if (showStartButton) {
-                    requestLocationPermission();
-                    if (devicePosition.latitude == 0) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          customSnackBar(locationErrorMessage),
-                        );
-                      }
-                    } else {
-                      scrollToTop();
-                      isRecordingData = true;
-                      showStartButton = false;
-                      updateAcceleration();
-                      updatePosition();
-                      accDataList.clear();
-                      gyroDataList.clear();
-                      await localDatabase.deleteAlltables();
-                      if (kDebugMode) {
-                        print('isRecordingData : $isRecordingData');
-                      }
-                    }
-                  } else {
-                    // This operation will be done when end button will be tapped
-                    accData = [0, 0, 0];
-                    gyroData = [0, 0, 0];
-                    accCallTimer?.cancel();
-                    locationCallTimer?.cancel();
-                    isRecordingData = false;
-                    showResponseSheet = true;
-                    showStartButton = true;
-                    filteredAccData = downsampleTo50Hz(accDataList);
-                    if (kDebugMode) {
-                      print('isRecordingData : $isRecordingData');
-                    }
-                    Future.delayed(const Duration(seconds: 1), () {
-                      scrollToMax();
-                    });
-                  }
-                  setState(() {});
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20, bottom: 20),
-              child: Center(
-                child: Text(
-                  showStartButton ? startMessage : progressMessage,
-                  style: GoogleFonts.inter(
-                    color: sensorScreencolor.updateMessage,
-                    fontWeight: FontWeight.w500,
-                    fontSize: MediaQuery.textScalerOf(context).scale(18),
-                  ),
-                ),
-              ),
-            ),
-            SensorReading(accData: accData, gyroData: gyroData),
-            const Gap(20),
-            showResponseSheet ? responsheeet() : const SizedBox(),
-          ],
-        ),
-      ),
-    );
-  }
+  SensorPageColor sensorScreencolor = SensorPageColor();
 
   @override
   void dispose() async {
     accCallTimer?.cancel();
     locationCallTimer?.cancel();
-    scrollController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    localDatabase.initDB();
-    scrollController = ScrollController();
     streamSubscriptions.add(
       accelerometerEventStream(
         samplingPeriod: const Duration(microseconds: 100),
@@ -180,319 +94,83 @@ class _SensorPageState extends State<SensorPage> {
     });
   }
 
-  void scrollToMax() {
-    scrollController.animateTo(
-      scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  void scrollToTop() {
-    scrollController.animateTo(
-      scrollController.position.minScrollExtent,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  Future<void> databaseOperation(String fileName, String vehicleTYpe) async {
-    setState(() {
-      selectedIndex = 2;
-    });
-    await localDatabase.insertData(filteredAccData, gyroDataList);
-    String dbMessage = await localDatabase.exportToCSV(fileName, vehicleTYpe);
-    if (context.mounted) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        customSnackBar(dbMessage),
-      );
-    }
-
-    setState(() {
-      selectedIndex = 0;
-      filenameController.clear();
-      showResponseSheet = false;
-      scrollToTop();
-    });
-  }
-
-  Widget responsheeet() {
-    return SizedBox(
-      width: 0.9 * MediaQuery.of(context).size.width,
-      height: 250,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const CustomAppBar(),
+      body: SafeArea(
+        child: ListView(
           children: [
-            IndexedStack(
-              index: selectedIndex,
-              children: [
-                // Confirmation message for saving data
-                Center(
-                  child: Column(
-                    children: [
-                      Center(
-                        child: Text(
-                          'Do you want to save the collected readings?',
-                          style: GoogleFonts.inter(
-                            color: sensorScreencolor.updateMessage,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      const Gap(15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          // Button to confirm saving data
-                          TextButton(
-                            onPressed: () {
-                              selectedIndex = 1;
-                              setState(() {});
-                            },
-                            style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.yesButton),
-                            child: Text(
-                              'Yes',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const Gap(50),
-                          // Button to discard data
-                          TextButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text(
-                                      'Are you sure you want to discard the file?',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    content: const Text(
-                                      'If you discard the file, any recorded data will be lost.',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: const Text("Don't Discard"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text("Yes, Discard"),
-                                        onPressed: () {
-                                          showResponseSheet = false;
-                                          scrollToTop();
-                                          Navigator.of(context).pop();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                                backgroundColor: sensorScreencolor.noButton),
-                            child: Text(
-                              'No',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const Gap(10),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                // Form for entering filename and selecting vehicle type
-                Center(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Select Vehicle Type',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const Gap(20),
-                                const VehicleTypeDropdown(),
-                              ],
-                            ),
-                            const Gap(20),
-                            TextFormField(
-                              controller: filenameController,
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 14,
-                              ),
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  borderSide: const BorderSide(
-                                      color: Colors
-                                          .blue), // Remove the border side
-                                ),
-                                labelText: 'Enter File Name',
-                                hintText: 'Road ID',
-                                hintStyle: GoogleFonts.inter(
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 14,
-                                ),
-                                labelStyle: GoogleFonts.inter(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 16,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                    horizontal: 20), // Adjust content padding
-                              ),
-                            ),
-                            const Gap(20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                // Button to save data
-                                TextButton(
-                                  onPressed: () async {
-                                    await databaseOperation(
-                                        filenameController.text, dropdownValue);
-                                  },
-                                  style: TextButton.styleFrom(
-                                      backgroundColor:
-                                          sensorScreencolor.yesButton),
-                                  child: Text(
-                                    'Save',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                const Gap(50),
-                                // Button to discard data
-                                TextButton(
-                                  onPressed: () async {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Text(
-                                            'Are you sure you want to discard the file?',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          content: const Text(
-                                            'If you discard the file, any recorded data will be lost.',
-                                            style: TextStyle(
-                                                color: Colors.blueGrey),
-                                          ),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              child:
-                                                  const Text("Don't Discard"),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                            ),
-                                            TextButton(
-                                              child: const Text("Yes, Discard"),
-                                              onPressed: () {
-                                                filenameController.clear();
-                                                showResponseSheet = false;
-                                                scrollToTop();
-                                                selectedIndex = 0;
-                                                Navigator.of(context).pop();
-                                                setState(() {});
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                  style: TextButton.styleFrom(
-                                      backgroundColor:
-                                          sensorScreencolor.noButton),
-                                  child: Text(
-                                    'Dicard',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                const Gap(10),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Progress indicator while saving data
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        const CircularProgressIndicator(),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            "Saving your recorded data",
-                            style: GoogleFonts.inter(
-                              color: sensorScreencolor.updateMessage,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            const Gap(20),
+            Center(
+              child: CircleWidget(
+                label: showStartButton ? "Start" : "End",
+                onPressed: () async {
+                  if (showStartButton) {
+                    requestLocationPermission();
+                    if (devicePosition.latitude == 0) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          customSnackBar(locationErrorMessage),
+                        );
+                      }
+                    } else {
+                      isRecordingData = true;
+                      showStartButton = false;
+                      updateAcceleration();
+                      updatePosition();
+                      accDataList.clear();
+                      gyroDataList.clear();
+                      await localDatabase.deleteAlltables();
+                      if (kDebugMode) {
+                        print('isRecordingData : $isRecordingData');
+                      }
+                    }
+                  } else {
+                    // This operation will be done when end button will be tapped
+                    accData = [0, 0, 0];
+                    gyroData = [0, 0, 0];
+                    accCallTimer?.cancel();
+                    locationCallTimer?.cancel();
+                    isRecordingData = false;
+                    showStartButton = true;
+                    filteredAccData = downsampleTo50Hz(accDataList);
+                    if (kDebugMode) {
+                      print('isRecordingData : $isRecordingData');
+                    }
+                  }
+                  if (context.mounted && !isRecordingData) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      isDismissible: false,
+                      enableDrag: false,
+                      builder: (BuildContext context) {
+                        return ResponseSheet(
+                          onPressed: () {},
+                          filteredAccData: filteredAccData,
+                        );
+                      },
+                    );
+                  }
+                  setState(() {});
+                },
+              ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20, bottom: 20),
+              child: Center(
+                child: Text(
+                  showStartButton ? startMessage : progressMessage,
+                  style: GoogleFonts.inter(
+                    color: sensorScreencolor.updateMessage,
+                    fontWeight: FontWeight.w500,
+                    fontSize: MediaQuery.textScalerOf(context).scale(18),
+                  ),
+                ),
+              ),
+            ),
+            SensorReading(accData: accData, gyroData: gyroData),
           ],
         ),
       ),
