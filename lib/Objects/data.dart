@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Objects/data_points.dart';
+import '../Database/sqlite_db_helper.dart';
 import 'polyline_obj.dart';
 
 Position devicePosition = Position(
@@ -74,3 +75,6 @@ final streamSubscriptions = <StreamSubscription<dynamic>>[];
 
 // Settings Page Data
 LocationAccuracy geolocatorLocationAccuracy = LocationAccuracy.best;
+
+// Main Page Data
+SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
