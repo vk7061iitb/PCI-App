@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Functions/request_storage_permission.dart';
 import '../Objects/data_points.dart';
+import '../Objects/pci_object.dart';
 
 class SQLDatabaseHelper {
   late Database _database;
@@ -24,6 +25,10 @@ class SQLDatabaseHelper {
           // Create the AccTable
           db.execute(
               'CREATE TABLE AccTable(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
+          db.execute(
+              'CREATE TABLE outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
+          db.execute(
+              'CREATE TABLE pciData(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, latitude REAL, longitude REAL, velocity REAL, prediction REAL)');
         },
         version: 1,
       );
@@ -59,6 +64,10 @@ class SQLDatabaseHelper {
   // Delete all tables in the database
   Future<void> deleteAlltables() async {
     await _database.delete('AccTable');
+  }
+
+  Future<List<Map<String, dynamic>>> queryTable(String tableName) async {
+    return await _database.query(tableName);
   }
 
   // Export data to CSV file
@@ -123,10 +132,75 @@ class SQLDatabaseHelper {
 
       await Share.shareXFiles([accFile1]);
 
-      return 'CSV files exported to path : ${appExternalStorageDir.path}';
+      return 'Data Exported Successfully';
     } catch (e) {
       debugPrint(e.toString());
       return e.toString();
     }
+  }
+
+  Future<int> insertOutputData(String filename, String vehicleType) async {
+    int id = -1;
+    try {
+      id = await _database.insert('outputData', {
+        'filename': filename,
+        'vehicleType': vehicleType,
+        'Time': DateFormat('dd-MMM-yyyy HH:mm:ss').format(DateTime.now())
+      });
+      if (kDebugMode) {
+        print('OutputData ID: $id');
+      }
+      return id;
+    } catch (e) {
+      debugPrint(e.toString());
+      return id;
+    }
+  }
+
+  Future<void> insertPciData(List<PciData2> pciData) async {
+    await _database.transaction((txn) async {
+      var pciBatch = txn.batch();
+      for (var data in pciData) {
+        pciBatch.rawInsert(
+          'INSERT INTO pciData(outputDataID, latitude, longitude, velocity, prediction) VALUES(?,?,?,?,?)',
+          [
+            data.outuputDataID,
+            data.latitude,
+            data.longitude,
+            data.velocity,
+            data.prediction
+          ],
+        );
+      }
+      await pciBatch.commit();
+      if (kDebugMode) {
+        print('PCI Data inserted');
+      }
+    });
+  }
+
+  Future<void> deleteOutputData(int id) async {
+    await _database.delete('outputData', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<PciData2>> queryPciData(int outputDataID) async {
+    List<Map<String, dynamic>> pciDataQuery = await _database
+        .query('pciData', where: 'outputDataID = ?', whereArgs: [outputDataID]);
+
+    List<PciData2> pciData = [];
+    for (var data in pciDataQuery) {
+      pciData.add(
+        PciData2(
+          outuputDataID: data['outputDataID'],
+          latitude: data['latitude'],
+          longitude: data['longitude'],
+          velocity: data['velocity'],
+          prediction: double.parse(
+            data['prediction'].toString(),
+          ),
+        ),
+      );
+    }
+    return pciData;
   }
 }
