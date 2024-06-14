@@ -75,35 +75,72 @@ class OutputDataItem extends StatelessWidget {
                   List<PciData2> pciDataOutput =
                       await localDatabase.queryPciData(id);
                   showModalBottomSheet(
-                      isScrollControlled: false,
-                      // ignore: use_build_context_synchronously
-                      context: context,
-                      builder: (context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF3EDF5),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20),
-                            ),
+                    isScrollControlled: false,
+                    // ignore: use_build_context_synchronously
+                    context: context,
+                    builder: (context) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF3EDF5),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
                           ),
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: Text('PCI')),
-                              DataColumn(label: Text('Latitude')),
-                              DataColumn(label: Text('Longitude')),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              // Header row
+                              const Padding(
+                                padding: EdgeInsets.all(10.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('PCI',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text('Latitude',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text('Longitude',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              // Divider line
+                              const Divider(thickness: 1, color: Colors.grey),
+                              // Scrollable list of data
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: pciDataOutput.length,
+                                  itemBuilder: (context, index) {
+                                    final item = pciDataOutput[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0, horizontal: 16.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(item.prediction.toString()),
+                                          Text(item.latitude.toString()),
+                                          Text(item.longitude.toString()),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ],
-                            rows: pciDataOutput.map((item) {
-                              return DataRow(cells: [
-                                DataCell(Text(item.prediction.toString())),
-                                DataCell(Text(item.latitude.toString())),
-                                DataCell(Text(item.longitude.toString())),
-                              ]);
-                            }).toList(),
                           ),
-                        );
-                      });
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               IconButton(
