@@ -3,12 +3,12 @@ import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:pci_app/Functions/init_download_folder.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
-import '../Functions/request_storage_permission.dart';
 import '../Objects/data_points.dart';
 import '../Objects/pci_object.dart';
+import '../Objects/stats_object.dart';
 
 class SQLDatabaseHelper {
   late Database _database;
@@ -29,6 +29,8 @@ class SQLDatabaseHelper {
               'CREATE TABLE outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
           db.execute(
               'CREATE TABLE pciData(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, latitude REAL, longitude REAL, velocity REAL, prediction REAL)');
+          db.execute(
+              'CREATE TABLE pciDataStats(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, pci TEXT, avgVelocity TEXT, distanceTravelled TEXT, numberOfSegments TEXT)');
         },
         version: 1,
       );
@@ -61,8 +63,8 @@ class SQLDatabaseHelper {
     });
   }
 
-  // Delete all tables in the database
-  Future<void> deleteAlltables() async {
+  // Delete Acc Table in the database
+  Future<void> deleteAcctables() async {
     await _database.delete('AccTable');
   }
 
@@ -73,26 +75,9 @@ class SQLDatabaseHelper {
   // Export data to CSV file
   Future<String> exportToCSV(String fileName, String vehicleType) async {
     try {
-      await requestStoragePermission();
-      String rawData = "Acceleration Data";
-      Directory? appExternalStorageDir = await getExternalStorageDirectory();
-      Directory accDataDirectory =
-          await Directory(join(appExternalStorageDir!.path, rawData))
-              .create(recursive: true);
-
-      // Check if folders exist
-      if (await accDataDirectory.exists()) {
-        debugPrint('Folder Already Exists');
-        debugPrint("$accDataDirectory.path");
-      } else {
-        debugPrint('Folder Created');
-      }
-
-      // Query the AccTable
+      String accDataDirectoryPath = await initializeDirectory();
       List<Map<String, dynamic>> accTableQuery =
           await _database.query('AccTable');
-
-      // Convert query result to CSV data
       List<List<dynamic>> accCSVdata = [
         [
           'x_acc',
@@ -115,23 +100,17 @@ class SQLDatabaseHelper {
           ],
       ];
 
-      // Convert CSV data to string
       String accCSV = const ListToCsvConverter().convert(accCSVdata);
-
-      // Generate file name and path
       String accFileName =
           '${fileName}_AccData_${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}_$vehicleType.csv';
-      String accPath = '${accDataDirectory.path}/$accFileName';
+      String accPath = '$accDataDirectoryPath/$accFileName';
 
-      // Create and write CSV file
       XFile accFile1 = XFile(accPath);
       File accFile = File(accPath);
       await accFile.writeAsString(accCSV);
 
-      debugPrint('CSV files exported to path : ${appExternalStorageDir.path}');
-
+      debugPrint('CSV files exported to path : $accDataDirectoryPath');
       await Share.shareXFiles([accFile1]);
-
       return 'Data Exported Successfully';
     } catch (e) {
       debugPrint(e.toString());
@@ -179,6 +158,27 @@ class SQLDatabaseHelper {
     });
   }
 
+  Future<void> insertStats(List<OutputStats> stats) async {
+    await _database.transaction((txn) async {
+      var statsBatch = txn.batch();
+      for (var data in stats) {
+        statsBatch.rawInsert(
+            'INSERT INTO pciDataStats(outputDataID, pci, avgVelocity, distanceTravelled, numberOfSegments) VALUES(?,?,?,?,?)',
+            [
+              data.outputDataID,
+              data.pci,
+              data.avgVelocity,
+              data.distanceTravelled,
+              data.numberOfSegments
+            ]);
+      }
+      await statsBatch.commit();
+      if (kDebugMode) {
+        print('Stats Data inserted');
+      }
+    });
+  }
+
   Future<void> deleteOutputData(int id) async {
     await _database.delete('outputData', where: 'id = ?', whereArgs: [id]);
   }
@@ -202,5 +202,26 @@ class SQLDatabaseHelper {
       );
     }
     return pciData;
+  }
+
+  Future<List<OutputStats>> queryStats(int outputDataID) async {
+    List<Map<String, dynamic>> statsQuery = await _database.query(
+        'pciDataStats',
+        where: 'outputDataID = ?',
+        whereArgs: [outputDataID]);
+
+    List<OutputStats> stats = [];
+    for (var data in statsQuery) {
+      stats.add(
+        OutputStats(
+          outputDataID: data['outputDataID'],
+          pci: data['pci'],
+          avgVelocity: data['avgVelocity'],
+          distanceTravelled: data['distanceTravelled'],
+          numberOfSegments: data['numberOfSegments'],
+        ),
+      );
+    }
+    return stats;
   }
 }
