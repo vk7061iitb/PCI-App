@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pci_app/firebase_options.dart';
+import 'Functions/init_download_folder.dart';
 import 'Functions/request_location_permission.dart';
 import 'Functions/request_storage_permission.dart';
 import 'Objects/data.dart';
@@ -15,6 +16,7 @@ import 'Presentation/Screens/show_history.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initializeDirectory();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,
   );
@@ -98,7 +100,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
+          statusBarColor: Color(0xFFF3EDF5),
           systemNavigationBarColor: Color(0xFFF3EDF5),
           systemNavigationBarIconBrightness: Brightness.dark),
     );
