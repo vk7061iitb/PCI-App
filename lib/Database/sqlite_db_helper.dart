@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:pci_app/Functions/init_download_folder.dart';
+import 'package:pci_app/Objects/user_data.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Objects/data_points.dart';
@@ -31,6 +32,10 @@ class SQLDatabaseHelper {
               'CREATE TABLE pciData(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, latitude REAL, longitude REAL, velocity REAL, prediction REAL)');
           db.execute(
               'CREATE TABLE pciDataStats(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, pci TEXT, avgVelocity TEXT, distanceTravelled TEXT, numberOfSegments TEXT)');
+          db.execute(
+              'CREATE TABLE userData(userID TEXT, phoneNumber TEXT, email TEXT)');
+          db.execute(
+              'CREATE TABLE unsendData(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
         },
         version: 1,
       );
@@ -41,9 +46,7 @@ class SQLDatabaseHelper {
     }
   }
 
-  // Insert data into the database
-  Future<void> insertData(
-      List<AccData> accdata, List<GyroData> gyrodata) async {
+  Future<void> insertAccData(List<AccData> accdata) async {
     await _database.transaction((txn) async {
       var accBatch = txn.batch();
       for (var data in accdata) {
@@ -63,7 +66,26 @@ class SQLDatabaseHelper {
     });
   }
 
-  // Delete Acc Table in the database
+  Future<void> insertToUnsendTable(List<AccData> accData) async {
+    await _database.transaction((txn) async {
+      var accBatch = txn.batch();
+      for (var data in accData) {
+        accBatch.rawInsert(
+            'INSERT INTO unsendData(x_acc, y_acc, z_acc, Latitude, Longitude, Speed, Time) VALUES(?,?,?,?,?,?,?)',
+            [
+              data.xAcc,
+              data.yAcc,
+              data.zAcc,
+              data.latitude,
+              data.longitude,
+              data.speed * 3.6,
+              DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
+            ]);
+      }
+      await accBatch.commit();
+    });
+  }
+
   Future<void> deleteAcctables() async {
     await _database.delete('AccTable');
   }
@@ -72,7 +94,6 @@ class SQLDatabaseHelper {
     return await _database.query(tableName);
   }
 
-  // Export data to CSV file
   Future<String> exportToCSV(String fileName, String vehicleType) async {
     try {
       String accDataDirectoryPath = await initializeDirectory();
@@ -102,7 +123,7 @@ class SQLDatabaseHelper {
 
       String accCSV = const ListToCsvConverter().convert(accCSVdata);
       String accFileName =
-          '${fileName}_AccData_${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}_$vehicleType.csv';
+          '$fileName#AccData#${DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())}#$vehicleType.csv';
       String accPath = '$accDataDirectoryPath/$accFileName';
 
       XFile accFile1 = XFile(accPath);
@@ -118,13 +139,51 @@ class SQLDatabaseHelper {
     }
   }
 
+  Future<String> insertUserData(UserData user) async {
+    await _database.transaction(
+      (txn) async {
+        txn.rawInsert(
+            'INSERT INTO userData(userID, phoneNumber, email) VALUES(?,?,?)',
+            [user.userID, user.phoneNumber, user.email]);
+      },
+    );
+    if (kDebugMode) {
+      print('User Data Inserted');
+    }
+    return 'User Data Inserted';
+  }
+
+  Future<UserData> queryUserData() async {
+    try {
+      List<Map<String, dynamic>> userDataQuery =
+          await _database.query('userData');
+      if (userDataQuery.isEmpty) {
+        return UserData(userID: 'null', phoneNumber: 'null', email: 'null');
+      } else {
+        UserData user = UserData(
+          userID: userDataQuery[0]['userID'],
+          phoneNumber: userDataQuery[0]['phoneNumber'],
+          email: userDataQuery[0]['email'],
+        );
+        return user;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      return UserData(userID: '0', phoneNumber: '0', email: '0');
+    }
+  }
+
+  Future<void> deleteUserData() async {
+    await _database.delete('userData');
+  }
+
   Future<int> insertOutputData(String filename, String vehicleType) async {
     int id = -1;
     try {
       id = await _database.insert('outputData', {
         'filename': filename,
         'vehicleType': vehicleType,
-        'Time': DateFormat('dd-MMM-yyyy HH:mm:ss').format(DateTime.now())
+        'Time': DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())
       });
       if (kDebugMode) {
         print('OutputData ID: $id');
