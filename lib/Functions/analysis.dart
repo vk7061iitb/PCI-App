@@ -24,9 +24,9 @@ AccData linInterpolate(AccData before, AccData after, DateTime curr) {
       xAcc: interpolatedX,
       yAcc: interpolatedY,
       zAcc: interpolatedZ,
-      latitude: before.latitude,
-      longitude: before.longitude,
-      speed: before.speed,
+      latitude: after.latitude,
+      longitude: after.longitude,
+      speed: after.speed,
       accTime: curr);
 
   return interpolatedData;
@@ -62,7 +62,7 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
             linInterpolate(downsampledList.last, after, currentTime);
         downsampledList.add(
           genData,
-        );
+        ); 
       } else {
         // Finding the interpolated data
         AccData interPolatedAccData =
