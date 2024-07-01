@@ -1,4 +1,4 @@
-// This file contains the code for the feature list of the polyline
+// This file contains the code for the feature list(Attributes) of the polyline
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -44,7 +44,10 @@ class PolylineFeature extends StatelessWidget {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: polylineObj[polylineIndex].properties.keyList.length,
+              itemCount: polylineObj[polylineIndex]
+                  .polylineAttributes
+                  .attributeKeys
+                  .length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
                   padding: const EdgeInsets.all(5.0),
@@ -58,8 +61,8 @@ class PolylineFeature extends StatelessWidget {
                         width: MediaQuery.of(context).size.width * 0.3,
                         child: Text(
                           polylineObj[polylineIndex]
-                              .properties
-                              .keyList[index]
+                              .polylineAttributes
+                              .attributeKeys[index]
                               .toString(),
                           style: listTileTitleStyle,
                         ),
@@ -69,8 +72,8 @@ class PolylineFeature extends StatelessWidget {
                         width: MediaQuery.of(context).size.width * 0.2,
                         child: Text(
                           polylineObj[polylineIndex]
-                              .properties
-                              .valuesList[index]
+                              .polylineAttributes
+                              .attributeValues[index]
                               .toStringAsFixed(2),
                           style: listTileTralingStyle,
                         ),

@@ -1,17 +1,17 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:pci_app/Utils/sensor_page_color.dart';
-import 'package:pci_app/src/Screens/SensorPage/widgets/start_end_widget.dart';
-import 'package:pci_app/src/Widgets/custom_appbar.dart';
-import '../../../Functions/analysis.dart';
-import '../../../Functions/request_location_permission.dart';
+import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/start_end_widget.dart';
+import 'package:pci_app/src/Presentation/Widgets/custom_appbar.dart';
+import '../../../../Functions/analysis.dart';
+import '../../../../Functions/request_location_permission.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:flutter/material.dart';
-import '../../Models/data_points.dart';
+import '../../../Models/data_points.dart';
 import 'widgets/response_sheet.dart';
 import 'widgets/sensor_readings.dart';
 import '../../Widgets/snackbar.dart';
-import '../../../Objects/data.dart';
+import '../../../../Objects/data.dart';
 import 'package:gap/gap.dart';
 import 'dart:async';
 

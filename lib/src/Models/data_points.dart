@@ -36,6 +36,7 @@ class AccData {
   }
 }
 
+// Not used in the current implementation.
 class GyroData {
   final double xGyro;
   final double yGyro;

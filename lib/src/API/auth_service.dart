@@ -1,3 +1,5 @@
+// This file contains the code for the user authentication service(Backend API)
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;

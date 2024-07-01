@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Models/pci_object.dart';
-import 'package:pci_app/src/Models/stats_object.dart';
-import '../../../Functions/pci_data.dart';
+import 'package:pci_app/src/Models/pci_data.dart';
+import 'package:pci_app/src/Models/stats_data.dart';
+import '../../../../Functions/pci_data.dart';
 import '../MapsPage/maps_page.dart';
 
 class OutputDataItem extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../Models/stats_object.dart';
+import '../../../../Models/stats_data.dart';
 
 class RoadStats extends StatelessWidget {
   const RoadStats({required this.outputStats, super.key});

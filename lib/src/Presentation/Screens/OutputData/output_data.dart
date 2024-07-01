@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Screens/OutputData/output_data_tile.dart';
+import 'package:pci_app/src/Presentation/Screens/OutputData/output_data_tile.dart';
 
 class OutputDataPage extends StatefulWidget {
   const OutputDataPage({super.key});

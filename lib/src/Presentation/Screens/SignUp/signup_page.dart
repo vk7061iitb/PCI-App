@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import '../../../Functions/signup_user.dart';
+import '../../../../Functions/signup_user.dart';
 import '../../Widgets/snackbar.dart';
 
 class SignupPage extends StatefulWidget {

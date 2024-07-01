@@ -10,10 +10,10 @@ import 'package:pci_app/firebase_options.dart';
 import 'Functions/init_download_folder.dart';
 import 'Functions/request_location_permission.dart';
 import 'Functions/request_storage_permission.dart';
-import 'src/Screens/HomePage/home.dart';
-import 'src/Screens/Login/login_page.dart';
-import 'src/Screens/SignUp/signup_page.dart';
-import 'src/Screens/UserProfile/user_page.dart';
+import 'src/Presentation/Screens/HomePage/home.dart';
+import 'src/Presentation/Screens/Login/login_page.dart';
+import 'src/Presentation/Screens/SignUp/signup_page.dart';
+import 'src/Presentation/Screens/UserProfile/user_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

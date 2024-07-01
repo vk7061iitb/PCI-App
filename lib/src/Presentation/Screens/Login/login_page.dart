@@ -3,8 +3,8 @@ import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Functions/login_user.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Widgets/snackbar.dart';
-import '../../Models/user_data.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import '../../../Models/user_data.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

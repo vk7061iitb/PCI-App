@@ -5,8 +5,8 @@ import 'package:pci_app/src/Models/data_points.dart';
 import 'package:pci_app/Utils/assets.dart';
 import '../src/Database/sqlite_db_helper.dart';
 import '../Utils/routes.dart';
-import '../src/Models/polyline_obj.dart';
-import '../src/Models/stats_object.dart';
+import '../src/Models/polyline_data.dart';
+import '../src/Models/stats_data.dart';
 
 MyRoutes myRoutes = MyRoutes();
 
@@ -35,7 +35,7 @@ Map<String, dynamic> jsonData = {};
 List<dynamic> features = [];
 List<dynamic> coordinates = [];
 Set<Polyline> polylines = {};
-List<PolylinObj> polylineObj = [];
+List<PolylineData> polylineObj = [];
 List<OutputStats> outputStats = [];
 const List<String> mapType = [
   'Normal',

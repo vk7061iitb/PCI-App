@@ -8,8 +8,8 @@ import 'package:pci_app/src/Models/user_data.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Models/data_points.dart';
-import '../Models/pci_object.dart';
-import '../Models/stats_object.dart';
+import '../Models/pci_data.dart';
+import '../Models/stats_data.dart';
 
 class SQLDatabaseHelper {
   late Database _localDbInstance;

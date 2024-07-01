@@ -1,12 +1,21 @@
+/*
+  This file contains the code for the map page. The map page contains the Google Map widget, 
+  which displays the output road's data. The road data is plotted as polylines on the map. 
+  It contains buttons to zoom in on the map, clear the map, and view road statistics. 
+  The map page also contains a button to toggle the DRRP layer on and off. 
+  The DRRP layer is plotted on the map as dashed lines. The map page also contains a dropdown to 
+  select the map type (satellite, terrain, etc.).
+ */
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../Functions/get_road_color.dart';
-import '../../../Functions/plot_drrp_layer.dart';
-import '../../../Objects/data.dart';
-import '../../Models/polyline_obj.dart';
+import '../../../../Functions/get_road_color.dart';
+import '../../../../Functions/plot_drrp_layer.dart';
+import '../../../../Objects/data.dart';
+import '../../../Models/polyline_data.dart';
 import 'widget/path_feature.dart';
 import 'widget/maptype_dropdown.dart';
 import 'widget/road_stats.dart';
@@ -80,15 +89,15 @@ class _MapPageState extends State<MapPage> {
       );
 
       Properties featureProperties = Properties(
-        keyList: myMap.keys.toList(),
-        valuesList: myMap.values.toList(),
+        attributeKeys: myMap.keys.toList(),
+        attributeValues: myMap.values.toList(),
       );
 
       polylineObj.add(
-        PolylinObj(
+        PolylineData(
           polyline: temporaryPolyline,
           polylineIndex: i,
-          properties: featureProperties,
+          polylineAttributes: featureProperties,
         ),
       );
       polylines.add(temporaryPolyline);

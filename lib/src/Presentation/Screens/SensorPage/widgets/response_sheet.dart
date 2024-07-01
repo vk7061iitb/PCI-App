@@ -3,9 +3,9 @@ import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Functions/send_data_to_server.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Screens/SensorPage/widgets/vehicle_dropdown_widget.dart';
-import '../../../../Utils/get_icon.dart';
-import '../../../Models/data_points.dart';
+import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/vehicle_dropdown_widget.dart';
+import '../../../../../Utils/get_icon.dart';
+import '../../../../Models/data_points.dart';
 import '../../../Widgets/snackbar.dart';
 
 class ResponseSheet extends StatefulWidget {

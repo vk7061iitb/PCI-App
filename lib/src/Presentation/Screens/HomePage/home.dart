@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pci_app/src/Screens/MapsPage/maps_page.dart';
+import 'package:pci_app/src/Presentation/Screens/MapsPage/maps_page.dart';
 import '../SensorPage/sensor_page.dart';
 import '../OutputData/output_data.dart';
 import '../SavedFile/saved_files_page.dart';
