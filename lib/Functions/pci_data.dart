@@ -5,7 +5,7 @@ velocity and maximum PCI value between consecutive data points, and creates GeoJ
 with these properties and coordinates for each pair of points.
 */
 
-import '../src/Models/pci_object.dart';
+import '../src/Models/pci_data.dart';
 
 Map<String, dynamic> convertToGeoJsonFormat(List<PciData> pciDataPoints) {
   List<Map<String, dynamic>> geoJsonFeatures = [];
