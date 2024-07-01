@@ -44,3 +44,6 @@ app.*.map.json
 
 # Important Files
 android/app/src/main/AndroidManifest.xml
+
+# Configuration files
+lib/src/config/config.dart
