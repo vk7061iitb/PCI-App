@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Objects/data_points.dart';
-import '../Database/sqlite_db_helper.dart';
-import 'polyline_obj.dart';
+import 'package:pci_app/src/Models/data_points.dart';
+import 'package:pci_app/Utils/assets.dart';
+import '../src/Database/sqlite_db_helper.dart';
+import '../Utils/routes.dart';
+import '../src/Models/polyline_obj.dart';
+import '../src/Models/stats_object.dart';
+
+MyRoutes myRoutes = MyRoutes();
 
 Position devicePosition = Position(
   latitude: 0.0,
@@ -24,9 +29,6 @@ List<GyroData> gyroDataList = [];
 List<double> accData = [0, 0, 0];
 List<double> gyroData = [0, 0, 0];
 
-bool isRecordingData = false;
-bool showStartButton = true;
-
 // Map Page Data
 String geoJsonData = '';
 Map<String, dynamic> jsonData = {};
@@ -34,6 +36,7 @@ List<dynamic> features = [];
 List<dynamic> coordinates = [];
 Set<Polyline> polylines = {};
 List<PolylinObj> polylineObj = [];
+List<OutputStats> outputStats = [];
 const List<String> mapType = [
   'Normal',
   'Satellite',
@@ -55,9 +58,6 @@ Timer? accCallTimer;
 Timer? locationCallTimer;
 String message = '';
 String requestLocationMessage = '';
-String gyroscopeImgPath = 'lib/Assets/gyroscope.png';
-String locationImgPath = 'lib/Assets/location.png';
-String accelerationImgPath = 'lib/Assets/speedometer.png';
 String startMessage = 'Tap "Start" to collect data';
 String progressMessage = 'Collecting the data...';
 String locationErrorMessage =
@@ -71,7 +71,8 @@ const List<String> vehicleType = <String>[
 ];
 
 String dropdownValue = vehicleType.first;
-final streamSubscriptions = <StreamSubscription<dynamic>>[];
+
+AssetsPath assetsPath = AssetsPath();
 
 // Settings Page Data
 LocationAccuracy geolocatorLocationAccuracy = LocationAccuracy.best;

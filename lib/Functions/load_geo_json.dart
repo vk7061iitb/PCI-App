@@ -1,4 +1,9 @@
-import 'package:pci_app/Objects/pci_object.dart';
+/*
+The loadGeoJsonFromFile() is used to load the output file(csv or geojson) manually by the user.
+The function uses the FilePicker plugin to allow the user to select a file from the device.
+*/
+
+import 'package:pci_app/src/Models/pci_object.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:flutter/foundation.dart';

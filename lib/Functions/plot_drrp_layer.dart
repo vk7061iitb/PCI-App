@@ -1,14 +1,17 @@
+// This function is used to plot the DRRP layer on the map. It reads the geojson file
+// containing the DRRP data and plots the polylines on the map.
+
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Objects/data.dart';
-import 'get_road_color.dart';
 import 'dart:convert';
 
 Future<void> plotDRRPLayer() async {
-  String jsonString =
-      await rootBundle.loadString("lib/Assets/Roads/road_drrp.geojson");
-  jsonData = jsonDecode(jsonString);
+  String geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
+  jsonData = jsonDecode(geoJsonString);
   features = jsonData['features'];
+
   List<Polyline> polylinesToAdd = [];
   for (var element in polylines) {
     if (element.polylineId.value.contains("plotted_polyline")) {
@@ -29,7 +32,7 @@ Future<void> plotDRRPLayer() async {
 
     Polyline temporaryPolyline = Polyline(
       polylineId: PolylineId('drrp_polyline$i'),
-      color: getRoadColor(feature['properties']['PCI'].toString()),
+      color: Colors.black,
       width: 5,
       endCap: Cap.roundCap,
       startCap: Cap.roundCap,

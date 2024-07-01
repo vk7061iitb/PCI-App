@@ -1,10 +1,10 @@
 name: pci_app
 description: "A new Flutter project."
-publish_to: 'none'
-version: 1.1.5
+publish_to: "none"
+version: 1.2.5-alpha
 
 environment:
-  sdk: '>=3.3.1 <4.0.0'
+  sdk: ">=3.3.1 <4.0.0"
 
 dependencies:
   auto_size_text: ^3.0.0
@@ -45,7 +45,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - lib\Assets\gyroscope.png
-    - lib\Assets\speedometer.png
-    - lib\Assets\location.png
+    - lib\Assets\Sensor Images\gyroscope.png
+    - lib\Assets\Sensor Images\speedometer.png
+    - lib\Assets\Sensor Images\location.png
     - lib\Assets\Roads\road_drrp.geojson

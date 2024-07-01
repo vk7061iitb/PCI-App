@@ -1,36 +1,4 @@
-import '../Objects/data_points.dart';
-
-AccData average(AccData accData1, AccData accData2) {
-  AccData avgAccData;
-  avgAccData = AccData(
-      xAcc: (accData1.xAcc + accData2.xAcc) / 2.0,
-      yAcc: (accData1.yAcc + accData2.yAcc) / 2.0,
-      zAcc: (accData1.zAcc + accData2.zAcc) / 2.0,
-      latitude: accData2.latitude,
-      longitude: accData2.longitude,
-      speed: accData2.speed,
-      accTime: accData2.accTime);
-  return avgAccData;
-}
-
-AccData linInterpolate(AccData before, AccData after, DateTime curr) {
-  double fraction = (curr.difference(before.accTime).inMicroseconds) /
-      (after.accTime.difference(before.accTime).inMicroseconds).toDouble();
-  double interpolatedX = before.xAcc + (after.xAcc - before.xAcc) * fraction;
-  double interpolatedY = before.yAcc + (after.yAcc - before.yAcc) * fraction;
-  double interpolatedZ = before.zAcc + (after.zAcc - before.zAcc) * fraction;
-
-  AccData interpolatedData = AccData(
-      xAcc: interpolatedX,
-      yAcc: interpolatedY,
-      zAcc: interpolatedZ,
-      latitude: after.latitude,
-      longitude: after.longitude,
-      speed: after.speed,
-      accTime: curr);
-
-  return interpolatedData;
-}
+import '../src/Models/data_points.dart';
 
 List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
   List<AccData> downsampledList = [];
@@ -62,7 +30,7 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
             linInterpolate(downsampledList.last, after, currentTime);
         downsampledList.add(
           genData,
-        ); 
+        );
       } else {
         // Finding the interpolated data
         AccData interPolatedAccData =
@@ -75,4 +43,36 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
   }
 
   return downsampledList;
+}
+
+AccData average(AccData accData1, AccData accData2) {
+  AccData avgAccData;
+  avgAccData = AccData(
+      xAcc: (accData1.xAcc + accData2.xAcc) / 2.0,
+      yAcc: (accData1.yAcc + accData2.yAcc) / 2.0,
+      zAcc: (accData1.zAcc + accData2.zAcc) / 2.0,
+      latitude: accData2.latitude,
+      longitude: accData2.longitude,
+      speed: accData2.speed,
+      accTime: accData2.accTime);
+  return avgAccData;
+}
+
+AccData linInterpolate(AccData before, AccData after, DateTime curr) {
+  double fraction = (curr.difference(before.accTime).inMicroseconds) /
+      (after.accTime.difference(before.accTime).inMicroseconds).toDouble();
+  double interpolatedX = before.xAcc + (after.xAcc - before.xAcc) * fraction;
+  double interpolatedY = before.yAcc + (after.yAcc - before.yAcc) * fraction;
+  double interpolatedZ = before.zAcc + (after.zAcc - before.zAcc) * fraction;
+
+  AccData interpolatedData = AccData(
+      xAcc: interpolatedX,
+      yAcc: interpolatedY,
+      zAcc: interpolatedZ,
+      latitude: after.latitude,
+      longitude: after.longitude,
+      speed: after.speed,
+      accTime: curr);
+
+  return interpolatedData;
 }

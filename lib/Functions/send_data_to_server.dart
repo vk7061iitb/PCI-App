@@ -1,46 +1,46 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/Objects/pci_object.dart';
+import 'package:pci_app/src/Models/pci_object.dart';
+import 'package:pci_app/src/Models/stats_object.dart';
 import 'package:share_plus/share_plus.dart';
-import '../Objects/data_points.dart';
+import '../src/Models/data_points.dart';
+import 'dart:convert';
+import 'dart:io';
 
-Future<String> sendDataToServer(List<AccData> accData) async {
+Future<String> sendDataToServer(
+    {required List<AccData> accData, required String userID}) async {
   String message = "Data sent successfully";
   const String url = 'http://13.201.2.105/track_labeler';
 
-  List<Map<String, dynamic>> data =
-      accData.map((data) => data.toJson()).toList();
-
-  final String jsonData = json.encode(data);
-
-  List<Map<String, dynamic>> pciData = [];
+  List<Map<String, dynamic>> sensorData =
+      accData.map((datapoint) => datapoint.toJson()).toList();
 
   List<PciData2> outputData = [];
+  List<OutputStats> outputStats = [];
 
   if (kDebugMode) {
-    getDownloadsDirectory().then((Directory? directory) async {
-      final File file = File('${directory?.path}/data.json');
-      await file.writeAsString(jsonData);
-      XFile fileToShare = XFile(file.path);
-      Share.shareXFiles([fileToShare]);
-    });
+    getDownloadsDirectory().then(
+      (Directory? directory) async {
+        final File file = File('${directory?.path}/data.json');
+        await file.writeAsString(jsonEncode(sensorData));
+        XFile fileToShare = XFile(file.path);
+        Share.shareXFiles([fileToShare]);
+      },
+    );
   }
 
   try {
-    if (kDebugMode) {
-      print('Sending data to server...');
-    }
     final http.Response response = await http
         .post(
       Uri.parse(url),
       headers: {
         'Content-Type': 'application/json',
+        'Userid': userID,
+        'vehicle_type': dropdownValue,
       },
-      body: jsonData,
+      body: jsonEncode(sensorData),
     )
         .timeout(
       const Duration(seconds: 20),
@@ -52,35 +52,44 @@ Future<String> sendDataToServer(List<AccData> accData) async {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      pciData = List<Map<String, dynamic>>.from(responseData);
-
       int outuputDataID =
           await localDatabase.insertOutputData("Output Data", dropdownValue);
 
-      for (var data in pciData) {
-        outputData.add(PciData2(
+      for (var data in responseData['labels']) {
+        outputData.add(
+          PciData2(
             outuputDataID: outuputDataID,
             latitude: data['latitude'],
             longitude: data['longitude'],
             velocity: data['velocity'],
-            prediction: data['prediction']));
+            prediction: data['prediction'],
+          ),
+        );
       }
+      responseData['stats'].forEach(
+        (key, value) {
+          outputStats.add(
+            OutputStats(
+              outputDataID: outuputDataID,
+              pci: key,
+              avgVelocity: value['avg_velocity'].toString(),
+              distanceTravelled: value['distance_travelled'].toString(),
+              numberOfSegments: value['number_of_segments'].toString(),
+            ),
+          );
+        },
+      );
       await localDatabase.insertPciData(outputData);
+      await localDatabase.insertStats(outputStats);
       return message;
     } else {
-      if (kDebugMode) {
-        print('Failed to send data. Status code: ${response.statusCode}');
-      }
+      debugPrint('Failed to send data. Status code: ${response.statusCode}');
       message = 'Failed to send data. Status code: ${response.statusCode}';
-      if (kDebugMode) {
-        print('Response body: ${response.body}');
-      }
+      debugPrint('Response body: ${response.body}');
       return message;
     }
   } catch (e) {
-    if (kDebugMode) {
-      print('Error: $e');
-    }
+    debugPrint('Error: $e');
     return e.toString();
   }
 }

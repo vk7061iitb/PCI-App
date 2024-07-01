@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../Objects/user_data.dart';
+import '../src/Models/user_data.dart';
 
 Future<Map<String, dynamic>> loginUser(UserData user) async {
   debugPrint('Logging in user...');
