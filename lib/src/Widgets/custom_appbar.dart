@@ -10,12 +10,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle appBarTitleStyle = GoogleFonts.inter(
+    TextStyle titleTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.w800,
       fontSize: MediaQuery.textScalerOf(context).scale(32),
     );
-    TextStyle buttonStyle = GoogleFonts.inter(
+    TextStyle actionTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
       fontSize: MediaQuery.textScalerOf(context).scale(16),
@@ -24,7 +24,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       title: Text(
         'PCI App',
-        style: appBarTitleStyle,
+        style: titleTextStyle,
       ),
       backgroundColor: const Color(0xFFF3EDF5),
       actions: [
@@ -39,13 +39,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               },
               child: Text(
                 "Profile",
-                style: buttonStyle,
+                style: actionTextStyle,
               ),
             ),
             PopupMenuItem(
               child: Text(
                 "Settings",
-                style: buttonStyle,
+                style: actionTextStyle,
               ),
             ),
           ];
