@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 SnackBar customSnackBar(String message) {
@@ -24,5 +25,31 @@ SnackBar customSnackBar(String message) {
         Radius.circular(20),
       ),
     ),
+  );
+}
+
+GetSnackBar customGetSnackBar(String message) {
+  return GetSnackBar(
+    messageText: Text(
+      message,
+      style: GoogleFonts.inter(
+        color: Colors.black87,
+        fontWeight: FontWeight.normal,
+        fontSize: 14,
+      ),
+    ),
+    isDismissible: true,
+    snackPosition: SnackPosition.BOTTOM,
+    backgroundColor: const Color(0xFFF3EDF5),
+    margin: const EdgeInsets.all(12),
+    duration: const Duration(seconds: 5),
+    borderRadius: 20,
+    boxShadows: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        spreadRadius: 1,
+        blurRadius: 5,
+      ),
+    ],
   );
 }
