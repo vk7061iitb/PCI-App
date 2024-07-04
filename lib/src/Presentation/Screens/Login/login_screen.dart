@@ -3,7 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/auth_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -46,23 +46,22 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const Gap(40),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Email",
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-                const Gap(10),
-                // Email Field
                 Form(
-                  key: loginController.formKey,
+                  key: loginController.loginFormKey,
                   child: Column(
                     children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Email",
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      const Gap(10),
                       TextFormField(
                         controller: loginController.emailController,
                         autocorrect: true,
@@ -153,11 +152,11 @@ class LoginScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () async {
                           // sign in logic
-                          if (loginController.formKey.currentState!
+                          if (loginController.loginFormKey.currentState!
                               .validate()) {
                             await loginController.loginUser().then((_) {
                               if (loginController.isLoggedIn) {
-                                Get.toNamed(myRoutes.homeRoute);
+                                Get.offNamed(myRoutes.homeRoute);
                               } else {
                                 Get.showSnackbar(
                                   customGetSnackBar("User not found"),
