@@ -2,25 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../Objects/data.dart';
 
-class VehicleTypeDropdown extends StatefulWidget {
+class VehicleTypeDropdown extends StatelessWidget {
   final ValueChanged<String> onPressed;
   final String dropdownValue;
   const VehicleTypeDropdown(
       {required this.onPressed, required this.dropdownValue, super.key});
 
   @override
-  State<VehicleTypeDropdown> createState() => _VehicleTypeDropdownState();
-}
-
-class _VehicleTypeDropdownState extends State<VehicleTypeDropdown> {
-  @override
   Widget build(BuildContext context) {
     return DropdownButton<String>(
       icon: const Icon(Icons.arrow_drop_down_circle_outlined),
-      value: widget.dropdownValue,
+      value: dropdownValue,
       alignment: Alignment.center,
       onChanged: (String? newValue) {
-        widget.onPressed(newValue!);
+        onPressed(newValue!);
       },
       elevation: 1,
       underline: Container(
