@@ -3,7 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Models/user_data.dart';
 
-class UserPage extends StatefulWidget {
+class UserPage extends StatelessWidget {
   final UserData user;
 
   const UserPage({
@@ -12,85 +12,82 @@ class UserPage extends StatefulWidget {
   });
 
   @override
-  State<UserPage> createState() => _UserPageState();
-}
-
-class _UserPageState extends State<UserPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Info'),
+        title: Text(
+          'User Info',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildRow(
+                  'User ID',
+                  user.userID!,
+                  Icons.person,
+                ),
+                const Divider(),
+                buildRow(
+                  'Phone',
+                  user.phoneNumber,
+                  Icons.phone,
+                ),
+                const Divider(),
+                buildRow(
+                  'Email',
+                  user.email,
+                  Icons.email,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildRow(String title, String value, IconData iconData) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(iconData, color: Colors.black54),
+        const Gap(10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildRow(
-              'User ID',
-              widget.user.userID!,
-              const Icon(
-                Icons.person,
-                color: Colors.black87,
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
               ),
             ),
-            const Gap(10),
-            buildRow(
-              'Phone',
-              widget.user.phoneNumber,
-              const Icon(
-                Icons.phone,
-                color: Colors.black87,
-              ),
-            ),
-            const Gap(10),
-            buildRow(
-              'Email',
-              widget.user.email,
-              const Icon(
-                Icons.email,
+            const Gap(5),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 16,
                 color: Colors.black87,
               ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
-}
-
-Widget buildRow(String title, String value, Icon icon) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.start,
-    children: [
-      const Gap(10),
-      Text(
-        title,
-        style: GoogleFonts.inter(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black54,
-        ),
-      ),
-      const Gap(10),
-      Text(
-        value,
-        style: GoogleFonts.inter(
-          fontSize: 16,
-          color: Colors.black87,
-        ),
-      ),
-    ],
-  );
 }
