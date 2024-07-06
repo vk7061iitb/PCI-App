@@ -30,11 +30,20 @@ class RoadStats extends StatelessWidget {
           ),
           const Gap(10),
           Text(
-            'Road Stats',
+            'Road Statistics',
             style: GoogleFonts.inter(
               color: Colors.black,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               fontSize: 24,
+            ),
+          ),
+          const Gap(5),
+          Text(
+            'Detailed breakdown of the road conditions by pavement value',
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
             ),
           ),
           const Gap(10),
@@ -42,18 +51,24 @@ class RoadStats extends StatelessWidget {
             child: ListView.builder(
                 itemCount: outputStats.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.black12,
-                        ),
-                        child: Row(
+                  return Container(
+                    margin: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.black26,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Gap(10),
+                        Row(
                           children: [
                             const Gap(10),
                             Text(
-                              "PCI",
+                              "PCI :",
                               style: GoogleFonts.inter(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w600,
@@ -65,30 +80,24 @@ class RoadStats extends StatelessWidget {
                               outputStats[index].pci.toString(),
                               style: GoogleFonts.inter(
                                 color: Colors.black,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 fontSize: 20,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const Gap(10),
-                      buildInfoRow("Distance travelled",
-                          outputStats[index].distanceTravelled.toString()),
-                      const Divider(
-                        color: Colors.black38,
-                        thickness: 1,
-                      ),
-                      buildInfoRow("Average velocity",
-                          outputStats[index].avgVelocity.toString()),
-                      const Divider(
-                        color: Colors.black38,
-                        thickness: 1,
-                      ),
-                      buildInfoRow("Number of segments",
-                          outputStats[index].numberOfSegments.toString()),
-                      const Gap(10),
-                    ],
+                        const Gap(10),
+                        distanceRow("Distance Travelled",
+                            outputStats[index].distanceTravelled.toString()),
+                        const Gap(10),
+                        speedRow("Average Speed",
+                            outputStats[index].avgVelocity.toString()),
+                        const Gap(10),
+                        segmentRow("Number of Segments",
+                            outputStats[index].numberOfSegments.toString()),
+                        const Gap(10),
+                      ],
+                    ),
                   );
                 }),
           ),
@@ -98,27 +107,98 @@ class RoadStats extends StatelessWidget {
   }
 }
 
-Widget buildInfoRow(String label, String value) {
+Widget speedRow(String label, String value) {
   return Row(
-    mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      const Gap(10),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.grey[800],
+      const Gap(20),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: Colors.black54,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+      const Spacer(),
+      Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          "${double.parse(value).toStringAsFixed(2)} km/hr",
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.black,
+          ),
         ),
       ),
       const Gap(20),
-      Text(
-        double.parse(value).toStringAsFixed(2),
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.black54,
+    ],
+  );
+}
+
+Widget distanceRow(String label, String value) {
+  return Row(
+    children: [
+      const Gap(20),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: Colors.black54,
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ),
+      const Spacer(),
+      Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          "${double.parse(value).toStringAsFixed(2)} km",
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+      ),
+      const Gap(20),
+    ],
+  );
+}
+
+Widget segmentRow(String label, String value) {
+  return Row(
+    children: [
+      const Gap(20),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: Colors.black54,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+      const Spacer(),
+      Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          double.parse(value).toStringAsFixed(0),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+      ),
+      const Gap(20),
     ],
   );
 }
