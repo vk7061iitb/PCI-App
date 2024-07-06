@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pci_app/src/service/send_data_api.dart';
 import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 
@@ -12,6 +13,7 @@ class ResponseController extends GetxController {
   final RxBool _isSaveLocally = true.obs;
   final RxBool _savingData = false.obs;
   final RxString _serverMessage = ''.obs;
+  SendDataToServer sendDataToServer = SendDataToServer();
 
   String get dropdownValue => _dropdownValue.value;
   String get dbMessage => _dbMessage.value;
@@ -29,8 +31,16 @@ class ResponseController extends GetxController {
 
   Future<void> saveData(List<AccData> accData) async {
     if (_isSaveLocally.isTrue) {
-      await localDatabase.exportToCSV(
-          _fileNameController.value.text, _dropdownValue.value);
+      Future.wait([
+        localDatabase.exportToCSV(
+            _fileNameController.value.text, _dropdownValue.value),
+      ]);
     }
+    String? userID =
+        await localDatabase.queryUserData().then((user) => user.userID);
+    debugPrint('User ID: $userID');
+    sendDataToServer.sendData(accData: accData, userID: userID!).then((value) {
+      serverMessage = value;
+    });
   }
 }
