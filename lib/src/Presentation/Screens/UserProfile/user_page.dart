@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Models/user_data.dart';
 
 class UserPage extends StatelessWidget {
   final UserData user;
-
   const UserPage({
     super.key,
     required this.user,
@@ -14,46 +14,80 @@ class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
-        title: Text(
-          'User Info',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
+        title: const Text(
+          'User Profile',
+          style: TextStyle(
             color: Colors.black87,
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
           ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+        backgroundColor: const Color(0xFFF3EDF5),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black54,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildRow(
-                  'User ID',
-                  user.userID!,
-                  Icons.person,
+          onPressed: () {
+            Get.back();
+          },
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.person_3_outlined,
+                color: Colors.black54,
+                size: 100,
+              ),
+              const Gap(10),
+              Text(
+                'User ${user.userID}',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
                 ),
-                const Divider(),
-                buildRow(
-                  'Phone',
-                  user.phoneNumber,
-                  Icons.phone,
+              ),
+              const Gap(20),
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.black12,
+                    width: 1,
+                  ),
                 ),
-                const Divider(),
-                buildRow(
-                  'Email',
-                  user.email,
-                  Icons.email,
+                child: Column(
+                  children: [
+                    buildRow(
+                      'Name',
+                      "User Name",
+                      Icons.person_2_outlined,
+                    ),
+                    const Gap(10),
+                    buildRow(
+                      'Phone',
+                      user.phoneNumber,
+                      Icons.phone_outlined,
+                    ),
+                    const Gap(10),
+                    buildRow(
+                      'Email',
+                      user.email,
+                      Icons.email_outlined,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -64,20 +98,24 @@ class UserPage extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(iconData, color: Colors.black54),
+        Icon(
+          iconData,
+          color: Colors.black54,
+          size: 24,
+        ),
         const Gap(10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               title,
               style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
                 color: Colors.black54,
               ),
             ),
-            const Gap(5),
+            const Gap(10),
             Text(
               value,
               style: GoogleFonts.inter(
