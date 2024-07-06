@@ -1,6 +1,7 @@
+import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LocationController extends GetxController {
   final RxBool _serviceEnabled = false.obs;
@@ -23,8 +24,15 @@ class LocationController extends GetxController {
   // Check GPS service and permissions
   void checkAndRequestLocation() async {
     await checkLocationService();
-    await checkLocationPermission();
-    await requestAllTimeLocationPermission();
+
+    if (serviceEnabled) {
+      await checkLocationPermission();
+      if (permission != LocationPermission.always) {
+        await requestAllTimeLocationPermission().then((_) {
+          checkAndRequestLocation();
+        });
+      }
+    }
   }
 
   // Check if GPS service is enabled
@@ -33,15 +41,36 @@ class LocationController extends GetxController {
     if (!_serviceEnabled.value) {
       Get.dialog(
         AlertDialog(
-          title: const Text('Location Services Disabled'),
-          content: const Text('Please enable location services to continue.'),
+          title: Text(
+            'Location Services Required',
+            style: GoogleFonts.inter(
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+            ),
+          ),
+          content: Text(
+            'To use this app, you need to enable location services on your device.',
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
           actions: <Widget>[
-            TextButton(
+            OutlinedButton(
               onPressed: () {
                 Geolocator.openLocationSettings();
                 Get.back();
               },
-              child: const Text('Enable Location'),
+              child: Text(
+                'Enable Location',
+                style: GoogleFonts.inter(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         ),
@@ -56,119 +85,101 @@ class LocationController extends GetxController {
         _permission.value == LocationPermission.deniedForever) {
       Get.dialog(
         AlertDialog(
-          title: const Text('Location Permission Required'),
-          content: const Text('Please grant location access to continue.'),
+          title: Text(
+            'Location Services Required',
+            style: GoogleFonts.inter(
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+            ),
+          ),
+          content: Text(
+            'Please grant location access to this app to continue.',
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                _permission.value = await Geolocator.requestPermission();
-                if (_permission.value == LocationPermission.denied ||
-                    _permission.value == LocationPermission.deniedForever) {
-                  giveLocationAccess();
-                } else {
-                  await requestAllTimeLocationPermission();
-                }
+                await Geolocator.requestPermission();
                 Get.back();
+                await checkLocationPermission(); // Re-check the permission after requesting
               },
-              child: const Text('Grant Permission'),
-            ),
-            TextButton(
-              onPressed: () {
-                Geolocator.openLocationSettings();
-                Get.back();
-              },
-              child: const Text('Go to Settings'),
+              child: Text(
+                'Grant Permission',
+                style: GoogleFonts.inter(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         ),
       );
-    } else {
-      await requestAllTimeLocationPermission();
     }
   }
 
-  // Request "All the Time" location permission
+// Request "All the Time" location permission
   Future<void> requestAllTimeLocationPermission() async {
     if (_permission.value == LocationPermission.always) {
       debugPrint('Location permission is already set to "All the Time".');
       return;
-    }
-
-    if (_permission.value == LocationPermission.whileInUse) {
+    } else {
       Get.dialog(
         AlertDialog(
-          title: const Text('All Time Location Access Required'),
-          content: const Text(
-              'Please grant "All the Time" location access for better app functionality.'),
+          title: Text(
+            'Please Grant All Time Location Access',
+            style: GoogleFonts.inter(
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+            ),
+          ),
+          content: Text(
+            'Please grant "Allow all the Time" location access.',
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                _permission.value = await Geolocator.requestPermission();
-                if (_permission.value == LocationPermission.always) {
-                  debugPrint('Location permission set to "All the Time".');
-                } else {
-                  giveAllTimeLocationAccess();
-                }
+                await Geolocator.requestPermission();
                 Get.back();
+                await checkLocationPermission(); // Re-check the permission after requesting
               },
-              child: const Text('Grant All Time Access'),
+              child: Text(
+                'Grant All Time Access',
+                style: GoogleFonts.inter(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
-                Geolocator.openLocationSettings();
+                Geolocator.openAppSettings();
                 Get.back();
               },
-              child: const Text('Go to Settings'),
+              child: Text(
+                'Go to Settings',
+                style: GoogleFonts.inter(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         ),
       );
-    } else {
-      _permission.value = await Geolocator.requestPermission();
-      if (_permission.value == LocationPermission.always) {
-        debugPrint('Location permission set to "All the Time".');
-      } else {
-        giveAllTimeLocationAccess();
-      }
     }
-  }
-
-  // Dialog for location permission access
-  void giveLocationAccess() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Location Permission Denied'),
-        content: const Text('Please grant location access to continue.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Geolocator.openLocationSettings();
-              Get.back();
-            },
-            child: const Text('Go to Settings'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Dialog for "All the Time" location permission access
-  void giveAllTimeLocationAccess() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('All Time Location Access Required'),
-        content: const Text(
-            'Please grant "All the Time" location access for better app functionality.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Geolocator.openLocationSettings();
-              Get.back();
-            },
-            child: const Text('Go to Settings'),
-          ),
-        ],
-      ),
-    );
   }
 }
