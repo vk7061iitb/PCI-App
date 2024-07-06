@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 
@@ -28,28 +29,29 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       backgroundColor: const Color(0xFFF3EDF5),
       actions: [
-        PopupMenuButton(itemBuilder: (BuildContext context) {
-          return [
-            PopupMenuItem(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  myRoutes.userProfileRoute,
-                );
-              },
-              child: Text(
-                "Profile",
-                style: actionTextStyle,
-              ),
+        PopupMenuButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            PopupMenuItem(
-              child: Text(
-                "Settings",
-                style: actionTextStyle,
-              ),
-            ),
-          ];
-        })
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem(
+                  onTap: () {
+                    Get.toNamed(myRoutes.userProfileRoute);
+                  },
+                  child: Text(
+                    "Profile",
+                    style: actionTextStyle,
+                  ),
+                ),
+                PopupMenuItem(
+                  child: Text(
+                    "Settings",
+                    style: actionTextStyle,
+                  ),
+                ),
+              ];
+            })
       ],
     );
   }
