@@ -27,7 +27,7 @@ class OutputDataItem extends StatelessWidget {
   final String time;
   final String vehicleType;
   final int id;
-  final VoidCallback onDeleteTap; // Callback function to delete the data
+  final VoidCallback onDeleteTap;
 
 // Function to get the icon for the vehicle type
   Icon getIcon(String vehicleType) {
@@ -141,6 +141,9 @@ class OutputDataItem extends StatelessWidget {
           ),
           const Spacer(),
           PopupMenuButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             icon: const Icon(
               Icons.more_vert,
               color: Colors.black,
