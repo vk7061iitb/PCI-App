@@ -145,6 +145,9 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
           ),
           const Spacer(),
           PopupMenuButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             icon: const Icon(
               Icons.more_vert,
               color: Colors.black,
@@ -164,7 +167,7 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
                     "Share",
                     style: pupUpMenuTextStyle,
                   ),
-                )
+                ),
               ];
             },
           ),
