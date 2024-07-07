@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
-import '../../../../../Objects/data.dart';
 import '../../../../../Utils/sensor_page_color.dart';
 
 class StartEndButton extends StatelessWidget {
@@ -115,15 +114,12 @@ class StartButton extends StatelessWidget {
               if (accDataController.showStartButton) {
                 accDataController.onStartButtonPressed();
               } else {
-                await accDataController.onEndButtonPressed().then((_) async {
-                  await localDatabase
-                      .insertAccData(accDataController.filteredAccData);
-                });
+                await accDataController.onEndButtonPressed();
                 Get.bottomSheet(
                   const SaveFile(),
                   isDismissible: false,
                   enableDrag: false,
-                  ignoreSafeArea: true,
+                  ignoreSafeArea: false,
                 );
               }
             },
