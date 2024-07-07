@@ -11,6 +11,6 @@ IconData getIcon(String dropdownValue) {
     case 'Auto':
       return Icons.electric_rickshaw_rounded;
     default:
-      return Icons.directions_walk_rounded;
+      return Icons.directions_run_rounded;
   }
 }
