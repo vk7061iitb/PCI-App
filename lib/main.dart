@@ -1,6 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:pci_app/src/Models/user_data.dart';
+import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
+import 'package:pci_app/src/Presentation/Screens/HomePage/home_screen.dart';
+import 'package:pci_app/src/Presentation/Screens/Login/login_screen.dart';
+import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
 import 'Objects/data.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -8,24 +13,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pci_app/firebase_options.dart';
 import 'Functions/init_download_folder.dart';
-import 'Functions/request_location_permission.dart';
 import 'Functions/request_storage_permission.dart';
-import 'src/Presentation/Screens/HomePage/home.dart';
-import 'src/Presentation/Screens/Login/login_page.dart';
-import 'src/Presentation/Screens/SignUp/signup_page.dart';
+import 'src/Presentation/Controllers/location_permission.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Get.lazyPut(() => LocationController());
+  Get.lazyPut(() => AccDataController());
   await localDatabase.initDB();
   await initializeDirectory();
-  bool isLoggedIn = await localDatabase.queryUserData().then((user) {
-    if (user.userID == 'null') {
-      return false;
-    } else {
-      return true;
-    }
-  });
+  bool isLoggedIn = await localDatabase.queryUserData().then(
+    (user) {
+      if (user.userID == 'null') {
+        return false;
+      } else {
+        return true;
+      }
+    },
+  );
   debugPrint('Is Logged In: $isLoggedIn');
   UserData currentUser = await localDatabase.queryUserData();
   await Firebase.initializeApp(
@@ -39,10 +45,12 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-  runApp(MainApp(
-    isLoggedIn: isLoggedIn,
-    currentUser: currentUser,
-  ));
+  runApp(
+    MainApp(
+      isLoggedIn: isLoggedIn,
+      currentUser: currentUser,
+    ),
+  );
 }
 
 class MainApp extends StatefulWidget {
@@ -70,7 +78,6 @@ class _MainAppState extends State<MainApp> {
   }
 
   void checkPermission() async {
-    await requestLocationPermission();
     await requestStoragePermission();
   }
 
@@ -82,16 +89,28 @@ class _MainAppState extends State<MainApp> {
           systemNavigationBarColor: Color(0xFFF3EDF5),
           systemNavigationBarIconBrightness: Brightness.dark),
     );
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: widget.isLoggedIn ? const HomePage() : const LoginPage(),
-      routes: {
-        myRoutes.homeRoute: (context) => const HomePage(),
-        myRoutes.userProfileRoute: (context) =>
-            UserPage(user: widget.currentUser),
-        myRoutes.loginRoute: (context) => const LoginPage(),
-        myRoutes.signUpRoute: (context) => const SignupPage(),
-      },
+      initialRoute:
+          widget.isLoggedIn ? myRoutes.homeRoute : myRoutes.loginRoute,
+      getPages: [
+        GetPage(
+          name: myRoutes.homeRoute,
+          page: () => HomeScreen(),
+        ),
+        GetPage(
+          name: myRoutes.userProfileRoute,
+          page: () => UserPage(user: widget.currentUser),
+        ),
+        GetPage(
+          name: myRoutes.loginRoute,
+          page: () => const LoginScreen(),
+        ),
+        GetPage(
+          name: myRoutes.signUpRoute,
+          page: () => const SignupScreen(),
+        ),
+      ],
     );
   }
 }
