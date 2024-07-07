@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -189,39 +188,52 @@ class SaveFile extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (kDebugMode) {
-                          print(responseController.formKey.currentState!
-                              .validate());
-                        }
-                        if (responseController.isSaveLocally &&
-                            !responseController.formKey.currentState!
-                                .validate()) {
-                          return;
-                        }
-                        responseController.savingData = true;
-                        await responseController
-                            .saveData(accDataController.filteredAccData)
-                            .then((_) {
-                          responseController.savingData = false;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black87,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                    child: Obx(() {
+                      return ElevatedButton(
+                        onPressed: () async {
+                          debugPrint("Hello World!");
+                          if (responseController.isSaveLocally) {
+                            debugPrint(responseController.formKey.currentState!
+                                .validate()
+                                .toString());
+
+                            if (responseController.isSaveLocally &&
+                                !responseController.formKey.currentState!
+                                    .validate()) {
+                              return;
+                            }
+                          }
+                          responseController.savingData = true;
+                          await responseController
+                              .saveData(accDataController.filteredAccData)
+                              .then((_) {
+                            responseController.savingData = false;
+                            Get.back();
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        "Save",
-                        style: GoogleFonts.inter(
-                          fontSize: MediaQuery.textScalerOf(context).scale(18),
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                        child: Text(
+                          responseController.isSaveLocally
+                              ? responseController.savingData
+                                  ? "Submitting Data..."
+                                  : "Submit and Save"
+                              : responseController.savingData
+                                  ? "Submitting Data..."
+                                  : "Submit",
+                          style: GoogleFonts.inter(
+                            fontSize:
+                                MediaQuery.textScalerOf(context).scale(18),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                 ],
               ),
