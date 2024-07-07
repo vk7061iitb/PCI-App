@@ -11,14 +11,27 @@ class ReadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AccDataController accDataController = Get.find();
-    TextStyle style1 = GoogleFonts.inter(
+
+    TextStyle sensorNameStyle = GoogleFonts.inter(
       fontSize: MediaQuery.textScalerOf(context).scale(18),
       fontWeight: FontWeight.w600,
       color: Colors.black,
     );
-    TextStyle style2 = GoogleFonts.inter(
+    TextStyle labelTextStyle = GoogleFonts.inter(
       fontSize: MediaQuery.textScalerOf(context).scale(16),
       fontWeight: FontWeight.w500,
+      color: Colors.black,
+    );
+
+    TextStyle speedTextStyle = GoogleFonts.inter(
+      fontSize: MediaQuery.textScalerOf(context).scale(16),
+      fontWeight: FontWeight.w500,
+      color: Colors.black87,
+    );
+
+    TextStyle speedValueTextStyle = GoogleFonts.inter(
+      fontSize: MediaQuery.textScalerOf(context).scale(24),
+      fontWeight: FontWeight.w700,
       color: Colors.black,
     );
     return Column(
@@ -52,7 +65,7 @@ class ReadingWidget extends StatelessWidget {
                               const Gap(2),
                               Text(
                                 "Acceleration",
-                                style: style1,
+                                style: sensorNameStyle,
                               ),
                             ],
                           ),
@@ -63,7 +76,7 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "X",
-                              style: style2,
+                              style: labelTextStyle,
                             ),
                             Container(
                               width: 80,
@@ -77,7 +90,7 @@ class ReadingWidget extends StatelessWidget {
                                   return Text(
                                     accDataController.accData.value.x
                                         .toStringAsFixed(3),
-                                    style: style2,
+                                    style: labelTextStyle,
                                   );
                                 }),
                               ),
@@ -90,7 +103,7 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "Y",
-                              style: style2,
+                              style: labelTextStyle,
                             ),
                             Container(
                               width: 80,
@@ -104,7 +117,7 @@ class ReadingWidget extends StatelessWidget {
                                   return Text(
                                     accDataController.accData.value.y
                                         .toStringAsFixed(3),
-                                    style: style2,
+                                    style: labelTextStyle,
                                   );
                                 }),
                               ),
@@ -117,7 +130,7 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "Z",
-                              style: style2,
+                              style: labelTextStyle,
                             ),
                             Container(
                               width: 80,
@@ -131,7 +144,7 @@ class ReadingWidget extends StatelessWidget {
                                   return Text(
                                     accDataController.accData.value.z
                                         .toStringAsFixed(3),
-                                    style: style2,
+                                    style: labelTextStyle,
                                   );
                                 }),
                               ),
@@ -170,7 +183,7 @@ class ReadingWidget extends StatelessWidget {
                               const Gap(2),
                               Text(
                                 "Gyroscope",
-                                style: style1,
+                                style: sensorNameStyle,
                               ),
                             ],
                           ),
@@ -219,32 +232,65 @@ class ReadingWidget extends StatelessWidget {
                                 const Gap(10),
                                 Text(
                                   "Location",
-                                  style: style1,
+                                  style: sensorNameStyle,
                                 ),
                               ],
                             ),
                           ),
-                          RowWidget(
-                              label: "Lat",
-                              value: accDataController.isRecordingData
-                                  ? devicePosition.latitude
-                                  : 0.000),
-                          RowWidget(
-                              label: "Lon",
-                              value: accDataController.isRecordingData
-                                  ? devicePosition.longitude
-                                  : 0.000),
-                          RowWidget(
-                              label: "Acc",
-                              value: accDataController.isRecordingData
-                                  ? devicePosition.accuracy
-                                  : 0.000),
+                          Obx(() {
+                            return RowWidget(
+                                label: "Lat",
+                                value: accDataController.isRecordingData
+                                    ? accDataController.devicePosition.latitude
+                                    : 0.000);
+                          }),
+                          Obx(() {
+                            return RowWidget(
+                                label: "Lon",
+                                value: accDataController.isRecordingData
+                                    ? accDataController.devicePosition.longitude
+                                    : 0.000);
+                          }),
+                          Obx(() {
+                            return RowWidget(
+                                label: "Acc",
+                                value: accDataController.isRecordingData
+                                    ? accDataController.devicePosition.accuracy
+                                    : 0.000);
+                          }),
                         ],
                       );
                     },
                   ),
                 ),
-                const SpeedWidget(),
+                Container(
+                  width: 100,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Obx(() {
+                          return Text(
+                            accDataController.isRecordingData
+                                ? (accDataController.devicePosition.speed * 3.6)
+                                    .toStringAsFixed(2)
+                                : "0.00",
+                            style: speedValueTextStyle,
+                          );
+                        }),
+                        Text(
+                          "km/h",
+                          style: speedTextStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const Gap(20),
               ],
             ),
@@ -268,7 +314,7 @@ class RowWidget extends StatefulWidget {
 class RowWidgetState extends State<RowWidget> {
   @override
   Widget build(BuildContext context) {
-    TextStyle style2 = GoogleFonts.inter(
+    TextStyle labelTextStyle = GoogleFonts.inter(
       fontSize: MediaQuery.textScalerOf(context).scale(16),
       fontWeight: FontWeight.w500,
       color: Colors.black,
@@ -279,7 +325,7 @@ class RowWidgetState extends State<RowWidget> {
         children: [
           Text(
             widget.label,
-            style: style2,
+            style: labelTextStyle,
           ),
           Container(
             width: 80,
@@ -289,31 +335,12 @@ class RowWidgetState extends State<RowWidget> {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
-              child: Text(widget.value.toStringAsFixed(3), style: style2),
+              child:
+                  Text(widget.value.toStringAsFixed(3), style: labelTextStyle),
             ),
           ),
         ],
       );
     });
-  }
-}
-
-class SpeedWidget extends StatefulWidget {
-  const SpeedWidget({super.key});
-
-  @override
-  State<SpeedWidget> createState() => _SpeedWidgetState();
-}
-
-class _SpeedWidgetState extends State<SpeedWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 100,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-    );
   }
 }
