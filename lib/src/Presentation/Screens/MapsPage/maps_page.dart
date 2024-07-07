@@ -7,11 +7,13 @@
   select the map type (satellite, terrain, etc.).
  */
 
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import '../../../../Functions/get_road_color.dart';
 import '../../../../Functions/plot_drrp_layer.dart';
 import '../../../../Objects/data.dart';
@@ -29,6 +31,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   bool isDrrpLayerVisible = false;
+  final AccDataController _accDataController = Get.find();
   late GoogleMapController? mapController;
 
   @override
@@ -46,27 +49,27 @@ class _MapPageState extends State<MapPage> {
     polylineObj.clear();
   }
 
-  // Function to plot the map with polylines
-  void plotMap(Map<String, dynamic> jsonData) {
+  // Function to plot the map with Poly-lines
+  void plotMap(Map<String, dynamic> jsonData) async {
     if (jsonData.isEmpty) {
       return;
     }
-    features = jsonData['features'];
+    debugPrint("Plotting map...");
+    features = jsonData['geoJsonFeatures'];
     for (int i = 0; i < features.length; i++) {
       List<LatLng> points = [];
       Map<String, dynamic> feature = features[i];
-      List<dynamic> coordinates = feature['geometry']['coordinates'];
-      Map<String, dynamic> myMap = feature['properties'];
+      List<dynamic> coordinates = feature['geometry']['polylineCoordinates'];
+      Map<String, dynamic> myMap = feature['polylineProperties'];
       for (var data in coordinates) {
         points.add(
           LatLng(data[1], data[0]),
         );
       }
-
       Polyline temporaryPolyline = Polyline(
         consumeTapEvents: true,
         polylineId: PolylineId('plotted_polyline$i'),
-        color: getRoadColor(feature['properties']['PCI'].toString()[0]),
+        color: getRoadColor(feature['polylineProperties']['PCI'].toString()[0]),
         width: 10,
         endCap: Cap.roundCap,
         startCap: Cap.roundCap,
@@ -102,17 +105,19 @@ class _MapPageState extends State<MapPage> {
       );
       polylines.add(temporaryPolyline);
     }
-    jsonData = {};
+    debugPrint("Map plotted!");
+    // Zoom the map
+    await animateToLocation();
   }
 
   // Function to animate the camera to the location of the polylines
   Future<void> animateToLocation() async {
-    double minLat = features[0]['geometry']['coordinates'][0][1];
-    double minLng = features[0]['geometry']['coordinates'][0][0];
+    double minLat = features[0]['geometry']['polylineCoordinates'][0][1];
+    double minLng = features[0]['geometry']['polylineCoordinates'][0][0];
     double maxLat =
-        features[features.length - 1]['geometry']['coordinates'][0][1];
+        features[features.length - 1]['geometry']['polylineCoordinates'][0][1];
     double maxLng =
-        features[features.length - 1]['geometry']['coordinates'][0][0];
+        features[features.length - 1]['geometry']['polylineCoordinates'][0][0];
 
     if (minLat > maxLat) {
       double temp = minLat;
@@ -138,6 +143,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             Positioned.fill(
@@ -146,8 +152,8 @@ class _MapPageState extends State<MapPage> {
                   child: GoogleMap(
                     mapType: googleMapType,
                     initialCameraPosition: CameraPosition(
-                      target: LatLng(
-                          devicePosition.latitude, devicePosition.longitude),
+                      target: LatLng(_accDataController.devicePosition.latitude,
+                          _accDataController.devicePosition.longitude),
                       zoom: 15,
                     ),
                     onMapCreated: (GoogleMapController controller) {
@@ -160,137 +166,84 @@ class _MapPageState extends State<MapPage> {
               ),
             ),
             Positioned(
-              bottom: 60,
-              right: 10,
+              top: 10,
+              left: 10,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) {
-                        return RoadStats(
-                          outputStats: outputStats,
-                        );
-                      },
-                    );
-                  },
-                  icon: const Icon(
-                    color: Colors.white,
-                    Icons.info_outline,
-                    size: 30,
+                  color: Colors.white,
+                  border: Border.all(
+                    color: isDrrpLayerVisible ? Colors.blue : Colors.black38,
+                    width: 1,
                   ),
-                  tooltip: 'Road Stats',
+                  borderRadius: BorderRadius.circular(15),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              child: Container(
-                color: const Color(0xFFF3EDF5),
-                height: MediaQuery.of(context).size.height * 0.08,
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDrrpLayerVisible
-                            ? Colors.blue.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.5),
-                        child: InkWell(
-                          onTap: () async {
-                            isDrrpLayerVisible = !isDrrpLayerVisible;
-                            if (isDrrpLayerVisible) {
-                              await plotDRRPLayer();
-                              setState(() {});
-                            } else {
-                              List<Polyline> polylinesToAdd = [];
-                              for (var element in polylines) {
-                                if (element.polylineId.value
-                                    .contains("plotted_polyline")) {
-                                  polylinesToAdd.add(element);
-                                }
-                              }
-                              polylines.clear();
-                              polylines.addAll(polylinesToAdd);
-                              setState(() {});
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              const Gap(10),
-                              Text(
-                                "DRRP Roads",
-                                style: GoogleFonts.inter(
-                                  color: isDrrpLayerVisible
-                                      ? Colors.blue
-                                      : Colors.black,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: MediaQuery.textScalerOf(context)
-                                      .scale(16),
-                                ),
-                              ),
-                              const Gap(10),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Row(
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: InkWell(
+                    onTap: () async {
+                      isDrrpLayerVisible = !isDrrpLayerVisible;
+                      if (isDrrpLayerVisible) {
+                        await plotDRRPLayer();
+                        setState(() {});
+                      } else {
+                        List<Polyline> polylinesToAdd = [];
+                        for (var element in polylines) {
+                          if (element.polylineId.value
+                              .contains("plotted_polyline")) {
+                            polylinesToAdd.add(element);
+                          }
+                        }
+                        polylines.clear();
+                        polylines.addAll(polylinesToAdd);
+                        setState(() {});
+                      }
+                    },
+                    child: Row(
                       children: [
                         const Gap(10),
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.5),
-                            child: Row(
-                              children: [
-                                const Gap(10),
-                                Text(
-                                  "Map Type ",
-                                  style: GoogleFonts.inter(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: MediaQuery.textScalerOf(context)
-                                        .scale(16),
-                                  ),
-                                ),
-                                const Gap(5),
-                                MapTypeDropdown(
-                                  onChanged: (p0) => setState(() {}),
-                                ),
-                                const Gap(10),
-                              ],
-                            ),
+                        Icon(
+                          Icons.layers_outlined,
+                          size: MediaQuery.textScalerOf(context).scale(20),
+                          color:
+                              isDrrpLayerVisible ? Colors.blue : Colors.black,
+                        ),
+                        const Gap(5),
+                        Text(
+                          "DRRP Layer",
+                          style: GoogleFonts.inter(
+                            color:
+                                isDrrpLayerVisible ? Colors.blue : Colors.black,
+                            fontWeight: FontWeight.w400,
+                            fontSize:
+                                MediaQuery.textScalerOf(context).scale(18),
                           ),
                         ),
+                        const Gap(10),
                       ],
-                    )
-                  ],
+                    ),
+                  ),
                 ),
               ),
             ),
             Positioned(
-              bottom: 5,
-              right: 0,
+              bottom: 10,
               left: 0,
+              // Row containing the buttons to zoom, clear, change map type and view road statistics
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   const Gap(10),
-                  Expanded(
-                    child: ElevatedButton(
+                  // Zoom to Fit Button //
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
                       onPressed: () async {
                         plotMap(jsonData);
                         Future.delayed(const Duration(milliseconds: 500)).then(
@@ -298,35 +251,74 @@ class _MapPageState extends State<MapPage> {
                         );
                         setState(() {});
                       },
-                      child: Text(
-                        'Zoom Map',
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontWeight: FontWeight.normal,
-                          fontSize: MediaQuery.textScalerOf(context).scale(16),
-                        ),
+                      tooltip: 'Zoom to Fit',
+                      icon: const Icon(
+                        Icons.zoom_out_map,
+                        color: Colors.black,
+                        size: 30,
                       ),
                     ),
                   ),
-                  const Gap(10),
-                  Expanded(
-                    child: ElevatedButton(
+                  const Gap(20),
+                  // Clear Map Button //
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
                       onPressed: () async {
                         polylines.clear();
                         polylineObj.clear();
                         setState(() {});
                       },
-                      child: Text(
-                        'Clear Map',
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontWeight: FontWeight.normal,
-                          fontSize: MediaQuery.textScalerOf(context).scale(16),
-                        ),
+                      tooltip: 'Clear Map',
+                      icon: Icon(
+                        Icons.clear_all_rounded,
+                        color: Colors.black,
+                        size: MediaQuery.textScalerOf(context).scale(30),
                       ),
                     ),
                   ),
-                  const Gap(10),
+                  const Gap(20),
+                  // Map Type Dropdown //
+                  MapTypeDropdown(
+                    onChanged: (p0) => setState(() {}),
+                  ),
+                  const Gap(20),
+                  // Road Statistics Button //
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return RoadStats(
+                              outputStats: outputStats,
+                            );
+                          },
+                        );
+                      },
+                      icon: const Icon(
+                        color: Colors.black,
+                        Icons.bar_chart_rounded,
+                        size: 30,
+                      ),
+                      tooltip: 'Road Statistics',
+                    ),
+                  ),
                 ],
               ),
             ),
