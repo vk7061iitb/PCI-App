@@ -10,7 +10,7 @@ class UserAuthenticationService {
   final String authURL;
   UserAuthenticationService() : authURL = Config.getAuthBaseURL();
 
-  Future<Map<String, dynamic>> loginUser(UserData user) async {
+  Future<Map<String, dynamic>> loginUser({required UserData user}) async {
     debugPrint('Logging in user...');
     String loginURL = "$authURL${Config.loginEndPoint}";
     Map<String, dynamic> data = {};
@@ -51,7 +51,9 @@ class UserAuthenticationService {
 
   // Sign up user
   Future<Map<String, dynamic>> signUp(
-      String name, String email, String phone) async {
+      {required String name,
+      required String email,
+      required String phone}) async {
     String signUpURL = "$authURL${Config.signUpEndpoint}";
     Map<String, dynamic> data = {
       'Name': name,
