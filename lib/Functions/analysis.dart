@@ -14,7 +14,6 @@ import '../src/Models/data_points.dart';
 List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
   List<AccData> downsampledList = [];
   if (accDataList.isEmpty) return downsampledList;
-
   DateTime startTime = accDataList.first.accTime;
   DateTime nextSampleTime = startTime.add(
     const Duration(microseconds: 20000),
@@ -23,7 +22,7 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
 
   downsampledList.add(accDataList[0]);
 
-  for (int i = 0; i < accDataList.length - 1; i++) {
+  for (int i = 1; i < accDataList.length - 1; i++) {
     AccData before = accDataList[0];
     AccData after;
 
