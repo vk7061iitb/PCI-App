@@ -5,18 +5,16 @@ import 'package:flutter/material.dart';
 Color getRoadColor(String quality) {
   switch (quality) {
     case '1':
-      return const Color(0xFF388E3C); // Best quality
+      return Colors.red;
     case '2':
-      return const Color(0xFFCDDC39);
+      return Colors.orange;
     case '3':
-      return const Color(0xFF1A237E);
+      return Colors.yellow;
     case '4':
-      return const Color(0xFF795548);
+      return Colors.blue;
     case '5':
-      return const Color(0xFFF44336);
-    case '6':
-      return const Color(0xFF448AFF); // Worst quality
+      return Colors.green;
     default:
-      return Colors.black; // Default color
+      return Colors.black; 
   }
 }
