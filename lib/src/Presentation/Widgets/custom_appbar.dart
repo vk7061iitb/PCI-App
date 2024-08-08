@@ -22,7 +22,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       fontSize: MediaQuery.textScalerOf(context).scale(16),
     );
     return AppBar(
+      scrolledUnderElevation: 0,
       elevation: 0,
+      forceMaterialTransparency: true,
       title: Text(
         'PCI App',
         style: titleTextStyle,
@@ -30,6 +32,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFFF3EDF5),
       actions: [
         PopupMenuButton(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width * 0.4,
+            ),
+            padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -39,15 +45,60 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   onTap: () {
                     Get.toNamed(myRoutes.userProfileRoute);
                   },
-                  child: Text(
-                    "Profile",
-                    style: actionTextStyle,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.person_2_outlined,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Profile",
+                        style: actionTextStyle,
+                      ),
+                    ],
                   ),
                 ),
                 PopupMenuItem(
-                  child: Text(
-                    "Settings",
-                    style: actionTextStyle,
+                  onTap: () {
+                    Get.toNamed(myRoutes.unsentDataRoute);
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.file_copy_outlined,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Unsent Files",
+                        style: actionTextStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.settings_outlined,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Settings",
+                        style: actionTextStyle,
+                      ),
+                    ],
                   ),
                 ),
               ];
