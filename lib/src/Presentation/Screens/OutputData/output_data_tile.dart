@@ -97,6 +97,7 @@ class OutputDataItem extends StatelessWidget {
             ),
           ),
           const Gap(5),
+          // Vetical line to separate the icon and the filename
           Container(
             height: 50,
             width: 1,
@@ -141,6 +142,10 @@ class OutputDataItem extends StatelessWidget {
           ),
           const Spacer(),
           PopupMenuButton(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.5,
+              maxHeight: MediaQuery.of(context).size.width * 0.5,
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -167,16 +172,38 @@ class OutputDataItem extends StatelessWidget {
                       );
                     }
                   },
-                  child: Text(
-                    "Show on Map",
-                    style: popUpMenuTextStyle,
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.map_outlined,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Show on Map",
+                        style: popUpMenuTextStyle,
+                      ),
+                    ],
                   ),
                 ),
                 PopupMenuItem(
                   onTap: onDeleteTap,
-                  child: Text(
-                    "Delete",
-                    style: popUpMenuTextStyle,
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.delete_outline,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Delete",
+                        style: popUpMenuTextStyle,
+                      ),
+                    ],
                   ),
                 )
               ];
