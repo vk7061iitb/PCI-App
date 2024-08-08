@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/user_data.dart';
 
 class UserPage extends StatelessWidget {
@@ -41,10 +43,10 @@ class UserPage extends StatelessWidget {
           padding: const EdgeInsets.all(10.0),
           child: Column(
             children: [
-              const Icon(
-                Icons.person_3_outlined,
-                color: Colors.black54,
-                size: 100,
+              SvgPicture.asset(
+                assetsPath.profile,
+                height: 100,
+                width: 1,
               ),
               const Gap(10),
               Text(
