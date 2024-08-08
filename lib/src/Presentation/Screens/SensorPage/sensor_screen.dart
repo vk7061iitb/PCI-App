@@ -13,7 +13,7 @@ class SensorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AccDataController accDataController = Get.put(AccDataController());
+    AccDataController accDataController = Get.find();
     return Scaffold(
       appBar: const CustomAppBar(),
       backgroundColor: const Color(0xFFF3EDF5),
