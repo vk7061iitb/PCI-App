@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pci_app/src/Presentation/Screens/MapsPage/maps_page.dart';
-import '../SensorPage/sensor_page.dart';
+import 'package:pci_app/src/Presentation/Screens/SensorPage/sensor_page.dart';
 import '../OutputData/output_data.dart';
 import '../SavedFile/saved_files_page.dart';
 
@@ -13,7 +13,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
   static const List<Widget> _widgetOptions = <Widget>[
     SensorPage(),
     MapPage(),
@@ -25,6 +24,16 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
