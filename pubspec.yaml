@@ -7,35 +7,31 @@ environment:
   sdk: ">=3.3.1 <4.0.0"
 
 dependencies:
-  auto_size_text: ^3.0.0
   collection: ^1.18.0
   cross_file: ^0.3.4+1
   csv: ^6.0.0
-  cupertino_icons: ^1.0.8
   file_picker: ^8.0.0+1
   firebase_analytics: ^11.0.0
   firebase_core: ^3.0.0
   firebase_crashlytics: ^4.0.0
   flutter:
     sdk: flutter
-  flutter_animate: ^4.5.0
-  flutter_map_math: ^0.1.7
+  flutter_svg: ^2.0.10+1
   gap: ^3.0.1
   geolocator: ^12.0.0
+  get: ^4.6.6
   google_fonts: ^6.2.1
   google_maps_flutter: ^2.6.0
   http: ^1.2.1
   intl: ^0.19.0
+  location: ^7.0.0
   mime: ^1.0.5
   path: ^1.9.0
   path_provider: ^2.1.2
-  permission_handler: ^11.3.0
-  postgres: ^3.2.0
-  provider: ^6.1.2
+  permission_handler: ^11.3.1
   sensors_plus: ^5.0.0
   share_plus: ^9.0.0
   sqflite: ^2.3.2
-  web_socket_channel: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -45,7 +41,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - lib\Assets\Sensor Images\gyroscope.png
-    - lib\Assets\Sensor Images\speedometer.png
-    - lib\Assets\Sensor Images\location.png
     - lib\Assets\Roads\road_drrp.geojson
+    - lib\Assets\SensorImages\gyroscope.svg
+    - lib\Assets\SensorImages\location.svg
+    - lib\Assets\SensorImages\speed.svg
+    - lib\Assets\delete.svg
+    - lib\Assets\profile.svg
+    - lib\Assets\share.svg
+    - lib\Assets\settings.svg
