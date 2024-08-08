@@ -27,7 +27,8 @@ class AccDataController extends GetxController {
     speedAccuracy: 0,
   ).obs;
 
-  final List<AccData> _filteredAccData = [];
+  final List<AccData> _downSampledDatapoints = [];
+  final List<AccData> _dataPointsList = [];
   final RxBool _isRecordingData = false.obs;
   StreamSubscription<Position>? _positionStream;
   final Rx<SensorPageColor> _sensorScreencolor = SensorPageColor().obs;
@@ -36,7 +37,8 @@ class AccDataController extends GetxController {
   String? _userID;
 
   // Getters
-  List<AccData> get filteredAccData => _filteredAccData;
+  List<AccData> get downSampledDatapoints => _downSampledDatapoints;
+  List<AccData> get dataPointsList => _dataPointsList;
   bool get isRecordingData => _isRecordingData.value;
   SensorPageColor get sensorScreencolor => _sensorScreencolor.value;
   bool get showStartButton => _showStartButton.value;
@@ -46,16 +48,18 @@ class AccDataController extends GetxController {
 
   // Setters
   set devicePosition(Position value) => _devicePosition.value = value;
-  set filteredAccData(List<AccData> value) => _filteredAccData.addAll(value);
+  set downSampledDatapoints(List<AccData> value) =>
+      _downSampledDatapoints.addAll(value);
 
   // On Start Button Pressed
   void onStartButtonPressed() async {
+    // Check if the location data is available or not, if not show an alert dialog
     if (_devicePosition.value.latitude == 0) {
       Get.dialog(
         AlertDialog(
           title: const Text('Cound not get location data'),
           content: const Text(
-            'Pleaase hit the start button again and give a try.',
+            'Please hit the start button again and give a try.',
           ),
           actions: [
             TextButton(
@@ -70,18 +74,17 @@ class AccDataController extends GetxController {
     } else {
       _isRecordingData.value = true;
       _showStartButton.value = false;
-      filteredAccData.clear();
-      accDataList.clear();
+      downSampledDatapoints.clear();
+      dataPointsList.clear();
       debugPrint('Recording Started');
       _userID = await localDatabase.queryUserData().then((user) => user.userID);
       await localDatabase.deleteAcctables();
-      // Start the location stream to record the location data points
       // Start the accelerometer stream to record the data points
       _accStream = accelerometerEventStream(
         samplingPeriod: const Duration(microseconds: 1000),
       ).listen(
         (AccelerometerEvent event) {
-          accDataList.add(
+          dataPointsList.add(
             AccData(
               xAcc: event.x,
               yAcc: event.y,
@@ -106,19 +109,18 @@ class AccDataController extends GetxController {
     _positionStream?.cancel();
     accData.value = AccelerometerEvent(0, 0, 0);
     _showResponseSheet.value = true;
-    _filteredAccData.addAll(downsampleTo50Hz(accDataList));
-    await localDatabase.insertAccData(downsampleTo50Hz(accDataList));
+    _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
   }
 
   @override
   void onInit() {
+    // Start the location stream to record the location data points
     loc.Location location = loc.Location();
     location.changeSettings(
       accuracy: loc.LocationAccuracy.high,
       distanceFilter: 0,
       interval: 1,
     );
-    location.enableBackgroundMode(enable: true);
     location.onLocationChanged.listen((loc.LocationData currentLocation) {
       _devicePosition.value = Position(
         latitude: currentLocation.latitude!,
@@ -134,7 +136,8 @@ class AccDataController extends GetxController {
       );
     });
     debugPrint(
-        'Location = ${_devicePosition.value.latitude}, ${_devicePosition.value.longitude}');
+      'Location = ${_devicePosition.value.latitude}, ${_devicePosition.value.longitude}',
+    );
     super.onInit();
   }
 }
