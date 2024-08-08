@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,7 +12,6 @@ class ReadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AccDataController accDataController = Get.find();
-
     TextStyle sensorNameStyle = GoogleFonts.inter(
       fontSize: MediaQuery.textScalerOf(context).scale(18),
       fontWeight: FontWeight.w600,
@@ -34,6 +34,9 @@ class ReadingWidget extends StatelessWidget {
       fontWeight: FontWeight.w700,
       color: Colors.black,
     );
+
+    double valueBoxWidth = MediaQuery.of(context).size.width * 0.21;
+    double valueBoxHeight = (MediaQuery.of(context).size.width * 0.2) * 0.4;
     return Column(
       children: [
         Row(
@@ -60,7 +63,9 @@ class ReadingWidget extends StatelessWidget {
                               SizedBox(
                                 width: 0.15 * constraints.maxWidth,
                                 height: 0.15 * constraints.maxHeight,
-                                child: Image.asset(assetsPath.accelerometer),
+                                child: SvgPicture.asset(
+                                  assetsPath.accelerometer,
+                                ),
                               ),
                               const Gap(2),
                               Text(
@@ -79,8 +84,8 @@ class ReadingWidget extends StatelessWidget {
                               style: labelTextStyle,
                             ),
                             Container(
-                              width: 80,
-                              height: 25,
+                              width: valueBoxWidth,
+                              height: valueBoxHeight,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
@@ -106,8 +111,8 @@ class ReadingWidget extends StatelessWidget {
                               style: labelTextStyle,
                             ),
                             Container(
-                              width: 80,
-                              height: 25,
+                              width: valueBoxWidth,
+                              height: valueBoxHeight,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
@@ -133,8 +138,8 @@ class ReadingWidget extends StatelessWidget {
                               style: labelTextStyle,
                             ),
                             Container(
-                              width: 80,
-                              height: 25,
+                              width: valueBoxWidth,
+                              height: valueBoxHeight,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
@@ -178,7 +183,7 @@ class ReadingWidget extends StatelessWidget {
                               SizedBox(
                                 width: 0.15 * constraints.maxWidth,
                                 height: 0.15 * constraints.maxHeight,
-                                child: Image.asset(assetsPath.gyroscope),
+                                child: SvgPicture.asset(assetsPath.gyroscope),
                               ),
                               const Gap(2),
                               Text(
@@ -225,7 +230,7 @@ class ReadingWidget extends StatelessWidget {
                                 SizedBox(
                                   width: 0.15 * constraints.maxWidth,
                                   height: 0.15 * constraints.maxHeight,
-                                  child: Image.asset(
+                                  child: SvgPicture.asset(
                                     assetsPath.location,
                                   ),
                                 ),
@@ -328,8 +333,8 @@ class RowWidgetState extends State<RowWidget> {
             style: labelTextStyle,
           ),
           Container(
-            width: 80,
-            height: 25,
+            width: MediaQuery.of(context).size.width * 0.21,
+            height: (MediaQuery.of(context).size.width * 0.2) * 0.4,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
