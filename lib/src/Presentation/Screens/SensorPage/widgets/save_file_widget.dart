@@ -91,7 +91,9 @@ class SaveFile extends StatelessWidget {
                 ),
               ),
               const Gap(10),
-              const VehicleType(),
+              VehicleType(
+                width: MediaQuery.of(context).size.width * 0.9,
+              ),
               const Gap(10),
               Obx(() {
                 return responseController.isSaveLocally
@@ -121,6 +123,8 @@ class SaveFile extends StatelessWidget {
                                   return null;
                                 },
                                 decoration: const InputDecoration(
+                                  prefixIcon:
+                                      Icon(Icons.drive_file_rename_outline),
                                   labelText: 'Enter the file name',
                                   isDense: true,
                                   focusedBorder: OutlineInputBorder(
@@ -161,6 +165,7 @@ class SaveFile extends StatelessWidget {
                   expands: false,
                   maxLines: 2,
                   decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.notes),
                     enabled: false,
                     hintText: 'Add any additional notes about the recording',
                     isDense: true,
@@ -204,12 +209,9 @@ class SaveFile extends StatelessWidget {
                             }
                           }
                           responseController.savingData = true;
-                          await responseController
-                              .saveData(accDataController.filteredAccData)
-                              .then((_) {
-                            responseController.savingData = false;
-                            Get.back();
-                          });
+
+                          await responseController.saveData(
+                              accDataController.downSampledDatapoints);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black87,
