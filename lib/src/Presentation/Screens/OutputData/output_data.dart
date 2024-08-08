@@ -56,6 +56,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
             List<Map<String, dynamic>> outputData = snapshot.data!;
 
             return ListView.builder(
+              physics: const BouncingScrollPhysics(),
               itemCount: outputData.length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
