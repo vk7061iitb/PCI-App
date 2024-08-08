@@ -12,6 +12,7 @@
         android:label="pci_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,6 +34,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- This is used to create a foreground service for the location tracking, required for Android 10 and above -->
+        <service
+        android:name=".MyForegroundService"
+        android:foregroundServiceType="location"
+        android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.pci_app.action.START" />
+            </intent-filter>
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
