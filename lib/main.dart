@@ -15,6 +15,7 @@ import 'package:pci_app/firebase_options.dart';
 import 'Functions/init_download_folder.dart';
 import 'Functions/request_storage_permission.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
+import 'src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
 
 Future<void> main() async {
@@ -110,6 +111,10 @@ class _MainAppState extends State<MainApp> {
           name: myRoutes.signUpRoute,
           page: () => const SignupScreen(),
         ),
+        GetPage(
+          name: myRoutes.unsentDataRoute,
+          page: () => const UnsendData(),
+        )
       ],
     );
   }
