@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/pci_data.dart';
 import 'package:pci_app/src/Models/stats_data.dart';
+import 'package:pci_app/src/config/config.dart';
 import 'package:share_plus/share_plus.dart';
 import '../src/Models/data_points.dart';
 import 'dart:convert';
@@ -12,11 +14,9 @@ import 'dart:io';
 Future<String> sendDataToServer(
     {required List<AccData> accData, required String userID}) async {
   String message = "Data sent successfully";
-  const String url = 'http://13.201.2.105/track_labeler';
-
+  String url = join(Config.authBaseURL, Config.sendDataEndPoint);
   List<Map<String, dynamic>> sensorData =
       accData.map((datapoint) => datapoint.toJson()).toList();
-
   List<PciData2> outputData = [];
   List<OutputStats> outputStats = [];
 
