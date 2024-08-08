@@ -9,17 +9,18 @@ import '../config/config.dart';
 import 'package:http/http.dart' as http;
 
 class SendDataToServer {
-  final String sendBaseURL;
   SendDataToServer() : sendBaseURL = Config.getAuthBaseURL();
+
+  final String sendBaseURL;
+  int statusCode = 0;
 
   Future<String> sendData(
       {required List<AccData> accData, required String userID}) async {
-    String message = "Data sent successfully";
+    String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
     List<Map<String, dynamic>> sensorData =
         accData.map((datapoint) => datapoint.toJson()).toList();
-
     List<PciData2> outputData = [];
     List<OutputStats> outputStats = [];
 
@@ -46,18 +47,19 @@ class SendDataToServer {
         body: jsonEncode(sensorData),
       )
           .timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 25),
         onTimeout: () {
           message = "Server took too long to respond";
           return http.Response('Server took too long to respond', 408);
         },
       );
+      // Get the status code
+      statusCode = response.statusCode;
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         int outuputDataID =
             await localDatabase.insertOutputData("Output Data", dropdownValue);
-
         for (var data in responseData['labels']) {
           outputData.add(
             PciData2(
