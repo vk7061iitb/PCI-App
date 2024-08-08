@@ -126,7 +126,7 @@ Widget speedRow(String label, String value) {
       Align(
         alignment: Alignment.centerRight,
         child: Text(
-          "${double.parse(value).toStringAsFixed(2)} km/hr",
+          "${(double.parse(value) * 3.6).toStringAsFixed(2)} km/hr",
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
@@ -158,7 +158,7 @@ Widget distanceRow(String label, String value) {
       Align(
         alignment: Alignment.centerRight,
         child: Text(
-          "${double.parse(value).toStringAsFixed(2)} km",
+          "${(double.parse(value) / 1000).toStringAsFixed(3)} km",
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
