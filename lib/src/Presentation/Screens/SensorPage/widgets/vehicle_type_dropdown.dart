@@ -6,14 +6,15 @@ import 'package:pci_app/Utils/get_icon.dart';
 import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 
 class VehicleType extends StatelessWidget {
-  const VehicleType({super.key});
+  const VehicleType({required this.width, super.key});
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     ResponseController responseController = Get.find();
     return Center(
       child: DropdownMenu<String>(
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: width,
         leadingIcon: Obx(() {
           return Icon(
             getIcon(responseController.dropdownValue),
