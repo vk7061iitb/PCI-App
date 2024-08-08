@@ -1,6 +1,12 @@
+import 'dart:io';
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/send_data_api.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../Functions/init_download_folder.dart';
 import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 
@@ -13,6 +19,7 @@ class ResponseController extends GetxController {
   final RxBool _isSaveLocally = true.obs;
   final RxBool _savingData = false.obs;
   final RxString _serverMessage = ''.obs;
+  final Rx<int> _serverResponseCode = 0.obs;
   SendDataToServer sendDataToServer = SendDataToServer();
 
   String get dropdownValue => _dropdownValue.value;
@@ -30,17 +37,89 @@ class ResponseController extends GetxController {
   set serverMessage(String value) => _serverMessage.value = value;
 
   Future<void> saveData(List<AccData> accData) async {
-    if (_isSaveLocally.isTrue) {
-      Future.wait([
-        localDatabase.exportToCSV(
-            _fileNameController.value.text, _dropdownValue.value),
-      ]);
-    }
     String? userID =
         await localDatabase.queryUserData().then((user) => user.userID);
     debugPrint('User ID: $userID');
-    sendDataToServer.sendData(accData: accData, userID: userID!).then((value) {
-      serverMessage = value;
+    await sendDataToServer
+        .sendData(accData: accData, userID: userID!)
+        .then((value) async {
+      _serverMessage.value = value;
+      _serverResponseCode.value = sendDataToServer.statusCode;
+      _savingData.value = false;
+      // If failed to send OR get data to/from server
+      if (_serverResponseCode.value != 200) {
+        // Save the data locally
+        int id = await localDatabase.insertUnsendDataInfo(
+          fileName: "Unsent Data",
+          vehicleType: _dropdownValue.value,
+        );
+        if (id != 0) {
+          // Insert the data points to unsendData table
+          localDatabase.insertToUnsendData(accdata: accData, id: id);
+        }
+      }
+      Get.back();
+      Get.showSnackbar(
+        customGetSnackBar(_serverMessage.value),
+      );
     });
+    // Save the data locally
+    if (_isSaveLocally.isTrue) {
+      await saveDataToCSV(
+        dataPointsToSave: accData,
+        fileName: _fileNameController.value.text,
+        vehicleType: _dropdownValue.value,
+      );
+    }
+  }
+
+  Future<void> saveDataToCSV({
+    required List<AccData> dataPointsToSave,
+    required String fileName,
+    required String vehicleType,
+  }) async {
+    List<List<dynamic>> csvData = [];
+    // Add the headers
+    csvData.add([
+      'x_acc',
+      'y_acc',
+      'z_acc',
+      'Latitude',
+      'Longitude',
+      'Speed',
+      'accTime'
+    ]);
+
+    // add the datapoints
+    for (var element in dataPointsToSave) {
+      csvData.add([
+        element.xAcc,
+        element.yAcc,
+        element.zAcc,
+        element.latitude,
+        element.longitude,
+        element.speed,
+        DateFormat('yyyy-MM-dd HH:mm:ss:S').format(element.accTime)
+      ]);
+    }
+
+    // convert to csv
+    String savedCSVdata = const ListToCsvConverter().convert(csvData);
+
+    // get the download folder and file path
+    String accDataDirectoryPath = await initializeDirectory();
+    String savedFileName =
+        '$fileName#AccelerationData#${DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())}#$vehicleType.csv';
+    String filePath = '$accDataDirectoryPath/$savedFileName';
+
+    // Save the file
+    File savedFile = File(filePath);
+    savedFile.writeAsString(
+      savedCSVdata,
+    );
+
+    // Share the file
+    XFile fileToShare = XFile(filePath);
+    await Share.shareXFiles([fileToShare]);
   }
 }
