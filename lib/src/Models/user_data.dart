@@ -1,3 +1,6 @@
+// UserData model class
+// This model class is used to store the user data in the database
+
 class UserData {
   final String? userID;
   final String phoneNumber;

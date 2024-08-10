@@ -1,3 +1,7 @@
+// This file contains the controller for the accelerometer data screen
+// It contains the accelerometer data controller class which is used to record the accelerometer data
+// and the location data of the user and store it in the database.
+
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:location/location.dart' as loc;
@@ -51,7 +55,7 @@ class AccDataController extends GetxController {
   set downSampledDatapoints(List<AccData> value) =>
       _downSampledDatapoints.addAll(value);
 
-  // On Start Button Pressed
+  // This function is called when the start button is pressed
   void onStartButtonPressed() async {
     // Check if the location data is available or not, if not show an alert dialog
     if (_devicePosition.value.latitude == 0) {
@@ -101,6 +105,7 @@ class AccDataController extends GetxController {
     }
   }
 
+  // This function is called when the end button is pressed
   Future<void> onEndButtonPressed() async {
     debugPrint('Recording Stopped');
     _isRecordingData.value = false;
@@ -109,6 +114,7 @@ class AccDataController extends GetxController {
     _positionStream?.cancel();
     accData.value = AccelerometerEvent(0, 0, 0);
     _showResponseSheet.value = true;
+    // Downsample the data points to 50Hz
     _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
   }
 
