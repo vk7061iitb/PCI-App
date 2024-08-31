@@ -1,5 +1,8 @@
-// Object to store the data points of the accelerometer and gyroscope sensors along
-// with the location data.
+/*
+  This file contains the data models for the accelerometer and gyroscope data points.
+  The data points are stored in the respective classes and converted to JSON format
+  for sending the data to the server.
+*/
 
 import 'package:intl/intl.dart';
 
