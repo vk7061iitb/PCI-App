@@ -1,3 +1,9 @@
+/*
+  Function to initialize the download folder
+  This function is used to create a folder in the external storage of the device
+  where the data will be stored.
+*/
+
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
