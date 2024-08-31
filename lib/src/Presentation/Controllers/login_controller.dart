@@ -1,3 +1,10 @@
+/* 
+  This file contains the controller for the login screen
+  It contains the logic for the login screen
+  It is responsible for handling the user input and sending it to the server
+  It also updates the local database with the user data
+*/
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/Objects/data.dart';

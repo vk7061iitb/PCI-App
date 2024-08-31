@@ -1,3 +1,6 @@
+/* This controller is responsible for fetching the unsent data 
+from the local database and updating the UI accordingly. */
+
 import 'package:get/get.dart';
 import '../../../Objects/data.dart';
 

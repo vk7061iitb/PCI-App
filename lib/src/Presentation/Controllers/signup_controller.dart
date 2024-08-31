@@ -1,3 +1,13 @@
+/* 
+  This controller is responsible for handling the signup process.
+  It contains the following:
+  - TextEditingControllers for the name, email, and phone number fields.
+  - FocusNodes for the name, email, and phone number fields.
+  - A GlobalKey for the signup form.
+  - A RxBool to check if the user has signed up successfully.
+  - A function to sign up the user.
+*/
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
