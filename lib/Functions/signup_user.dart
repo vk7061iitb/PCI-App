@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 Future<Map<String, dynamic>> signUp(
     String name, String email, String phone) async {
-  const String url = 'http://13.201.2.105/signup';
+  const String url = 'http://3.109.203.37/signup';
   Map<String, dynamic> data = {
     'Name': name,
     'Email_Id': email,
