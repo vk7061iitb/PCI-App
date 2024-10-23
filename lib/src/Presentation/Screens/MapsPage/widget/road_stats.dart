@@ -3,9 +3,9 @@ import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../Models/stats_data.dart';
 
-class RoadStats extends StatelessWidget {
-  const RoadStats({required this.outputStats, super.key});
-  final List<OutputStats> outputStats;
+class RoadStatistics extends StatelessWidget {
+  const RoadStatistics({required this.roadStats, super.key});
+  final List<RoadStats> roadStats;
 
   @override
   Widget build(BuildContext context) {
@@ -49,56 +49,62 @@ class RoadStats extends StatelessWidget {
           const Gap(10),
           Expanded(
             child: ListView.builder(
-                itemCount: outputStats.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.black26,
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Gap(10),
-                        Row(
-                          children: [
-                            const Gap(10),
-                            Text(
-                              "PCI :",
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 20,
-                              ),
-                            ),
-                            const Gap(10),
-                            Text(
-                              outputStats[index].pci.toString(),
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
+                itemCount: roadStats.length,
+                itemBuilder: (context, roadIndex) {
+                  final outputStats = roadStats[roadIndex].roadStatsData;
+                  return ExpansionTile(
+                      title: Text(
+                        roadStats[roadIndex].roadName,
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
                         ),
-                        const Gap(10),
-                        distanceRow("Distance Travelled",
-                            outputStats[index].distanceTravelled.toString()),
-                        const Gap(10),
-                        speedRow("Average Speed",
-                            outputStats[index].avgVelocity.toString()),
-                        const Gap(10),
-                        segmentRow("Number of Segments",
-                            outputStats[index].numberOfSegments.toString()),
-                        const Gap(10),
-                      ],
-                    ),
-                  );
+                      ),
+                      children: [
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              for (var stats in outputStats)
+                                Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Gap(20),
+                                        Text(
+                                          "PCI :",
+                                          style: GoogleFonts.inter(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                        const Gap(10),
+                                        Text(
+                                          stats.pci.toString(),
+                                          style: GoogleFonts.inter(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Gap(10),
+                                    speedRow('Avg. Speed', stats.avgVelocity),
+                                    const Gap(10),
+                                    distanceRow('Distance Travelled',
+                                        stats.distanceTravelled),
+                                    const Gap(10),
+                                    segmentRow('Number of Segments',
+                                        stats.numberOfSegments),
+                                    const Gap(10),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ]);
                 }),
           ),
         ],
