@@ -70,8 +70,8 @@ class UserPage extends StatelessWidget {
                 child: Column(
                   children: [
                     buildRow(
-                      'Name',
-                      "User Name",
+                      'Role',
+                      user.userRole,
                       Icons.person_2_outlined,
                     ),
                     const Gap(10),
