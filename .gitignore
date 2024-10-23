@@ -31,6 +31,7 @@ migrate_working_dir/
 .pub/
 /build/
 
+
 # Symbolication related
 app.*.symbols
 
@@ -47,3 +48,6 @@ android/app/src/main/AndroidManifest.xml
 
 # Configuration files
 lib/src/config/config.dart
+
+# Gradle files : Contains the API keys
+android/gradle.properties
