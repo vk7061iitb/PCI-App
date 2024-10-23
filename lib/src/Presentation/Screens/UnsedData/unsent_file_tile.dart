@@ -2,24 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class UnsentFileTile extends StatefulWidget {
+class UnsentFileTile extends StatelessWidget {
   const UnsentFileTile({
     super.key,
     required this.filename,
     required this.vehicleType,
     required this.time,
     required this.id,
+    required this.onDeleteTap,
   });
   final String filename;
   final String time;
   final String vehicleType;
   final int id;
+  final VoidCallback onDeleteTap;
 
-  @override
-  State<UnsentFileTile> createState() => _UnsentFileTileState();
-}
-
-class _UnsentFileTileState extends State<UnsentFileTile> {
   @override
   Widget build(BuildContext context) {
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
@@ -82,7 +79,7 @@ class _UnsentFileTileState extends State<UnsentFileTile> {
               child: Padding(
                 padding: const EdgeInsets.only(
                     left: 10, right: 10, top: 5, bottom: 5),
-                child: getIcon(widget.vehicleType),
+                child: getIcon(vehicleType),
               ),
             ),
           ),
@@ -99,7 +96,7 @@ class _UnsentFileTileState extends State<UnsentFileTile> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.5,
                 child: Text(
-                  widget.filename,
+                  filename,
                   style: GoogleFonts.inter(
                     color: Colors.black,
                     fontWeight: FontWeight.normal,
@@ -118,7 +115,7 @@ class _UnsentFileTileState extends State<UnsentFileTile> {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    widget.time,
+                    time,
                     style: GoogleFonts.inter(
                       color: Colors.teal,
                       fontWeight: FontWeight.normal,
@@ -142,11 +139,40 @@ class _UnsentFileTileState extends State<UnsentFileTile> {
               return [
                 PopupMenuItem(
                   onTap: () {
-                    // Submit the data to the server
+                    // Send the data to the server
                   },
-                  child: Text(
-                    "Submit",
-                    style: pupUpMenuTextStyle,
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.send_outlined,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Submit",
+                        style: pupUpMenuTextStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: onDeleteTap,
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 5),
+                        child: Icon(
+                          Icons.delete_outline,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "Delete",
+                        style: pupUpMenuTextStyle,
+                      ),
+                    ],
                   ),
                 ),
               ];
