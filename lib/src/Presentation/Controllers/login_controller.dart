@@ -20,13 +20,16 @@ class LoginController extends GetxController {
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode phoneFocusNode = FocusNode();
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  Rx<UserData> currUser = UserData(phoneNumber: " ", email: " ").obs;
+  Rx<UserData> currUser =
+      UserData(phoneNumber: " ", email: " ", userRole: " ").obs;
+  final RxString _userRole = "Admin".obs;
 
   // Getters
   bool get isLoggedIn => _isLoggedIn.value;
-
+  String get userRole => _userRole.value;
   // Setters
   set isLoggedIn(bool value) => _isLoggedIn.value = value;
+  set userRole(String value) => _userRole.value = value;
 
   Future<void> loginUser() async {
     // Send the user data to the server
@@ -36,6 +39,7 @@ class LoginController extends GetxController {
       user: UserData(
         email: emailController.text,
         phoneNumber: phoneController.text,
+        userRole: _userRole.value,
       ),
     );
 
@@ -46,6 +50,7 @@ class LoginController extends GetxController {
         email: emailController.text,
         phoneNumber: phoneController.text,
         userID: serverMessage['User_Id'].toString(),
+        userRole: _userRole.value,
       );
 
       debugPrint(serverMessage.toString());
