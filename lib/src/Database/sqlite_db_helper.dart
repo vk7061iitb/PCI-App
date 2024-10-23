@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
@@ -8,7 +9,6 @@ import 'package:pci_app/src/Models/user_data.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Models/data_points.dart';
-import '../Models/pci_data.dart';
 import '../Models/stats_data.dart';
 
 class SQLDatabaseHelper {
@@ -16,7 +16,7 @@ class SQLDatabaseHelper {
 
   Future<void> initDB() async {
     var databaseDirectoryPath = await getDatabasesPath();
-    String localDatabasePath = join(databaseDirectoryPath, 'local.db');
+    String localDatabasePath = join(databaseDirectoryPath, 'pci_app.db');
 
     try {
       _localDbInstance = await openDatabase(
@@ -26,25 +26,22 @@ class SQLDatabaseHelper {
           * There are 5 tables in the database
           * 1. AccelerationData: Stores the acceleration + location data
           * 2. outputData: Stores the output data(only the filename and vehicle type), used to show the data on the output screen
-          * 3. pciData: Stores the PCI data(lat,lng,velocity,PCI) for each outputDataID
-          * 4. pciDataStats: Stores the stats data for each outputDataID
           * 5. userData: Stores the user data
           * 6. unsendData: Stores the data that was not sent to the server(due to no internet connection or server error)
           */
           db.execute(
-              'CREATE TABLE AccelerationData(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS AccelerationData(id INTEGER PRIMARY KEY AUTOINCREMENT, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE unsendData(id INTEGER PRIMARY KEY AUTOINCREMENT, unsendDataID INTEGER, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS unsendData(id INTEGER PRIMARY KEY AUTOINCREMENT, unsendDataID INTEGER, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE unsendDataInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS unsendDataInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE pciData(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, latitude REAL, longitude REAL, velocity REAL, prediction REAL)');
+              'CREATE TABLE IF NOT EXISTS userData(userID TEXT, phoneNumber TEXT, email TEXT, userRole TEXT)');
           db.execute(
-              'CREATE TABLE pciDataStats(id INTEGER PRIMARY KEY AUTOINCREMENT, outputDataID INTEGER, pci TEXT, avgVelocity TEXT, distanceTravelled TEXT, numberOfSegments TEXT)');
-          db.execute(
-              'CREATE TABLE userData(userID TEXT, phoneNumber TEXT, email TEXT)');
+            'CREATE TABLE IF NOT EXISTS roadOutputData(id INTEGER PRIMARY KEY AUTOINCREMENT, journeyID INTEGER, roadName TEXT, labels TEXT, stats TEXT)',
+          );
         },
         version: 1,
       );
@@ -120,8 +117,22 @@ class SQLDatabaseHelper {
     }
   }
 
+  Future<void> deleteUnsentDataInfo(int id) async {
+    await _localDbInstance
+        .delete('unsendDataInfo', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteUnsentData(int id) async {
+    await _localDbInstance
+        .delete('unsendData', where: 'unsendDataID = ?', whereArgs: [id]);
+  }
+
   Future<void> deleteAcctables() async {
     await _localDbInstance.delete('AccelerationData');
+  }
+
+  Future<void> deleteTable(String tableName) async {
+    await _localDbInstance.delete(tableName);
   }
 
   Future<List<Map<String, dynamic>>> queryTable(String tableName) async {
@@ -178,11 +189,13 @@ class SQLDatabaseHelper {
     await _localDbInstance.transaction(
       (txn) async {
         txn.rawInsert(
-            'INSERT INTO userData(userID, phoneNumber, email) VALUES(?,?,?)',
-            [user.userID, user.phoneNumber, user.email]);
+          'INSERT INTO userData(userID, phoneNumber, email, userRole) VALUES(?,?,?,?)',
+          [user.userID, user.phoneNumber, user.email, user.userRole],
+        );
       },
     );
-    debugPrint('User Data Inserted');
+    debugPrint(
+        'User Data Inserted : {${user.email}, ${user.phoneNumber}, ${user.userRole}}');
     return 'User Data Inserted';
   }
 
@@ -192,18 +205,23 @@ class SQLDatabaseHelper {
       List<Map<String, dynamic>> userDataQuery =
           await _localDbInstance.query('userData');
       if (userDataQuery.isEmpty) {
-        return UserData(userID: 'null', phoneNumber: 'null', email: 'null');
+        return UserData(
+            userID: 'null',
+            phoneNumber: 'null',
+            email: 'null',
+            userRole: 'null');
       } else {
         UserData user = UserData(
           userID: userDataQuery[0]['userID'],
           phoneNumber: userDataQuery[0]['phoneNumber'],
           email: userDataQuery[0]['email'],
+          userRole: userDataQuery[0]['userRole'],
         );
         return user;
       }
     } catch (error) {
       debugPrint(error.toString());
-      return UserData(userID: '0', phoneNumber: '0', email: '0');
+      return UserData(userID: '0', phoneNumber: '0', email: '0', userRole: '0');
     }
   }
 
@@ -213,7 +231,7 @@ class SQLDatabaseHelper {
   }
 
   /// Insert the output data to the local database
-  Future<int> insertOutputData(String filename, String vehicleType) async {
+  Future<int> insertJourneyData(String filename, String vehicleType) async {
     int id = -1;
     try {
       id = await _localDbInstance.insert('outputData', {
@@ -229,95 +247,47 @@ class SQLDatabaseHelper {
     }
   }
 
-  /// Insert the PCI Data to the local database
-  Future<void> insertPciData(List<PciData2> pciData) async {
+  /// Delete the output data from the local database, used in the output screen for deleting the data
+  Future<void> deleteOutputData(int id) async {
+    await _localDbInstance.delete(
+      'outputData',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> insertToRoadOutputData({
+    required List<RoadOutputData> roadOutputData,
+  }) async {
     await _localDbInstance.transaction((txn) async {
-      var pciBatch = txn.batch();
-      for (var data in pciData) {
-        pciBatch.rawInsert(
-          'INSERT INTO pciData(outputDataID, latitude, longitude, velocity, prediction) VALUES(?,?,?,?,?)',
+      var roadOutputDataBatch = txn.batch();
+      for (var data in roadOutputData) {
+        roadOutputDataBatch.rawInsert(
+          'INSERT INTO roadOutputData(journeyID, roadName, labels, stats) VALUES(?,?,?,?)',
           [
-            data.outuputDataID,
-            data.latitude,
-            data.longitude,
-            data.velocity,
-            data.prediction
+            data.outputDataID,
+            data.roadData.roadName,
+            jsonEncode(data.roadData.labels),
+            jsonEncode(data.roadData.stats),
           ],
         );
       }
-      await pciBatch.commit();
-      debugPrint('PCI Data inserted');
+      await roadOutputDataBatch.commit();
+      debugPrint('Road Output Data inserted!');
     });
   }
 
-  /// Insert the Road Statistics to the local database
-  Future<void> insertStats(List<OutputStats> stats) async {
-    await _localDbInstance.transaction((txn) async {
-      var statsBatch = txn.batch();
-      for (var data in stats) {
-        statsBatch.rawInsert(
-            'INSERT INTO pciDataStats(outputDataID, pci, avgVelocity, distanceTravelled, numberOfSegments) VALUES(?,?,?,?,?)',
-            [
-              data.outputDataID,
-              data.pci,
-              data.avgVelocity,
-              data.distanceTravelled,
-              data.numberOfSegments
-            ]);
-      }
-      await statsBatch.commit();
-      debugPrint('Stats Data inserted');
-    });
+  Future<List<Map<String, dynamic>>> queryRoadOutputData(int id) async {
+    List<Map<String, dynamic>> roadOutputDataQuery = await _localDbInstance
+        .query('roadOutputData', where: 'journeyID = ?', whereArgs: [id]);
+    return roadOutputDataQuery;
   }
 
-  /// Delete the output data from the local database, used in the output screen for deleting the data
-  Future<void> deleteOutputData(int id) async {
-    await _localDbInstance
-        .delete('outputData', where: 'id = ?', whereArgs: [id]);
-  }
-
-  /// Query the PCI Data to show it on the Map Page
-  Future<List<PciData2>> queryPciData(int outputDataID) async {
-    List<Map<String, dynamic>> pciDataQuery = await _localDbInstance
-        .query('pciData', where: 'outputDataID = ?', whereArgs: [outputDataID]);
-
-    List<PciData2> pciData = [];
-    for (var data in pciDataQuery) {
-      pciData.add(
-        PciData2(
-          outuputDataID: data['outputDataID'],
-          latitude: data['latitude'],
-          longitude: data['longitude'],
-          velocity: data['velocity'],
-          prediction: double.parse(
-            data['prediction'].toString(),
-          ),
-        ),
-      );
-    }
-    return pciData;
-  }
-
-  /// Query the Road Statistics to show it on the Map Page
-  Future<List<OutputStats>> queryStats(int outputDataID) async {
-    List<Map<String, dynamic>> statsQuery = await _localDbInstance.query(
-      'pciDataStats',
-      where: 'outputDataID = ?',
-      whereArgs: [outputDataID],
+  Future<void> deleteRoadOutputData(int id) async {
+    await _localDbInstance.delete(
+      'roadOutputData',
+      where: 'id = ?',
+      whereArgs: [id],
     );
-
-    List<OutputStats> stats = [];
-    for (var data in statsQuery) {
-      stats.add(
-        OutputStats(
-          outputDataID: data['outputDataID'],
-          pci: data['pci'],
-          avgVelocity: data['avgVelocity'],
-          distanceTravelled: data['distanceTravelled'],
-          numberOfSegments: data['numberOfSegments'],
-        ),
-      );
-    }
-    return stats;
   }
 }
