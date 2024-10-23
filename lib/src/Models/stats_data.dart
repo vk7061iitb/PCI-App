@@ -1,10 +1,4 @@
-/* This file contains the model class for the stats data. 
-   It contains the model class for the road's statistics.
-
-* OutputStats class is created to store the output data from the model.
-* It contains the outputDataID, pci, avgVelocity, distanceTravelled, and numberOfSegments.
-* The data is used to display the statistics of the road.
- */
+import 'package:pci_app/src/Models/pci_data.dart';
 
 class OutputStats {
   final int outputDataID;
@@ -19,4 +13,62 @@ class OutputStats {
       required this.avgVelocity,
       required this.distanceTravelled,
       required this.numberOfSegments});
+}
+
+class RoadData {
+  final String roadName;
+  final List<Map<String, dynamic>> labels;
+  final Map<String, dynamic> stats;
+
+  RoadData({
+    required this.roadName,
+    required this.labels,
+    required this.stats,
+  });
+}
+
+class RoadOutputData {
+  final int outputDataID;
+  final RoadData roadData;
+
+  RoadOutputData({
+    required this.outputDataID,
+    required this.roadData,
+  });
+}
+
+class Road {
+  final String roadName;
+  final List<RoadPCIdata> roadPciData;
+  final List<RoadStats> roadStats;
+
+  Road({
+    required this.roadName,
+    required this.roadPciData,
+    required this.roadStats,
+  });
+}
+
+class RoadStatsData {
+  final String pci;
+  final String avgVelocity;
+  final String distanceTravelled;
+  final String numberOfSegments;
+
+  RoadStatsData({
+    required this.pci,
+    required this.avgVelocity,
+    required this.distanceTravelled,
+    required this.numberOfSegments,
+  });
+}
+
+class RoadStats {
+  final String roadName;
+  final List<RoadStatsData> roadStatsData;
+
+  RoadStats({
+    required this.roadName,
+    required this.roadStatsData,
+  });
 }
