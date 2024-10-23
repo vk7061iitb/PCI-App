@@ -29,8 +29,8 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.2
   permission_handler: ^11.3.1
-  sensors_plus: ^5.0.0
-  share_plus: ^9.0.0
+  sensors_plus: ^6.0.1
+  share_plus: ^10.0.0
   sqflite: ^2.3.2
 
 dev_dependencies:
@@ -49,3 +49,8 @@ flutter:
     - lib\Assets\profile.svg
     - lib\Assets\share.svg
     - lib\Assets\settings.svg
+    - lib\Assets\past-trips.svg
+    - lib\Assets\past_trips_selected.svg
+    - lib\Assets\journey1.svg
+    - lib\Assets\journey2.svg
+    - lib\Assets\empty_file.svg
