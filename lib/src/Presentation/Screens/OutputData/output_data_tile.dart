@@ -6,11 +6,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Models/pci_data.dart';
-import 'package:pci_app/src/Models/stats_data.dart';
-import '../../../../Functions/pci_data.dart';
+import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import '../MapsPage/maps_page.dart';
 
 class OutputDataItem extends StatelessWidget {
@@ -24,10 +23,10 @@ class OutputDataItem extends StatelessWidget {
   });
 
   final String filename;
-  final String time;
-  final String vehicleType;
   final int id;
   final VoidCallback onDeleteTap;
+  final String time;
+  final String vehicleType;
 
 // Function to get the icon for the vehicle type
   Icon getIcon(String vehicleType) {
@@ -66,6 +65,7 @@ class OutputDataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MapPageController mapPageController = Get.find();
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
@@ -157,17 +157,17 @@ class OutputDataItem extends StatelessWidget {
               return [
                 PopupMenuItem(
                   onTap: () async {
-                    List<PciData2> pciDataOutput =
-                        await localDatabase.queryPciData(id);
-                    jsonData = outputDataToGeoJson(pciDataOutput);
-                    List<OutputStats> outputDataStats =
-                        await localDatabase.queryStats(id);
-                    outputStats = outputDataStats;
+                    List<Map<String, dynamic>> roadOutputDataQuery =
+                        await localDatabase.queryRoadOutputData(id);
+                    mapPageController.setRoadOutputDataQuery =
+                        roadOutputDataQuery;
+                    mapPageController.plotRoadData();
+
                     if (context.mounted) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const MapPage(),
+                          builder: (context) => MapPage(),
                         ),
                       );
                     }
