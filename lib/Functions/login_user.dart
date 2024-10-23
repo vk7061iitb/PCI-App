@@ -5,7 +5,7 @@ import '../src/Models/user_data.dart';
 
 Future<Map<String, dynamic>> loginUser(UserData user) async {
   debugPrint('Logging in user...');
-  const String url = 'http://13.201.2.105/login';
+  const String url = 'http://3.109.203.37/login';
   Map<String, dynamic> data = {};
   try {
     final http.Response response = await http
