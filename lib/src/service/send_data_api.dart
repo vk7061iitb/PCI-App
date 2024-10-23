@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:pci_app/Objects/data.dart';
 import '../Models/data_points.dart';
-import '../Models/pci_data.dart';
 import '../Models/stats_data.dart';
 import '../config/config.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +12,6 @@ class SendDataToServer {
 
   final String sendBaseURL;
   int statusCode = 0;
-
   Future<String> sendData(
       {required List<AccData> accData, required String userID}) async {
     String message = "Data Submitted Successfully";
@@ -21,19 +19,7 @@ class SendDataToServer {
     join(sendBaseURL, Config.sendDataEndPoint);
     List<Map<String, dynamic>> sensorData =
         accData.map((datapoint) => datapoint.toJson()).toList();
-    List<PciData2> outputData = [];
-    List<OutputStats> outputStats = [];
-
-    /* if (kDebugMode) {
-      getDownloadsDirectory().then(
-        (Directory? directory) async {
-          final File file = File('${directory?.path}/data.json');
-          await file.writeAsString(jsonEncode(sensorData));
-          XFile fileToShare = XFile(file.path);
-          Share.shareXFiles([fileToShare]);
-        },
-      );
-    } */
+    List<RoadOutputData> roadOutputData = [];
 
     try {
       final http.Response response = await http
@@ -57,35 +43,36 @@ class SendDataToServer {
       statusCode = response.statusCode;
 
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        int outuputDataID =
-            await localDatabase.insertOutputData("Output Data", dropdownValue);
-        for (var data in responseData['labels']) {
-          outputData.add(
-            PciData2(
-              outuputDataID: outuputDataID,
-              latitude: data['latitude'],
-              longitude: data['longitude'],
-              velocity: data['velocity'],
-              prediction: data['prediction'],
+        debugPrint(response.body);
+        String geoJsonString = response.body;
+        final responseData = jsonDecode(geoJsonString);
+
+        int outuputDataID = await localDatabase.insertJourneyData(
+            "Journey Data", dropdownValue);
+
+        // Extract the road data
+        List<dynamic> roads = responseData['roads_covered'];
+        // Insert the each road data
+        for (var road in roads) {
+          RoadData roadData = RoadData(
+            roadName: road,
+            labels: (responseData[road]['labels'] as List<dynamic>)
+                .map((item) => item as Map<String, dynamic>)
+                .toList(),
+            stats: responseData[road]['stats'],
+          );
+
+          // Add the journey data to the roadOutputData
+          roadOutputData.add(
+            RoadOutputData(
+              outputDataID: outuputDataID,
+              roadData: roadData,
             ),
           );
         }
-        responseData['stats'].forEach(
-          (key, value) {
-            outputStats.add(
-              OutputStats(
-                outputDataID: outuputDataID,
-                pci: key,
-                avgVelocity: value['avg_velocity'].toString(),
-                distanceTravelled: value['distance_travelled'].toString(),
-                numberOfSegments: value['number_of_segments'].toString(),
-              ),
-            );
-          },
-        );
-        await localDatabase.insertPciData(outputData);
-        await localDatabase.insertStats(outputStats);
+
+        await localDatabase.insertToRoadOutputData(
+            roadOutputData: roadOutputData);
         return message;
       } else {
         debugPrint('Failed to send data. Status code: ${response.statusCode}');
@@ -94,6 +81,9 @@ class SendDataToServer {
         return message;
       }
     } catch (e) {
+      // Error in building the connection to the server
+      // Save that file to the local database and send it later
+
       debugPrint('Error: $e');
       return e.toString();
     }
