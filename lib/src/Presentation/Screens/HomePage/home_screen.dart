@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/MapsPage/maps_page.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/sensor_screen.dart';
+import '../../../../Utils/assets.dart';
 import '../../Controllers/bottom_navbar_controller.dart';
 import '../OutputData/output_data.dart';
 import '../SavedFile/saved_files_page.dart';
@@ -18,13 +19,15 @@ class HomeScreen extends StatelessWidget {
 
   final List<Widget> _widgetOptions = <Widget>[
     const SensorScreen(),
-    const MapPage(),
+    // const MapPage(),
     const HistoryDataPage(),
     const OutputDataPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    const iconWidth = 25.0;
+    final AssetsPath assetsPath = AssetsPath();
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
       body: SafeArea(
@@ -40,31 +43,42 @@ class HomeScreen extends StatelessWidget {
           onDestinationSelected: bottomNavController.onTapped,
           indicatorColor: Colors.blue.shade100,
           selectedIndex: bottomNavController.selectedIndex.value,
-          destinations: const <Widget>[
-            NavigationDestination(
+          destinations: <Widget>[
+            const NavigationDestination(
               selectedIcon: Icon(
                 Icons.home,
-                color: Colors.blueAccent,
+                color: Colors.black,
+                size: iconWidth,
               ),
-              icon: Icon(Icons.home_outlined),
+              icon: Icon(
+                Icons.home_outlined,
+                size: iconWidth,
+                color: Colors.black,
+              ),
               label: 'Home',
             ),
-            NavigationDestination(
-              selectedIcon: Icon(Icons.map, color: Colors.blueAccent),
-              icon: Icon(Icons.map_outlined),
-              label: 'Maps',
-            ),
-            NavigationDestination(
-              selectedIcon:
-                  Icon(Icons.file_present_rounded, color: Colors.blueAccent),
-              icon: Icon(Icons.file_present_outlined),
+            const NavigationDestination(
+              selectedIcon: Icon(Icons.file_present_rounded,
+                  color: Colors.black, size: iconWidth),
+              icon: Icon(
+                Icons.file_present_outlined,
+                size: iconWidth,
+                color: Colors.black,
+              ),
               label: 'Saved Files',
             ),
             NavigationDestination(
-              selectedIcon:
-                  Icon(Icons.data_array_rounded, color: Colors.blueAccent),
-              icon: Icon(Icons.data_array_outlined),
-              label: 'Output Files',
+              selectedIcon: SvgPicture.asset(
+                assetsPath.journeyHistorySelected,
+                width: 25,
+                height: 25,
+              ),
+              icon: SvgPicture.asset(
+                assetsPath.journeyHistory,
+                width: 25,
+                height: 25,
+              ),
+              label: 'Past Trips',
             ),
           ],
         );
