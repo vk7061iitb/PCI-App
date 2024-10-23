@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/src/Models/user_data.dart';
+import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/HomePage/home_screen.dart';
 import 'package:pci_app/src/Presentation/Screens/Login/login_screen.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Get.lazyPut(() => LocationController());
   Get.lazyPut(() => AccDataController());
+  Get.lazyPut(() => MapPageController());
   await localDatabase.initDB();
   await initializeDirectory();
   bool isLoggedIn = await localDatabase.queryUserData().then(
@@ -33,6 +35,7 @@ Future<void> main() async {
       }
     },
   );
+
   debugPrint('Is Logged In: $isLoggedIn');
   UserData currentUser = await localDatabase.queryUserData();
   await Firebase.initializeApp(
