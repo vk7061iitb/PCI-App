@@ -9,15 +9,16 @@ import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:pci_app/Functions/analysis.dart';
+import 'package:pci_app/Functions/downsample_data.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../../Utils/sensor_page_color.dart';
 
 class AccDataController extends GetxController {
-  Rx<AccelerometerEvent> accData = AccelerometerEvent(0, 0, 0)
+  Rx<AccelerometerEvent> accData = AccelerometerEvent(0, 0, 0, DateTime.now())
       .obs; // used to show the accelerometer data on the screen
 
   StreamSubscription<AccelerometerEvent>? _accStream;
+  final List<AccData> _dataPointsList = [];
   final Rx<Position> _devicePosition = Position(
     latitude: 0.0,
     longitude: 0.0,
@@ -32,13 +33,43 @@ class AccDataController extends GetxController {
   ).obs;
 
   final List<AccData> _downSampledDatapoints = [];
-  final List<AccData> _dataPointsList = [];
   final RxBool _isRecordingData = false.obs;
   StreamSubscription<Position>? _positionStream;
   final Rx<SensorPageColor> _sensorScreencolor = SensorPageColor().obs;
   final RxBool _showResponseSheet = false.obs;
   final RxBool _showStartButton = true.obs;
   String? _userID;
+
+  @override
+  void onInit() {
+    // Start the location stream to record the location data points
+    loc.Location location = loc.Location();
+    location.changeSettings(
+      accuracy: loc.LocationAccuracy.high,
+      distanceFilter: 0,
+      interval: 1,
+    );
+    location.onLocationChanged.listen(
+      (loc.LocationData currentLocation) {
+        _devicePosition.value = Position(
+          latitude: currentLocation.latitude!,
+          longitude: currentLocation.longitude!,
+          altitude: currentLocation.altitude!,
+          accuracy: currentLocation.accuracy!,
+          timestamp: DateTime.now(),
+          altitudeAccuracy: 0,
+          heading: currentLocation.heading!,
+          headingAccuracy: currentLocation.headingAccuracy!,
+          speed: currentLocation.speed!,
+          speedAccuracy: currentLocation.speedAccuracy!,
+        );
+      },
+    );
+    debugPrint(
+      'Location = ${_devicePosition.value.latitude}, ${_devicePosition.value.longitude}',
+    );
+    super.onInit();
+  }
 
   // Getters
   List<AccData> get downSampledDatapoints => _downSampledDatapoints;
@@ -49,7 +80,6 @@ class AccDataController extends GetxController {
   String? get userID => _userID;
   bool get showResponseSheet => _showResponseSheet.value;
   Position get devicePosition => _devicePosition.value;
-
   // Setters
   set devicePosition(Position value) => _devicePosition.value = value;
   set downSampledDatapoints(List<AccData> value) =>
@@ -112,38 +142,9 @@ class AccDataController extends GetxController {
     _showStartButton.value = true;
     _accStream?.cancel();
     _positionStream?.cancel();
-    accData.value = AccelerometerEvent(0, 0, 0);
+    accData.value = AccelerometerEvent(0, 0, 0, DateTime.now());
     _showResponseSheet.value = true;
     // Downsample the data points to 50Hz
     _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
-  }
-
-  @override
-  void onInit() {
-    // Start the location stream to record the location data points
-    loc.Location location = loc.Location();
-    location.changeSettings(
-      accuracy: loc.LocationAccuracy.high,
-      distanceFilter: 0,
-      interval: 1,
-    );
-    location.onLocationChanged.listen((loc.LocationData currentLocation) {
-      _devicePosition.value = Position(
-        latitude: currentLocation.latitude!,
-        longitude: currentLocation.longitude!,
-        altitude: currentLocation.altitude!,
-        accuracy: currentLocation.accuracy!,
-        timestamp: DateTime.now(),
-        altitudeAccuracy: 0,
-        heading: currentLocation.heading!,
-        headingAccuracy: currentLocation.headingAccuracy!,
-        speed: currentLocation.speed!,
-        speedAccuracy: currentLocation.speedAccuracy!,
-      );
-    });
-    debugPrint(
-      'Location = ${_devicePosition.value.latitude}, ${_devicePosition.value.longitude}',
-    );
-    super.onInit();
   }
 }
