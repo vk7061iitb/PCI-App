@@ -37,6 +37,27 @@ class ResponseController extends GetxController {
   set serverMessage(String value) => _serverMessage.value = value;
 
   Future<void> saveData(List<AccData> accData) async {
+    // Initially check whether data has lat lon changes or not
+    int diffPoints = 0;
+    for (int i = 1; i < accData.length; i++) {
+      if (accData[i].latitude != accData[i - 1].latitude ||
+          accData[i].longitude != accData[i - 1].longitude) {
+        diffPoints++;
+      }
+    }
+    debugPrint('Diff Points: $diffPoints');
+    if (diffPoints < 1) {
+      // show snackbar
+      String message = 'Not enough data to send';
+
+      Get.back();
+      Get.showSnackbar(
+        customGetSnackBar(message, Icons.error_outline),
+      );
+      return;
+    }
+
+    // send the data to the server
     String? userID =
         await localDatabase.queryUserData().then((user) => user.userID);
     debugPrint('User ID: $userID');
@@ -46,8 +67,9 @@ class ResponseController extends GetxController {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       _savingData.value = false;
-      // If failed to send OR get data to/from server
-      if (_serverResponseCode.value != 200) {
+
+      // If the data is not sent successfully, save the data locally
+      if (_serverResponseCode.value / 100 != 2) {
         // Save the data locally
         int id = await localDatabase.insertUnsendDataInfo(
           fileName: "Unsent Data",
@@ -60,7 +82,10 @@ class ResponseController extends GetxController {
       }
       Get.back();
       Get.showSnackbar(
-        customGetSnackBar(_serverMessage.value),
+        customGetSnackBar(
+          _serverMessage.value,
+          Icons.check_circle_outline,
+        ),
       );
     });
     // Save the data locally
