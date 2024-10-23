@@ -4,31 +4,12 @@
   and to pass the data to the UI
 */
 
-class PciData {
-  double latitude;
-  double longitude;
-  double velocity;
-  int label;
-  int pci;
-
-  PciData({
-    required this.latitude,
-    required this.longitude,
-    required this.velocity,
-    required this.label,
-    required this.pci,
-  });
-}
-
-class PciData2 {
-  int outuputDataID;
-  double latitude;
-  double longitude;
-  double velocity;
-  double prediction;
-
-  PciData2({
-    required this.outuputDataID,
+class RoadPCIdata {
+  final double latitude;
+  final double longitude;
+  final double velocity;
+  final double prediction;
+  RoadPCIdata({
     required this.latitude,
     required this.longitude,
     required this.velocity,
