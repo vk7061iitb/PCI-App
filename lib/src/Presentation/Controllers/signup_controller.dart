@@ -24,11 +24,15 @@ class SignupController extends GetxController {
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode phoneFocusNode = FocusNode();
   final GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
-  Rx<UserData> currUser = UserData(phoneNumber: " ", email: " ").obs;
+  Rx<UserData> currUser = UserData(phoneNumber: " ", email: " ", userRole: " ").obs;
   final RxBool _isSignedUp = false.obs;
-
+  final RxString _userRole = "Admin".obs;
   // Getters
   bool get isSignedUp => _isSignedUp.value;
+  String get userRole => _userRole.value;
+  // Setters
+  set isSignedUp(bool value) => _isSignedUp.value = value;
+  set userRole(String value) => _userRole.value = value;
 
   Future<void> signUp() async {
     // Validate the form
