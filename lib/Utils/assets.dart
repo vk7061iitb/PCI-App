@@ -14,6 +14,9 @@ class AssetsPath {
   final String share = 'lib/Assets/share.svg';
   final String settings = 'lib/Assets/settings.svg';
   final String delete = 'lib/Assets/delete.svg';
+  final String journeyHistory = 'lib/Assets/journey1.svg';
+  final String journeyHistorySelected = 'lib/Assets/journey2.svg';
+  final String emptyFile = 'lib/Assets/empty_file.svg';
 
   // Roads
   final String roadDRRP = "lib/Assets/Roads/road_drrp.geojson";
