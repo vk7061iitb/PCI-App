@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Controllers/signup_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
+import '../Login/roles_dropdown.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -28,30 +29,29 @@ class SignupScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Gap(50),
                 Align(
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: Text(
-                      "Create an Account",
-                      style: GoogleFonts.inter(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Create an Account",
+                    style: GoogleFonts.inter(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 const Gap(10),
-                Text(
-                  "Enter your details to get started.",
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Enter your details to get started.",
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
-                const Gap(40),
+                const Gap(50),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -73,10 +73,10 @@ class SignupScreen extends StatelessWidget {
                         controller: signupController.nameController,
                         autocorrect: true,
                         keyboardType: TextInputType.name,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          focusedBorder: OutlineInputBorder(
+                          focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Colors.black,
                               width: 2,
@@ -85,15 +85,18 @@ class SignupScreen extends StatelessWidget {
                               Radius.circular(15),
                             ),
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(15),
                             ),
                           ),
                           isDense: false,
-                          contentPadding: EdgeInsets.all(15),
-                          prefixIcon: Icon(Icons.mail_outline),
+                          contentPadding: const EdgeInsets.all(15),
+                          prefixIcon: const Icon(Icons.person_outline),
                           hintText: "Enter Your Name",
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.black54,
+                          ),
                         ),
                         validator: (value) {
                           if (value!.isEmpty) {
@@ -120,10 +123,10 @@ class SignupScreen extends StatelessWidget {
                         controller: signupController.emailController,
                         autocorrect: true,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          focusedBorder: OutlineInputBorder(
+                          focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Colors.black,
                               width: 2,
@@ -132,15 +135,18 @@ class SignupScreen extends StatelessWidget {
                               Radius.circular(15),
                             ),
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(15),
                             ),
                           ),
                           isDense: false,
-                          contentPadding: EdgeInsets.all(15),
-                          prefixIcon: Icon(Icons.mail_outline),
+                          contentPadding: const EdgeInsets.all(15),
+                          prefixIcon: const Icon(Icons.mail_outline),
                           hintText: "Enter Your Email Address",
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.black54,
+                          ),
                         ),
                         validator: (value) {
                           if (value!.length < 6 || !value.contains("@")) {
@@ -167,10 +173,10 @@ class SignupScreen extends StatelessWidget {
                         controller: signupController.phoneController,
                         autocorrect: true,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          focusedBorder: OutlineInputBorder(
+                          focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Colors.black,
                               width: 2,
@@ -179,15 +185,18 @@ class SignupScreen extends StatelessWidget {
                               Radius.circular(15),
                             ),
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(15),
                             ),
                           ),
                           isDense: false,
-                          contentPadding: EdgeInsets.all(15),
-                          prefixIcon: Icon(Icons.phone),
+                          contentPadding: const EdgeInsets.all(15),
+                          prefixIcon: const Icon(Icons.phone_outlined),
                           hintText: "Enter Your Phone Number",
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.black54,
+                          ),
                         ),
                         validator: (value) {
                           if (value!.length != 10) {
@@ -196,11 +205,28 @@ class SignupScreen extends StatelessWidget {
                           return null;
                         },
                       ),
+                      const Gap(20),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Choose your role",
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      const Gap(10),
+                      const Row(
+                        children: [
+                          Expanded(child: RolesDropdown()),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-
-                const Gap(20),
+                const Gap(50),
                 Row(
                   children: [
                     Expanded(
@@ -214,12 +240,14 @@ class SignupScreen extends StatelessWidget {
                                 Get.offNamed(myRoutes.loginRoute);
                                 Get.showSnackbar(
                                   customGetSnackBar(
-                                      "Success! Account created successfully."),
+                                      "Success! Account created successfully.",
+                                      Icons.check_circle),
                                 );
                               } else {
                                 Get.showSnackbar(
                                   customGetSnackBar(
-                                      "Error! User already exists"),
+                                      "Error! User already exists",
+                                      Icons.error),
                                 );
                               }
                             });
