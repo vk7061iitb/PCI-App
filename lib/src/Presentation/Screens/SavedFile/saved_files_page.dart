@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Screens/SavedFile/widget/history_data_tile.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -83,6 +85,26 @@ class HistoryDataPageState extends State<HistoryDataPage> {
           } else if (snapshot.hasError) {
             return Center(
               child: Text('Error loading files: ${snapshot.error}'),
+            );
+          } else if (snapshot.data!.isEmpty) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  assetsPath.emptyFile,
+                  width: 50,
+                ),
+                Center(
+                  child: Text(
+                    'There are no files to display',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                )
+              ],
             );
           } else {
             List<File> savedFiles = snapshot.data ?? [];
