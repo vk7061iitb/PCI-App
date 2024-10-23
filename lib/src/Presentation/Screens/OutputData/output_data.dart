@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Screens/OutputData/output_data_tile.dart';
@@ -30,7 +31,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
       backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
         title: Text(
-          'Output Files',
+          'Journey History',
           style: GoogleFonts.inter(
             fontSize: 24,
             fontWeight: FontWeight.w700,
@@ -51,7 +52,25 @@ class _OutputDataPageState extends State<OutputDataPage> {
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No data available'));
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assetsPath.emptyFile,
+                    width: 50,
+                  ),
+                  Center(
+                    child: Text(
+                      'There are no files to display',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black,
+                      ),
+                    ),
+                  )
+                ],
+              );
             }
             List<Map<String, dynamic>> outputData = snapshot.data!;
 
@@ -68,6 +87,8 @@ class _OutputDataPageState extends State<OutputDataPage> {
                     id: outputData[index]["id"],
                     onDeleteTap: () {
                       localDatabase.deleteOutputData(outputData[index]["id"]);
+                      localDatabase
+                          .deleteRoadOutputData(outputData[index]["id"]);
                       setState(() {
                         outputDataFile = getData();
                       });
