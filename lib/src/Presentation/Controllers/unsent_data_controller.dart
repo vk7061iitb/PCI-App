@@ -5,20 +5,17 @@ import 'package:get/get.dart';
 import '../../../Objects/data.dart';
 
 class UnsentDataController extends GetxController {
-  late final Rx<Future<List<Map<String, dynamic>>>> _unsentData;
   final RxBool _isEmpty = true.obs;
+  final RxBool _refresh = false.obs;
 
-  // Getter
-  Future<List<Map<String, dynamic>>> get unsentData => _unsentData.value;
   bool get isEmpty => _isEmpty.value;
+  bool get reFresh => _refresh.value;
+
+  // Setter
+  set isEmpty(bool value) => _isEmpty.value = value;
+  set reFresh(bool value) => _refresh.value = value;
 
   Future<List<Map<String, dynamic>>> getUnsentData() async {
     return localDatabase.queryTable('unsendDataInfo');
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    _unsentData.value = getUnsentData();
   }
 }
