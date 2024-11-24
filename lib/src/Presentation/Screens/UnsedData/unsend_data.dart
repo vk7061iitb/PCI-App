@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/UnsedData/unsent_file_tile.dart';
 import '../../../../Objects/data.dart';
 
@@ -13,6 +15,7 @@ class UnsendData extends StatefulWidget {
 
 class _UnsendDataState extends State<UnsendData> {
   late Future<List<Map<String, dynamic>>> unsentDataFiles;
+  ResponseController responseController = Get.put(ResponseController());
   Future<List<Map<String, dynamic>>> getUnsentData() async {
     List<Map<String, dynamic>> unsendDataFiles = [];
     unsendDataFiles = await localDatabase.queryTable('unsendDataInfo');
@@ -31,10 +34,10 @@ class _UnsendDataState extends State<UnsendData> {
       backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
         title: Text(
-          'Unsent Data',
+          'Unsend Files',
           style: GoogleFonts.inter(
             fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
