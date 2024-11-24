@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 
 class UnsentFileTile extends StatelessWidget {
   const UnsentFileTile({
@@ -19,6 +22,7 @@ class UnsentFileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ResponseController responseController = Get.find();
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
@@ -138,8 +142,17 @@ class UnsentFileTile extends StatelessWidget {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
-                  onTap: () {
+                  onTap: () async {
                     // Send the data to the server
+                    List<Map<String, dynamic>> data =
+                        await localDatabase.queryUnsentData(id);
+                    int res =
+                        await responseController.reSendData(data, filename);
+                    if (res == 200) {
+                      await localDatabase.deleteUnsentData(id);
+                      await localDatabase.deleteUnsentDataInfo(id);
+                      onDeleteTap();
+                    }
                   },
                   child: Row(
                     children: [
