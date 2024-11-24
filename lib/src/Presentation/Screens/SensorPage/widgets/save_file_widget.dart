@@ -95,60 +95,53 @@ class SaveFile extends StatelessWidget {
                 width: MediaQuery.of(context).size.width * 0.9,
               ),
               const Gap(10),
-              Obx(() {
-                return responseController.isSaveLocally
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Recording Name",
-                            style: GoogleFonts.inter(
-                              fontSize:
-                                  MediaQuery.textScalerOf(context).scale(18),
-                              fontWeight: FontWeight.w500,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Recording Name",
+                    style: GoogleFonts.inter(
+                      fontSize: MediaQuery.textScalerOf(context).scale(18),
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Gap(10),
+                  Obx(() {
+                    return Form(
+                      key: responseController.formKey,
+                      child: TextFormField(
+                        controller: responseController.fileNameController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter a file name';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.drive_file_rename_outline),
+                          labelText: 'Enter the file name',
+                          isDense: true,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
                               color: Colors.black,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(15),
                             ),
                           ),
-                          const Gap(10),
-                          Obx(() {
-                            return Form(
-                              key: responseController.formKey,
-                              child: TextFormField(
-                                controller:
-                                    responseController.fileNameController,
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Please enter a file name';
-                                  }
-                                  return null;
-                                },
-                                decoration: const InputDecoration(
-                                  prefixIcon:
-                                      Icon(Icons.drive_file_rename_outline),
-                                  labelText: 'Enter the file name',
-                                  isDense: true,
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Colors.black,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(15),
-                                    ),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(15),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          })
-                        ],
-                      )
-                    : const SizedBox();
-              }),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(15),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  })
+                ],
+              ),
               const Gap(10),
               // Notes
               Text(
@@ -196,20 +189,12 @@ class SaveFile extends StatelessWidget {
                     child: Obx(() {
                       return ElevatedButton(
                         onPressed: () async {
-                          debugPrint("Hello World!");
-                          if (responseController.isSaveLocally) {
-                            debugPrint(responseController.formKey.currentState!
-                                .validate()
-                                .toString());
-
-                            if (responseController.isSaveLocally &&
-                                !responseController.formKey.currentState!
-                                    .validate()) {
-                              return;
-                            }
+                          if (!responseController.formKey.currentState!
+                              .validate()) {
+                            return;
                           }
+                          debugPrint("Saving Data..");
                           responseController.savingData = true;
-
                           await responseController.saveData(
                               accDataController.downSampledDatapoints);
                         },
