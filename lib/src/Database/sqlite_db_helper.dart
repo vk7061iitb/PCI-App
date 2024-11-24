@@ -65,7 +65,7 @@ class SQLDatabaseHelper {
               data.zAcc,
               data.latitude,
               data.longitude,
-              data.speed * 3.6,
+              data.speed,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -89,7 +89,7 @@ class SQLDatabaseHelper {
               data.zAcc,
               data.latitude,
               data.longitude,
-              data.speed * 3.6,
+              data.speed,
               DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
             ]);
       }
@@ -115,6 +115,12 @@ class SQLDatabaseHelper {
       debugPrint(e.toString());
       return id;
     }
+  }
+
+  Future<List<Map<String, dynamic>>> queryUnsentData(int id) async {
+    List<Map<String, dynamic>> unsentDataQuery = await _localDbInstance
+        .query('unsendData', where: 'unsendDataID = ?', whereArgs: [id]);
+    return unsentDataQuery;
   }
 
   Future<void> deleteUnsentDataInfo(int id) async {
