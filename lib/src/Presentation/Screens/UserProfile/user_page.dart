@@ -4,17 +4,17 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Models/user_data.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 
 class UserPage extends StatelessWidget {
-  final UserData user;
   const UserPage({
     super.key,
-    required this.user,
   });
 
   @override
   Widget build(BuildContext context) {
+    UserDataController userDataController = Get.find();
+    userDataController.getUserData();
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
@@ -50,7 +50,7 @@ class UserPage extends StatelessWidget {
               ),
               const Gap(10),
               Text(
-                'User ${user.userID}',
+                'User ${userDataController.userData.userID}',
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w500,
@@ -71,19 +71,19 @@ class UserPage extends StatelessWidget {
                   children: [
                     buildRow(
                       'Role',
-                      user.userRole,
+                      userDataController.userData.userRole,
                       Icons.person_2_outlined,
                     ),
                     const Gap(10),
                     buildRow(
                       'Phone',
-                      user.phoneNumber,
+                      userDataController.userData.phoneNumber,
                       Icons.phone_outlined,
                     ),
                     const Gap(10),
                     buildRow(
                       'Email',
-                      user.email,
+                      userDataController.userData.email,
                       Icons.email_outlined,
                     ),
                   ],
