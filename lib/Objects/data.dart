@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pci_app/Functions/datetime_format.dart';
 import 'package:pci_app/src/Models/data_points.dart';
 import 'package:pci_app/Utils/assets.dart';
 import '../src/Database/sqlite_db_helper.dart';
@@ -79,3 +80,5 @@ LocationAccuracy geolocatorLocationAccuracy = LocationAccuracy.best;
 
 // Main Page Data
 SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
+
+DateTimeParser dateTimeParser = DateTimeParser();
