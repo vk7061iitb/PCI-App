@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/src/Models/user_data.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/HomePage/home_screen.dart';
@@ -16,14 +16,18 @@ import 'package:pci_app/firebase_options.dart';
 import 'Functions/init_download_folder.dart';
 import 'Functions/request_storage_permission.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
+import 'src/Presentation/Controllers/user_data_controller.dart';
 import 'src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DotEnv().load(fileName: '.env');
   Get.lazyPut(() => LocationController());
   Get.lazyPut(() => AccDataController());
   Get.lazyPut(() => MapPageController());
+  Get.lazyPut(() => UserDataController());
   await localDatabase.initDB();
   await initializeDirectory();
   bool isLoggedIn = await localDatabase.queryUserData().then(
@@ -37,7 +41,6 @@ Future<void> main() async {
   );
 
   debugPrint('Is Logged In: $isLoggedIn');
-  UserData currentUser = await localDatabase.queryUserData();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,
   );
@@ -52,16 +55,13 @@ Future<void> main() async {
   runApp(
     MainApp(
       isLoggedIn: isLoggedIn,
-      currentUser: currentUser,
     ),
   );
 }
 
 class MainApp extends StatefulWidget {
-  const MainApp(
-      {required this.currentUser, required this.isLoggedIn, super.key});
+  const MainApp({required this.isLoggedIn, super.key});
 
-  final UserData currentUser;
   final bool isLoggedIn;
 
   @override
@@ -87,6 +87,7 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    debugPaintSizeEnabled = false;
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
           statusBarColor: Color(0xFFF3EDF5),
@@ -104,7 +105,7 @@ class _MainAppState extends State<MainApp> {
         ),
         GetPage(
           name: myRoutes.userProfileRoute,
-          page: () => UserPage(user: widget.currentUser),
+          page: () => UserPage(),
         ),
         GetPage(
           name: myRoutes.loginRoute,
