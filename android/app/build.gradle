@@ -49,6 +49,8 @@ android {
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        manifestPlaceholders = [G_MAP_KEY: localProperties.getProperty('G_MAP_KEY', ""),
+        applicationName: "io.flutter.app.FlutterApplication"]
     }
 
     buildTypes {
