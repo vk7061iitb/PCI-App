@@ -32,78 +32,119 @@ class MapPage extends StatelessWidget {
           children: [
             Positioned.fill(
               child: SizedBox(
-                child: SizedBox(child: Obx(() {
-                  return GoogleMap(
-                    mapType: mapPageController.backgroundMapType,
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(_accDataController.devicePosition.latitude,
-                          _accDataController.devicePosition.longitude),
-                      zoom: 15,
-                    ),
-                    onMapCreated: (GoogleMapController controller) {
-                      mapPageController.setGoogleMapController = controller;
+                child: SizedBox(
+                  child: Obx(
+                    () {
+                      return GoogleMap(
+                        mapType: mapPageController.backgroundMapType,
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(
+                              _accDataController.devicePosition.latitude,
+                              _accDataController.devicePosition.longitude),
+                          zoom: 15,
+                        ),
+                        onMapCreated: (GoogleMapController controller) {
+                          mapPageController.setGoogleMapController = controller;
 
-                      mapPageController.animateToLocation(
-                          mapPageController.getMinLat,
-                          mapPageController.getMaxLat);
+                          mapPageController.animateToLocation(
+                              mapPageController.getMinLat,
+                              mapPageController.getMaxLat);
+                        },
+                        polylines: mapPageController.pciPolylines,
+                        zoomControlsEnabled: false,
+                      );
                     },
-                    polylines: mapPageController.getPolylines,
-                    zoomControlsEnabled: false,
-                  );
-                })),
+                  ),
+                ),
               ),
             ),
             Positioned(
-                top: 10,
-                left: 10,
-                child: Obx(
-                  () {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: mapPageController.isDrrpLayerVisible
-                              ? Colors.blue
-                              : Colors.black38,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: InkWell(
-                          onTap: () async {
-                            try {
-                              mapPageController.isDrrpLayerVisible =
-                                  !mapPageController.isDrrpLayerVisible;
-                              if (mapPageController.isDrrpLayerVisible) {
-                                mapPageController.plotDRRPLayer();
-                              } else {
-                                mapPageController.polylines.clear();
-                                mapPageController.polylines
-                                    .addAll(mapPageController.pciPolylines);
+              top: 0,
+              left: 0,
+              child: Obx(
+                () => Container(
+                  padding: const EdgeInsets.all(10),
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.08,
+                  color: const Color(0xFFF3EDF5),
+                  child: FittedBox(
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: InkWell(
+                            onTap: () async {
+                              try {
+                                mapPageController.isDrrpLayerVisible =
+                                    !mapPageController.isDrrpLayerVisible;
+                                if (mapPageController.isDrrpLayerVisible) {
+                                  mapPageController.plotDRRPLayer();
+                                } else {
+                                  mapPageController.pciPolylines.clear();
+                                  mapPageController.pciPolylines
+                                      .addAll(mapPageController.pciPolylines);
+                                }
+                              } catch (e) {
+                                // Handle any errors that occur during the onTap execution
+                                debugPrint('Error toggling DRRP layer: $e');
                               }
-                            } catch (e) {
-                              // Handle any errors that occur during the onTap execution
-                              debugPrint('Error toggling DRRP layer: $e');
-                            }
+                            },
+                            child: Row(
+                              children: [
+                                const Gap(10),
+                                Icon(
+                                  Icons.layers_outlined,
+                                  size: MediaQuery.textScalerOf(context)
+                                      .scale(20),
+                                  color: mapPageController.isDrrpLayerVisible
+                                      ? Colors.blue
+                                      : Colors.black,
+                                ),
+                                const Gap(5),
+                                Text(
+                                  "DRRP Layer",
+                                  style: GoogleFonts.inter(
+                                    color: mapPageController.isDrrpLayerVisible
+                                        ? Colors.blue
+                                        : Colors.black,
+                                    fontWeight:
+                                        mapPageController.isDrrpLayerVisible
+                                            ? FontWeight.w500
+                                            : FontWeight.w400,
+                                    fontSize: MediaQuery.textScalerOf(context)
+                                        .scale(18),
+                                  ),
+                                ),
+                                const Gap(10),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Gap(10),
+                        TextButton(
+                          onPressed: () {
+                            mapPageController.showPCIlabel =
+                                !mapPageController.showPCIlabel;
+                            mapPageController.showIndicator = true;
+                            mapPageController.clearPolylines();
+                            mapPageController.plotRoadData().then((value) {
+                              mapPageController.showIndicator = false;
+                            });
                           },
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              mapPageController.showPCIlabel
+                                  ? Colors.blue.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.1),
+                            ),
+                          ),
                           child: Row(
                             children: [
-                              const Gap(10),
-                              Icon(
-                                Icons.layers_outlined,
-                                size:
-                                    MediaQuery.textScalerOf(context).scale(20),
-                                color: mapPageController.isDrrpLayerVisible
-                                    ? Colors.blue
-                                    : Colors.black,
-                              ),
-                              const Gap(5),
                               Text(
-                                "DRRP Layer",
+                                'Show PCI Label',
                                 style: GoogleFonts.inter(
-                                  color: mapPageController.isDrrpLayerVisible
+                                  color: mapPageController.showPCIlabel
                                       ? Colors.blue
                                       : Colors.black,
                                   fontWeight: FontWeight.w400,
@@ -111,14 +152,27 @@ class MapPage extends StatelessWidget {
                                       .scale(18),
                                 ),
                               ),
-                              const Gap(10),
+                              const Gap(5),
+                              Icon(
+                                // tick icon
+                                mapPageController.showPCIlabel
+                                    ? Icons.cancel_outlined
+                                    : Icons.check_rounded,
+                                color: mapPageController.showPCIlabel
+                                    ? Colors.blue
+                                    : Colors.black,
+                                size:
+                                    MediaQuery.textScalerOf(context).scale(20),
+                              )
                             ],
                           ),
                         ),
-                      ),
-                    );
-                  },
-                )),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Positioned(
               bottom: 10,
               left: 0,
@@ -154,30 +208,6 @@ class MapPage extends StatelessWidget {
                     ),
                   ),
                   const Gap(20),
-                  // Clear Map Button //
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black38,
-                        width: 1,
-                      ),
-                    ),
-                    child: IconButton(
-                      onPressed: () async {
-                        mapPageController.polylines.clear();
-                        //polylineObj.clear();
-                      },
-                      tooltip: 'Clear Map',
-                      icon: Icon(
-                        Icons.clear_all_rounded,
-                        color: Colors.black,
-                        size: MediaQuery.textScalerOf(context).scale(30),
-                      ),
-                    ),
-                  ),
-                  const Gap(20),
                   // Map Type Dropdown //
                   const SelectMapType(),
                   const Gap(20),
@@ -196,7 +226,7 @@ class MapPage extends StatelessWidget {
                         Get.bottomSheet(
                           isDismissible: true,
                           backgroundColor: Colors.white,
-                          RoadStatistics(
+                          MapPageRoadStatistics(
                               roadStats: mapPageController.getRoadStats),
                         );
                       },
@@ -211,8 +241,98 @@ class MapPage extends StatelessWidget {
                 ],
               ),
             ),
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.2,
+                height: MediaQuery.of(context).size.height * 0.2,
+                child: FittedBox(
+                  alignment: Alignment.center,
+                  fit: BoxFit.contain,
+                  child: const Legends(),
+                ),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class Legends extends StatelessWidget {
+  const Legends({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: Colors.white54,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: Colors.red,
+              ),
+              const Gap(5),
+              const Text('PCI = 1'),
+            ],
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: Colors.orange,
+              ),
+              const Gap(5),
+              const Text('PCI = 2'),
+            ],
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: Colors.yellow,
+              ),
+              const Gap(5),
+              const Text('PCI = 3'),
+            ],
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: Colors.blue,
+              ),
+              const Gap(5),
+              const Text('PCI = 4'),
+            ],
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: Colors.green,
+              ),
+              const Gap(5),
+              const Text('PCI = 5'),
+            ],
+          ),
+        ],
       ),
     );
   }
