@@ -39,6 +39,7 @@ class AccDataController extends GetxController {
   final RxBool _showResponseSheet = false.obs;
   final RxBool _showStartButton = true.obs;
   String? _userID;
+  int _count = 0;
 
   @override
   void onInit() {
@@ -51,6 +52,7 @@ class AccDataController extends GetxController {
     );
     location.onLocationChanged.listen(
       (loc.LocationData currentLocation) {
+        _count++;
         _devicePosition.value = Position(
           latitude: currentLocation.latitude!,
           longitude: currentLocation.longitude!,
@@ -64,9 +66,6 @@ class AccDataController extends GetxController {
           speedAccuracy: currentLocation.speedAccuracy!,
         );
       },
-    );
-    debugPrint(
-      'Location = ${_devicePosition.value.latitude}, ${_devicePosition.value.longitude}',
     );
     super.onInit();
   }
@@ -118,18 +117,20 @@ class AccDataController extends GetxController {
         samplingPeriod: const Duration(microseconds: 1000),
       ).listen(
         (AccelerometerEvent event) {
-          dataPointsList.add(
-            AccData(
-              xAcc: event.x,
-              yAcc: event.y,
-              zAcc: event.z,
-              latitude: _devicePosition.value.latitude,
-              longitude: _devicePosition.value.longitude,
-              speed: _devicePosition.value.speed,
-              accTime: DateTime.now(),
-            ),
-          );
           accData.value = event;
+          if (_count > 5) {
+            dataPointsList.add(
+              AccData(
+                xAcc: event.x,
+                yAcc: event.y,
+                zAcc: event.z,
+                latitude: _devicePosition.value.latitude,
+                longitude: _devicePosition.value.longitude,
+                speed: _devicePosition.value.speed,
+                accTime: DateTime.now(),
+              ),
+            );
+          }
         },
       );
     }
