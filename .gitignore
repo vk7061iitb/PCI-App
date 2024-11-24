@@ -9,6 +9,8 @@
 .history
 .svn/
 migrate_working_dir/
+*.env
+*.android
 
 # IntelliJ related
 *.iml
@@ -42,6 +44,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+C:/Users/vk706/.android
+C:/Users/vk706/.conda
 
 # Important Files
 android/app/src/main/AndroidManifest.xml
@@ -51,3 +55,4 @@ lib/src/config/config.dart
 
 # Gradle files : Contains the API keys
 android/gradle.properties
+android/secrets.properties
