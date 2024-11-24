@@ -13,7 +13,9 @@ class SendDataToServer {
   final String sendBaseURL;
   int statusCode = 0;
   Future<String> sendData(
-      {required List<AccData> accData, required String userID}) async {
+      {required List<AccData> accData,
+      required String userID,
+      required filename}) async {
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
@@ -29,6 +31,7 @@ class SendDataToServer {
           'Content-Type': 'application/json',
           'Userid': userID,
           'vehicle_type': dropdownValue,
+          'Roadname': filename,
         },
         body: jsonEncode(sensorData),
       )
@@ -43,12 +46,11 @@ class SendDataToServer {
       statusCode = response.statusCode;
 
       if (response.statusCode == 200) {
-        debugPrint(response.body);
         String geoJsonString = response.body;
         final responseData = jsonDecode(geoJsonString);
 
-        int outuputDataID = await localDatabase.insertJourneyData(
-            "Journey Data", dropdownValue);
+        int outuputDataID =
+            await localDatabase.insertJourneyData(filename, dropdownValue);
 
         // Extract the road data
         List<dynamic> roads = responseData['roads_covered'];
