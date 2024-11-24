@@ -56,3 +56,5 @@ lib/src/config/config.dart
 # Gradle files : Contains the API keys
 android/gradle.properties
 android/secrets.properties
+
+*.env
