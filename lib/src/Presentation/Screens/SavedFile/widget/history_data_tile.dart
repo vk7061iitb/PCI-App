@@ -42,16 +42,17 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
     );
 
     FileInfo fileInfo = getFileInfo(widget.file.path.split('/').last);
+// Function to get the icon for the vehicle type
     Icon getIcon(String vehicleType) {
       if (vehicleType == 'Car') {
         return const Icon(
-          Icons.directions_car,
+          Icons.directions_car_filled_outlined,
           size: 40,
           color: Colors.black87,
         );
       } else if (vehicleType == 'Bike') {
         return const Icon(
-          Icons.motorcycle,
+          Icons.motorcycle_outlined,
           size: 40,
           color: Colors.black87,
         );
@@ -63,13 +64,13 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
         );
       } else if (vehicleType == 'Bus') {
         return const Icon(
-          Icons.directions_bus,
+          Icons.directions_bus_outlined,
           size: 40,
           color: Colors.black87,
         );
       } else {
         return const Icon(
-          Icons.directions_walk,
+          Icons.directions_run_outlined,
           size: 40,
           color: Colors.black87,
         );
@@ -155,17 +156,35 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
-                  onTap: widget.deleteFile,
-                  child: Text(
-                    "Delete",
-                    style: pupUpMenuTextStyle,
+                  onTap: widget.shareFile,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(
+                        Icons.share,
+                        color: Colors.black87,
+                      ),
+                      Text(
+                        "Share",
+                        style: pupUpMenuTextStyle,
+                      ),
+                    ],
                   ),
                 ),
                 PopupMenuItem(
-                  onTap: widget.shareFile,
-                  child: Text(
-                    "Share",
-                    style: pupUpMenuTextStyle,
+                  onTap: widget.deleteFile,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(
+                        Icons.delete,
+                        color: Colors.black87,
+                      ),
+                      Text(
+                        "Delete",
+                        style: pupUpMenuTextStyle,
+                      ),
+                    ],
                   ),
                 ),
               ];
