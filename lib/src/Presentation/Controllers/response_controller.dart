@@ -62,7 +62,10 @@ class ResponseController extends GetxController {
         await localDatabase.queryUserData().then((user) => user.userID);
     debugPrint('User ID: $userID');
     await sendDataToServer
-        .sendData(accData: accData, userID: userID!)
+        .sendData(
+            accData: accData,
+            userID: userID!,
+            filename: _fileNameController.value.text)
         .then((value) async {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
@@ -72,7 +75,7 @@ class ResponseController extends GetxController {
       if (_serverResponseCode.value / 100 != 2) {
         // Save the data locally
         int id = await localDatabase.insertUnsendDataInfo(
-          fileName: "Unsent Data",
+          fileName: _fileNameController.value.text,
           vehicleType: _dropdownValue.value,
         );
         if (id != 0) {
@@ -96,6 +99,50 @@ class ResponseController extends GetxController {
         vehicleType: _dropdownValue.value,
       );
     }
+  }
+
+  Future<int> reSendData(
+      List<Map<String, dynamic>> unsentData, String filename) async {
+    int responseCode = 0;
+    List<AccData> accData = [];
+    for (var data in unsentData) {
+      accData.add(
+        AccData(
+          xAcc: data['x_acc'],
+          yAcc: data['y_acc'],
+          zAcc: data['z_acc'],
+          latitude: data['Latitude'],
+          longitude: data['Longitude'],
+          speed: data['Speed'],
+          accTime: dateTimeParser.parseDateTime(
+              data['Time'], 'yyyy-MM-dd HH:mm:ss:S')!,
+        ),
+      );
+    }
+    // send the data to the server
+    String? userID =
+        await localDatabase.queryUserData().then((user) => user.userID);
+    debugPrint('User ID: $userID');
+
+    await sendDataToServer
+        .sendData(accData: accData, userID: userID!, filename: filename)
+        .then((value) {
+      _serverMessage.value = value;
+      _serverResponseCode.value = sendDataToServer.statusCode;
+      responseCode = sendDataToServer.statusCode;
+      _savingData.value = false;
+      if (_serverResponseCode.value == 200) {
+        // data sent successfully
+        Get.showSnackbar(
+          customGetSnackBar(
+            "Data sent successfully",
+            Icons.check_circle_outline,
+          ),
+        );
+        return responseCode;
+      }
+    });
+    return responseCode;
   }
 
   Future<void> saveDataToCSV({
