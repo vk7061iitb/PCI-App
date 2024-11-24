@@ -69,11 +69,23 @@ class HistoryDataPageState extends State<HistoryDataPage> {
           'Saved Files',
           style: GoogleFonts.inter(
             fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
         backgroundColor: const Color(0xFFF3EDF5),
+        foregroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
+          ),
+        ],
       ),
       body: FutureBuilder<List<File>>(
         future: _savedFilesFuture,
@@ -108,23 +120,30 @@ class HistoryDataPageState extends State<HistoryDataPage> {
             );
           } else {
             List<File> savedFiles = snapshot.data ?? [];
-            return ListView.builder(
-              itemCount: savedFiles.length,
-              itemBuilder: (context, index) {
-                File file = savedFiles[index];
-                return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: HistoryDataItem(
-                    file: file,
-                    deleteFile: () {
-                      deleteFile(file);
-                    },
-                    shareFile: () {
-                      shareFile(file);
-                    },
-                  ),
-                );
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _savedFilesFuture = loadSavedFiles();
+                });
               },
+              child: ListView.builder(
+                itemCount: savedFiles.length,
+                itemBuilder: (context, index) {
+                  File file = savedFiles[index];
+                  return Container(
+                    padding: const EdgeInsets.all(10),
+                    child: HistoryDataItem(
+                      file: file,
+                      deleteFile: () {
+                        deleteFile(file);
+                      },
+                      shareFile: () {
+                        shareFile(file);
+                      },
+                    ),
+                  );
+                },
+              ),
             );
           }
         },
