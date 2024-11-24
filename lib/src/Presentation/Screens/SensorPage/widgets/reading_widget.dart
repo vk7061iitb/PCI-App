@@ -13,268 +13,432 @@ class ReadingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     AccDataController accDataController = Get.find();
     TextStyle sensorNameStyle = GoogleFonts.inter(
-      fontSize: MediaQuery.textScalerOf(context).scale(18),
-      fontWeight: FontWeight.w600,
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
       color: Colors.black,
     );
     TextStyle labelTextStyle = GoogleFonts.inter(
-      fontSize: MediaQuery.textScalerOf(context).scale(16),
+      fontSize: 16,
       fontWeight: FontWeight.w500,
       color: Colors.black,
     );
 
     TextStyle speedTextStyle = GoogleFonts.inter(
-      fontSize: MediaQuery.textScalerOf(context).scale(16),
+      fontSize: 16,
       fontWeight: FontWeight.w500,
       color: Colors.black87,
     );
 
     TextStyle speedValueTextStyle = GoogleFonts.inter(
-      fontSize: MediaQuery.textScalerOf(context).scale(24),
+      fontSize: 24,
       fontWeight: FontWeight.w700,
       color: Colors.black,
     );
 
-    double valueBoxWidth = MediaQuery.of(context).size.width * 0.21;
-    double valueBoxHeight = (MediaQuery.of(context).size.width * 0.2) * 0.4;
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // Accelerometer Reading
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Container(
-                  width: MediaQuery.of(context).size.width * 0.45,
-                  height: MediaQuery.of(context).size.width * 0.45,
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(15)),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5, left: 5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              SizedBox(
-                                width: 0.15 * constraints.maxWidth,
-                                height: 0.15 * constraints.maxHeight,
-                                child: SvgPicture.asset(
-                                  assetsPath.accelerometer,
-                                ),
-                              ),
-                              const Gap(2),
-                              Text(
-                                "Acceleration",
-                                style: sensorNameStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        // X - Acceleration
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              "X",
-                              style: labelTextStyle,
-                            ),
-                            Container(
-                              width: valueBoxWidth,
-                              height: valueBoxHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.accData.value.x
-                                        .toStringAsFixed(3),
-                                    style: labelTextStyle,
-                                  );
-                                }),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Y - Acceleration
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              "Y",
-                              style: labelTextStyle,
-                            ),
-                            Container(
-                              width: valueBoxWidth,
-                              height: valueBoxHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.accData.value.y
-                                        .toStringAsFixed(3),
-                                    style: labelTextStyle,
-                                  );
-                                }),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Z - Acceleration
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              "Z",
-                              style: labelTextStyle,
-                            ),
-                            Container(
-                              width: valueBoxWidth,
-                              height: valueBoxHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.accData.value.z
-                                        .toStringAsFixed(3),
-                                    style: labelTextStyle,
-                                  );
-                                }),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  }),
-                );
-              },
-            ),
-            // Gyroscope Reading
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Container(
-                  width: MediaQuery.of(context).size.width * 0.45,
-                  height: MediaQuery.of(context).size.width * 0.45,
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(15)),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5, left: 5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              SizedBox(
-                                width: 0.15 * constraints.maxWidth,
-                                height: 0.15 * constraints.maxHeight,
-                                child: SvgPicture.asset(assetsPath.gyroscope),
-                              ),
-                              const Gap(2),
-                              Text(
-                                "Gyroscope",
-                                style: sensorNameStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const RowWidget(label: "X", value: 0),
-                        const RowWidget(label: "Y", value: 0),
-                        const RowWidget(label: "Z", value: 0),
-                      ],
-                    );
-                  }),
-                );
-              },
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.width * 0.45,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Column(
+            Gap(MediaQuery.sizeOf(context).width * 0.025),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              height: MediaQuery.of(context).size.width * 0.45,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0E0E0),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: LayoutBuilder(builder: (context, constraints) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 5, left: 5),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 0.15 * constraints.maxWidth,
-                                  height: 0.15 * constraints.maxHeight,
-                                  child: SvgPicture.asset(
-                                    assetsPath.location,
-                                  ),
-                                ),
-                                const Gap(10),
-                                Text(
-                                  "Location",
-                                  style: sensorNameStyle,
-                                ),
-                              ],
+                          Gap(constraints.maxWidth * 0.05),
+                          SizedBox(
+                            width: 0.15 * constraints.maxWidth,
+                            height: 0.15 * constraints.maxHeight,
+                            child: SvgPicture.asset(
+                              assetsPath.accelerometer,
                             ),
                           ),
-                          Obx(() {
-                            return RowWidget(
-                                label: "Lat",
-                                value: accDataController.isRecordingData
-                                    ? accDataController.devicePosition.latitude
-                                    : 0.000);
-                          }),
-                          Obx(() {
-                            return RowWidget(
-                                label: "Lon",
-                                value: accDataController.isRecordingData
-                                    ? accDataController.devicePosition.longitude
-                                    : 0.000);
-                          }),
-                          Obx(() {
-                            return RowWidget(
-                                label: "Acc",
-                                value: accDataController.isRecordingData
-                                    ? accDataController.devicePosition.accuracy
-                                    : 0.000);
-                          }),
+                          Gap(constraints.maxWidth * 0.05),
+                          Text(
+                            "Acceleration",
+                            style: sensorNameStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.05),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    // X - Acceleration
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        children: [
+                          Text(
+                            "X",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Obx(() {
+                                return Text(
+                                  accDataController.accData.value.x
+                                      .toStringAsFixed(3),
+                                  style: labelTextStyle,
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Y - Acceleration
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            "Y",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Obx(() {
+                                return Text(
+                                  accDataController.accData.value.y
+                                      .toStringAsFixed(3),
+                                  style: labelTextStyle,
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Z - Acceleration
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            "Z",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Obx(() {
+                                return Text(
+                                  accDataController.accData.value.z
+                                      .toStringAsFixed(3),
+                                  style: labelTextStyle,
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+            Gap(MediaQuery.sizeOf(context).width * 0.05),
+            // Gyroscope Reading
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              height: MediaQuery.of(context).size.width * 0.45,
+              decoration: BoxDecoration(
+                  color: const Color(0xFFE0E0E0),
+                  borderRadius: BorderRadius.circular(15)),
+              child: LayoutBuilder(builder: (context, constraints) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FittedBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Gap(constraints.maxWidth * 0.05),
+                          SizedBox(
+                            width: 0.15 * constraints.maxWidth,
+                            height: 0.15 * constraints.maxHeight,
+                            child: SvgPicture.asset(assetsPath.gyroscope),
+                          ),
+                          Gap(constraints.maxWidth * 0.05),
+                          Text(
+                            "Gyroscope",
+                            style: sensorNameStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.05),
+                        ],
+                      ),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        children: [
+                          Text(
+                            "X",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "0.000",
+                                style: labelTextStyle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        children: [
+                          Text(
+                            "Y",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "0.000",
+                                style: labelTextStyle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            "Z",
+                            style: labelTextStyle,
+                          ),
+                          Gap(constraints.maxWidth * 0.1),
+                          Container(
+                            width: constraints.maxWidth * 0.50,
+                            height: constraints.maxHeight * 0.20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "0.000",
+                                style: labelTextStyle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+            Gap(MediaQuery.sizeOf(context).width * 0.025),
+          ],
+        ),
+        Gap(MediaQuery.sizeOf(context).width * 0.05),
+        Container(
+          width: MediaQuery.of(context).size.width * 0.95,
+          height: MediaQuery.of(context).size.width * 0.45,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE0E0E0),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.45,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 0.15 * constraints.maxWidth,
+                              height: 0.15 * constraints.maxHeight,
+                              child: SvgPicture.asset(
+                                assetsPath.location,
+                              ),
+                            ),
+                            Gap(constraints.maxWidth * 0.05),
+                            Text(
+                              "Location",
+                              style: sensorNameStyle,
+                            ),
+                            Gap(constraints.maxWidth * 0.05),
+                          ],
+                        ),
+                        // latitude, longitude, accuracy
+                        FittedBox(
+                          fit: BoxFit.contain,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "Lat",
+                                style: labelTextStyle,
+                              ),
+                              Gap(constraints.maxWidth * 0.1),
+                              Container(
+                                width: constraints.maxWidth * 0.50,
+                                height: constraints.maxHeight * 0.20,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Center(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.latitude
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle,
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        FittedBox(
+                          fit: BoxFit.contain,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "Lon",
+                                style: labelTextStyle,
+                              ),
+                              Gap(constraints.maxWidth * 0.1),
+                              Container(
+                                width: constraints.maxWidth * 0.50,
+                                height: constraints.maxHeight * 0.20,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Center(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.longitude
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle,
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.contain,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "Acc",
+                                style: labelTextStyle,
+                              ),
+                              Gap(constraints.maxWidth * 0.1),
+                              Container(
+                                width: constraints.maxWidth * 0.50,
+                                height: constraints.maxHeight * 0.20,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Center(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.accuracy
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle,
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                Container(
-                  width: 100,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
+              ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.30,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -296,9 +460,9 @@ class ReadingWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(20),
-              ],
-            ),
+              ),
+              Gap(MediaQuery.of(context).size.width * 0.05),
+            ],
           ),
         )
       ],
