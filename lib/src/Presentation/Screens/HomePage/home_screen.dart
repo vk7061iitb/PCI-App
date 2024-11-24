@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/sensor_screen.dart';
 import '../../../../Utils/assets.dart';
 import '../../Controllers/bottom_navbar_controller.dart';
@@ -26,6 +27,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
+    UserDataController userDataController = Get.put(UserDataController());
     const iconWidth = 25.0;
     final AssetsPath assetsPath = AssetsPath();
     return Scaffold(
