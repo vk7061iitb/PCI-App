@@ -38,7 +38,7 @@ class StartButton extends StatelessWidget {
         Center(
           child: InkWell(
             onTap: () async {
-              locationController.checkLocationService();
+              await locationController.locationPermission();
               if (accDataController.showStartButton) {
                 accDataController.onStartButtonPressed();
               } else {
@@ -67,12 +67,15 @@ class StartButton extends StatelessWidget {
                       strokeAlign: BorderSide.strokeAlignInside),
                 ),
                 child: Center(
-                  child: Text(
-                    accDataController.showStartButton ? "Start" : "End",
-                    style: GoogleFonts.inter(
-                      fontSize: MediaQuery.textScalerOf(context).scale(36),
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      accDataController.showStartButton ? "Start" : "End",
+                      style: GoogleFonts.inter(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
