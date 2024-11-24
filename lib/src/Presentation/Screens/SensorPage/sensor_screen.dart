@@ -15,29 +15,48 @@ class SensorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     AccDataController accDataController = Get.find();
     return Scaffold(
-      appBar: const CustomAppBar(),
       backgroundColor: const Color(0xFFF3EDF5),
-      body: ListView(
-        children: [
-          const Gap(20),
-          const StartButton(),
-          const Gap(20),
-          Center(
-            child: Obx(() {
-              return Text(
-                accDataController.showStartButton
-                    ? startMessage
-                    : progressMessage,
-                style: GoogleFonts.inter(
-                  color: accDataController.sensorScreencolor.updateMessage,
-                  fontWeight: FontWeight.w500,
-                  fontSize: MediaQuery.textScalerOf(context).scale(18),
-                ),
-              );
-            }),
+      body: CustomScrollView(
+        slivers: [
+          // Custom App Bar as Sliver
+          const CustomSliverAppBar(),
+
+          // Content using SliverList
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Gap(MediaQuery.sizeOf(context).height * 0.03),
+              const StartButton(),
+              Gap(MediaQuery.sizeOf(context).height * 0.03),
+
+              // Message Text
+              Center(
+                child: Obx(() {
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      accDataController.showStartButton
+                          ? startMessage
+                          : progressMessage,
+                      style: GoogleFonts.inter(
+                        color:
+                            accDataController.sensorScreencolor.updateMessage,
+                        fontWeight: FontWeight.w500,
+                        fontSize: MediaQuery.textScalerOf(context).scale(18),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.03),
+              const ReadingWidget(),
+            ]),
           ),
-          const Gap(20),
-          const ReadingWidget(),
+
+          // Add some padding at the bottom
+          const SliverPadding(
+            padding: EdgeInsets.only(bottom: 20),
+          ),
         ],
       ),
     );
