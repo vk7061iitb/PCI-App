@@ -34,11 +34,23 @@ class _OutputDataPageState extends State<OutputDataPage> {
           'Journey History',
           style: GoogleFonts.inter(
             fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
         backgroundColor: const Color(0xFFF3EDF5),
+        foregroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -73,29 +85,35 @@ class _OutputDataPageState extends State<OutputDataPage> {
               );
             }
             List<Map<String, dynamic>> outputData = snapshot.data!;
-
-            return ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: outputData.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: OutputDataItem(
-                    filename: outputData[index]["filename"],
-                    vehicleType: outputData[index]["vehicleType"],
-                    time: outputData[index]["Time"],
-                    id: outputData[index]["id"],
-                    onDeleteTap: () {
-                      localDatabase.deleteOutputData(outputData[index]["id"]);
-                      localDatabase
-                          .deleteRoadOutputData(outputData[index]["id"]);
-                      setState(() {
-                        outputDataFile = getData();
-                      });
-                    },
-                  ),
-                );
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  outputDataFile = getData();
+                });
               },
+              child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                itemCount: outputData.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: OutputDataItem(
+                      filename: outputData[index]["filename"],
+                      vehicleType: outputData[index]["vehicleType"],
+                      time: outputData[index]["Time"],
+                      id: outputData[index]["id"],
+                      onDeleteTap: () {
+                        localDatabase.deleteOutputData(outputData[index]["id"]);
+                        localDatabase
+                            .deleteRoadOutputData(outputData[index]["id"]);
+                        setState(() {
+                          outputDataFile = getData();
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
             );
           },
         ),
