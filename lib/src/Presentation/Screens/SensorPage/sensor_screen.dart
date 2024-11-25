@@ -6,7 +6,6 @@ import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/reading_widget.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/start_end_widget.dart';
 import 'package:pci_app/src/Presentation/Widgets/custom_appbar.dart';
-import '../../../../Objects/data.dart';
 
 class SensorScreen extends StatelessWidget {
   const SensorScreen({super.key});
@@ -35,8 +34,8 @@ class SensorScreen extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       accDataController.showStartButton
-                          ? startMessage
-                          : progressMessage,
+                          ? accDataController.startMessage
+                          : accDataController.progressMessage,
                       style: GoogleFonts.inter(
                         color:
                             accDataController.sensorScreencolor.updateMessage,
