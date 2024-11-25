@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:pci_app/Objects/data.dart';
 import '../src/Models/user_data.dart';
 
 Future<Map<String, dynamic>> loginUser(UserData user) async {
-  debugPrint('Logging in user...');
+  logger.d('Logging in user...');
   const String url = 'http://3.109.203.37/login';
   Map<String, dynamic> data = {};
   try {
@@ -31,11 +31,11 @@ Future<Map<String, dynamic>> loginUser(UserData user) async {
       data = responseData;
       return data;
     } else {
-      debugPrint(response.body);
+      logger.d(response.body);
       return data;
     }
   } catch (e) {
-    debugPrint(e.toString());
+    logger.d(e.toString());
     return data;
   }
 }
