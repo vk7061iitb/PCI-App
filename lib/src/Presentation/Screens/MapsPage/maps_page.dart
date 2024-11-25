@@ -12,8 +12,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
+import '../../../../Objects/data.dart';
+import '../../Controllers/map_page_controller.dart';
+import '../../Controllers/sensor_controller.dart';
+import 'widget/map_page_legends.dart';
 import 'widget/maptype_dropdown.dart';
 import 'widget/road_stats.dart';
 
@@ -87,7 +89,7 @@ class MapPage extends StatelessWidget {
                                 }
                               } catch (e) {
                                 // Handle any errors that occur during the onTap execution
-                                debugPrint('Error toggling DRRP layer: $e');
+                                logger.e('Error toggling DRRP layer: $e');
                               }
                             },
                             child: Row(
@@ -256,83 +258,6 @@ class MapPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class Legends extends StatelessWidget {
-  const Legends({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white54,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.red,
-              ),
-              const Gap(5),
-              const Text('PCI = 1'),
-            ],
-          ),
-          const Gap(5),
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.orange,
-              ),
-              const Gap(5),
-              const Text('PCI = 2'),
-            ],
-          ),
-          const Gap(5),
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.yellow,
-              ),
-              const Gap(5),
-              const Text('PCI = 3'),
-            ],
-          ),
-          const Gap(5),
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.blue,
-              ),
-              const Gap(5),
-              const Text('PCI = 4'),
-            ],
-          ),
-          const Gap(5),
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.green,
-              ),
-              const Gap(5),
-              const Text('PCI = 5'),
-            ],
-          ),
-        ],
       ),
     );
   }
