@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pci_app/Objects/data.dart';
 
 class DateTimeParser {
   DateTime? parseDateTime(String dateStr, String format) {
@@ -7,7 +7,7 @@ class DateTimeParser {
       final DateFormat formatter = DateFormat(format);
       return formatter.parse(dateStr);
     } catch (e) {
-      debugPrint('Error parsing date: $e');
+      logger.e('Error parsing date: $e');
       return null;
     }
   }
