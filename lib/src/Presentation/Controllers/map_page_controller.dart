@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Functions/get_road_color.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
+import '../../../Functions/cal_map_bounds.dart';
+import '../../../Functions/vel_to_pci.dart';
 import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
@@ -29,9 +30,10 @@ class MapPageController extends GetxController {
     MapType.terrain,
     MapType.none
   ].obs;
+
   RxString dropdownValue = 'Normal'.obs;
   final RxBool _showCircularProgress = false.obs;
-  final RxBool _showPCIlabel = false.obs;
+  final RxBool _showPCIlabel = true.obs;
   final RxBool _showIndicator = false.obs;
 
   // variables to store the currently open road's metadata
@@ -107,23 +109,9 @@ class MapPageController extends GetxController {
     }
   }
 
-  double velocityToPCI(double velocity) {
-    if (velocity >= 30) {
-      return 5;
-    } else if (velocity > 20) {
-      return 4;
-    } else if (velocity > 10) {
-      return 3;
-    } else if (velocity > 5) {
-      return 2;
-    } else {
-      return 1;
-    }
-  }
-
   // fuction to plot the road data on the map
   Future<void> plotRoadData() async {
-    debugPrint("plotting road data...");
+    logger.d("plotting road data...");
     roadStats.clear();
     _pciPolylines.clear();
     for (var road in roadOutputDataQuery) {
@@ -164,8 +152,7 @@ class MapPageController extends GetxController {
         _maxLat = LatLng(labels[i]['latitude'], labels[i]['longitude']);
         double avgVelocity =
             (labels[i]['velocity'] + labels[i - 1]['velocity']) / 2;
-        // convert m/s to kmph
-        avgVelocity *= 3.6;
+        avgVelocity *= 3.6; // convert m/s to kmph
         double prediction = max(
             double.parse(labels[i]['prediction'].toString()),
             double.parse(labels[i - 1]['prediction'].toString()));
@@ -186,211 +173,44 @@ class MapPageController extends GetxController {
             LatLng(labels[i]['latitude'], labels[i]['longitude']),
           ],
           onTap: () {
-            debugPrint('${currentRoad['time']}');
+            Map<String, dynamic> polylineOnTapData = {
+              'roadName': roadName,
+              'filename': currentRoad['filename'],
+              'time': currentRoad['time'],
+              'pci_pred': prediction,
+              'vel_pred': velocityPCI,
+              'avg_vel': avgVelocity,
+            };
             Get.bottomSheet(
               clipBehavior: Clip.antiAlias,
               backgroundColor: Colors.white,
-              Container(
-                padding: const EdgeInsets.all(10),
-                width: Get.width,
-                color: Colors.white,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Features",
-                      style: GoogleFonts.inter(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                      ),
-                    ),
-                    const Gap(10),
-                    Row(
-                      children: [
-                        Text(
-                          roadName,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                    const Gap(10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${currentRoad['filename']}',
-                          style: GoogleFonts.inter(
-                            color: Colors.black54,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              color: Colors.black54,
-                            ),
-                            const Gap(5),
-                            Text(
-                              '${currentRoad['time']}',
-                              style: GoogleFonts.inter(
-                                color: Colors.black54,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    const Divider(),
-                    Row(
-                      children: [
-                        Text(
-                          "PCI(prediction)",
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          prediction.toString(),
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Gap(5),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            minHeight: 10,
-                            value: prediction / 5,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.black87,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Gap(10),
-                    Row(
-                      children: [
-                        Text(
-                          "PCI(velocity)",
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          velocityPCI.toString(),
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Gap(5),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            minHeight: 10,
-                            value: velocityPCI / 5,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.black87,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Gap(10),
-                    Row(
-                      children: [
-                        Text(
-                          "Avg Speed",
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "${avgVelocity.toStringAsFixed(2)} kmph",
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Gap(10),
-                  ],
-                ),
-              ),
+              PolylineBottomSheet(data: polylineOnTapData),
             );
           },
         );
-
         _pciPolylines.add(tempPolylne);
       }
     }
-    polylines.addAll(_pciPolylines.toSet());
   }
 
   // Function to animate the camera to the location of the polylines
   Future<void> animateToLocation(LatLng min, LatLng max) async {
-    double minLat = min.latitude;
-    double minLng = min.longitude;
-    double maxLat = max.latitude;
-    double maxLng = max.longitude;
-
-    if (minLat > maxLat) {
-      double temp = minLat;
-      minLat = maxLat;
-      maxLat = temp;
-    }
-
-    if (minLng > maxLng) {
-      double temp = minLng;
-      minLng = maxLng;
-      maxLng = temp;
-    }
-
-    LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(minLat, minLng),
-      northeast: LatLng(maxLat, maxLng),
-    );
-
+    LatLngBounds bounds = calculateBounds(min, max);
     _googleMapController
         ?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 11));
   }
 
-  // This function is used to plot the DRRP layer on the map. It reads the geojson file containing the DRRP data and plots the polylines on the map.
+  // This function is used to plot the DRRP layer on the map.
+  // It reads the geojson file containing the DRRP data and plots the polylines on the map.
   Future<void> plotDRRPLayer() async {
     _showCircularProgress.value = true;
+    Map<String, dynamic> jsonData = {};
+    List<dynamic> features = [];
     String geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
+
     jsonData = jsonDecode(geoJsonString);
     features = jsonData['features'];
 
-    // Clear the polylines then add DRRP + PCI polylines
     _pciPolylines.clear();
 
     for (int i = 0; i < features.length; i++) {
@@ -403,7 +223,7 @@ class MapPageController extends GetxController {
         );
       }
 
-      Polyline temporaryPolyline = Polyline(
+      Polyline tempPolyline = Polyline(
         polylineId: PolylineId('drrp_polyline$i'),
         color: Colors.black,
         width: 5,
@@ -416,10 +236,8 @@ class MapPageController extends GetxController {
           PatternItem.gap(10),
         ],
       );
-
-      _pciPolylines.add(temporaryPolyline);
+      _pciPolylines.add(tempPolyline);
     }
     _showCircularProgress.value = false;
-    jsonData = {};
   }
 }
