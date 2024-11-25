@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pci_app/Objects/data.dart';
 
 import '../../Controllers/login_controller.dart';
 
@@ -55,7 +56,7 @@ class RolesDropdown extends StatelessWidget {
           }).toList(),
           onChanged: (String? newValue) {
             loginController.userRole = newValue!;
-            debugPrint('User Role: ${loginController.userRole}');
+            logger.i('User Role: ${loginController.userRole}');
           },
         );
       }),

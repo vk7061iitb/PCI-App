@@ -14,16 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pci_app/firebase_options.dart';
 import 'Functions/init_download_folder.dart';
-import 'Functions/request_storage_permission.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
 import 'src/Presentation/Controllers/user_data_controller.dart';
 import 'src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  DotEnv().load(fileName: '.env');
   Get.lazyPut(() => LocationController());
   Get.lazyPut(() => AccDataController());
   Get.lazyPut(() => MapPageController());
@@ -40,7 +37,7 @@ Future<void> main() async {
     },
   );
 
-  debugPrint('Is Logged In: $isLoggedIn');
+  logger.i('Is Logged In: $isLoggedIn');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,
   );
@@ -78,11 +75,6 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    checkPermission();
-  }
-
-  void checkPermission() async {
-    await requestStoragePermission();
   }
 
   @override

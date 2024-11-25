@@ -38,6 +38,8 @@ class AccDataController extends GetxController {
   final Rx<SensorPageColor> _sensorScreencolor = SensorPageColor().obs;
   final RxBool _showResponseSheet = false.obs;
   final RxBool _showStartButton = true.obs;
+  final String startMessage = 'Tap "Start" to collect data';
+  final String progressMessage = 'Collecting the data...';
   String? _userID;
   int _count = 0;
 
@@ -86,7 +88,6 @@ class AccDataController extends GetxController {
 
   // This function is called when the start button is pressed
   void onStartButtonPressed() async {
-    // Check if the location data is available or not, if not show an alert dialog
     if (_devicePosition.value.latitude == 0) {
       Get.dialog(
         AlertDialog(
@@ -109,12 +110,10 @@ class AccDataController extends GetxController {
       _showStartButton.value = false;
       downSampledDatapoints.clear();
       dataPointsList.clear();
-      debugPrint('Recording Started');
+      logger.i('Recording Started');
       _userID = await localDatabase.queryUserData().then((user) => user.userID);
-      await localDatabase.deleteAcctables();
-      // Start the accelerometer stream to record the data points
       _accStream = accelerometerEventStream(
-        samplingPeriod: const Duration(microseconds: 1000),
+        samplingPeriod: const Duration(milliseconds: 10),
       ).listen(
         (AccelerometerEvent event) {
           accData.value = event;
@@ -138,14 +137,13 @@ class AccDataController extends GetxController {
 
   // This function is called when the end button is pressed
   Future<void> onEndButtonPressed() async {
-    debugPrint('Recording Stopped');
+    logger.i('Recording Stopped');
     _isRecordingData.value = false;
     _showStartButton.value = true;
     _accStream?.cancel();
     _positionStream?.cancel();
     accData.value = AccelerometerEvent(0, 0, 0, DateTime.now());
     _showResponseSheet.value = true;
-    // Downsample the data points to 50Hz
     _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
   }
 }

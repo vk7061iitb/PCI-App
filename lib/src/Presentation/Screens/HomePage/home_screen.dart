@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
-import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/SensorPage/sensor_screen.dart';
+import '../../Controllers/location_permission.dart';
+import '../../Controllers/sensor_controller.dart';
+import '../../Controllers/user_data_controller.dart';
+import '../SensorPage/sensor_screen.dart';
+import '../SavedFile/saved_files_page.dart';
 import '../../../../Utils/assets.dart';
 import '../../Controllers/bottom_navbar_controller.dart';
 import '../OutputData/output_data.dart';
-import '../SavedFile/saved_files_page.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});

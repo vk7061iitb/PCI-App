@@ -45,7 +45,7 @@ class ResponseController extends GetxController {
         diffPoints++;
       }
     }
-    debugPrint('Diff Points: $diffPoints');
+
     if (diffPoints < 1) {
       // show snackbar
       String message = 'Not enough data to send';
@@ -60,7 +60,7 @@ class ResponseController extends GetxController {
     // send the data to the server
     String? userID =
         await localDatabase.queryUserData().then((user) => user.userID);
-    debugPrint('User ID: $userID');
+    logger.i('User ID: $userID');
     await sendDataToServer
         .sendData(
             accData: accData,
@@ -122,7 +122,7 @@ class ResponseController extends GetxController {
     // send the data to the server
     String? userID =
         await localDatabase.queryUserData().then((user) => user.userID);
-    debugPrint('User ID: $userID');
+    ('User ID: $userID');
 
     await sendDataToServer
         .sendData(accData: accData, userID: userID!, filename: filename)

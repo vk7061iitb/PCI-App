@@ -53,7 +53,7 @@ class LoginController extends GetxController {
         userRole: _userRole.value,
       );
 
-      debugPrint(serverMessage.toString());
+      logger.i(serverMessage.toString());
       Future.wait([
         localDatabase.deleteUserData(),
         localDatabase.insertUserData(
@@ -65,7 +65,7 @@ class LoginController extends GetxController {
 
   @override
   void dispose() {
-    debugPrint("Disposing Login Controller");
+    logger.d("Disposing Login Controller");
     emailController.dispose();
     phoneController.dispose();
     emailFocusNode.dispose();

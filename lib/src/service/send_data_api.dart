@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:pci_app/Objects/data.dart';
 import '../Models/data_points.dart';
@@ -36,7 +35,7 @@ class SendDataToServer {
         body: jsonEncode(sensorData),
       )
           .timeout(
-        const Duration(seconds: 25),
+        const Duration(seconds: 30),
         onTimeout: () {
           message = "Server took too long to respond";
           return http.Response('Server took too long to respond', 408);
@@ -77,16 +76,13 @@ class SendDataToServer {
             roadOutputData: roadOutputData);
         return message;
       } else {
-        debugPrint('Failed to send data. Status code: ${response.statusCode}');
+        logger.f('Failed to send data. Status code: ${response.statusCode}');
         message = 'Failed to send data. Status code: ${response.statusCode}';
-        debugPrint('Response body: ${response.body}');
+        logger.d('Response body: ${response.body}');
         return message;
       }
     } catch (e) {
-      // Error in building the connection to the server
-      // Save that file to the local database and send it later
-
-      debugPrint('Error: $e');
+      logger.f('Error: $e');
       return e.toString();
     }
   }

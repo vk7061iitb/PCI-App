@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/src/Models/user_data.dart';
 import '../../../Objects/data.dart';
@@ -25,7 +24,7 @@ class UserDataController extends GetxController {
     try {
       _userData.value = await localDatabase.queryUserData();
     } catch (e) {
-      debugPrint('Error: $e');
+      logger.e('Error: $e');
     }
     super.onInit();
   }
