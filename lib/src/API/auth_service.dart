@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/config/config.dart';
 import '../Models/user_data.dart';
 
@@ -11,7 +12,7 @@ class UserAuthenticationService {
   UserAuthenticationService() : authURL = Config.getAuthBaseURL();
 
   Future<Map<String, dynamic>> loginUser({required UserData user}) async {
-    debugPrint('Logging in user...');
+    logger.d('Logging in user...');
     String loginURL = "$authURL${Config.loginEndPoint}";
     Map<String, dynamic> data = {};
     try {
@@ -40,11 +41,11 @@ class UserAuthenticationService {
         data = responseData;
         return data;
       } else {
-        debugPrint(response.body);
+        logger.d(response.body);
         return data;
       }
     } catch (e) {
-      debugPrint(e.toString());
+      logger.e(e.toString());
       return data;
     }
   }

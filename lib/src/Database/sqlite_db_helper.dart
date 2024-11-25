@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:pci_app/Functions/init_download_folder.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/user_data.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
@@ -109,10 +110,10 @@ class SQLDatabaseHelper {
           'Time': DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())
         },
       );
-      debugPrint('UnsendDataInfo ID: $id');
+      logger.d('UnsendDataInfo ID: $id');
       return id;
     } catch (e) {
-      debugPrint(e.toString());
+      logger.e(e.toString());
       return id;
     }
   }
@@ -181,11 +182,11 @@ class SQLDatabaseHelper {
       File accFile = File(accPath);
       await accFile.writeAsString(accCSV);
 
-      debugPrint('CSV files exported to path : $accDataDirectoryPath');
+      logger.d('CSV files exported to path : $accDataDirectoryPath');
       await Share.shareXFiles([accFile1]);
       return 'Data Exported Successfully';
     } catch (e) {
-      debugPrint(e.toString());
+      logger.e(e.toString());
       return e.toString();
     }
   }
@@ -200,7 +201,7 @@ class SQLDatabaseHelper {
         );
       },
     );
-    debugPrint(
+    logger.i(
         'User Data Inserted : {${user.email}, ${user.phoneNumber}, ${user.userRole}}');
     return 'User Data Inserted';
   }
@@ -226,7 +227,7 @@ class SQLDatabaseHelper {
         return user;
       }
     } catch (error) {
-      debugPrint(error.toString());
+      logger.e(error.toString());
       return UserData(userID: '0', phoneNumber: '0', email: '0', userRole: '0');
     }
   }
@@ -245,10 +246,10 @@ class SQLDatabaseHelper {
         'vehicleType': vehicleType,
         'Time': DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())
       });
-      debugPrint('OutputData ID: $id');
+      logger.d('OutputData ID: $id');
       return id;
     } catch (e) {
-      debugPrint(e.toString());
+      logger.e(e.toString());
       return id;
     }
   }
@@ -279,7 +280,7 @@ class SQLDatabaseHelper {
         );
       }
       await roadOutputDataBatch.commit();
-      debugPrint('Road Output Data inserted!');
+      logger.i('Road Output Data inserted!');
     });
   }
 
