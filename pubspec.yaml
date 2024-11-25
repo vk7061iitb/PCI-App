@@ -17,7 +17,6 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.0.10+1
-  flutter_dotenv: ^5.2.1
   gap: ^3.0.1
   geolocator: ^13.0.2
   get: ^4.6.6
@@ -33,6 +32,7 @@ dependencies:
   sensors_plus: ^6.0.1
   share_plus: ^10.0.0
   sqflite: ^2.3.2
+  logger: ^2.5.0
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +42,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - .env
     - lib\Assets\Roads\road_drrp.geojson
     - lib\Assets\SensorImages\gyroscope.svg
     - lib\Assets\SensorImages\location.svg
