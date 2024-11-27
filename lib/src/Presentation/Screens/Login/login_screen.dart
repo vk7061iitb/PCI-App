@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/Login/roles_dropdown.dart';
+import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -230,7 +231,10 @@ class LoginScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          Get.toNamed(myRoutes.signUpRoute);
+                          Get.to(
+                            () => SignupScreen(),
+                            transition: Transition.cupertino,
+                          );
                         },
                         child: Text(
                           "Create one",
