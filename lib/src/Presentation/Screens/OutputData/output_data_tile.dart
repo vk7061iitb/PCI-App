@@ -4,19 +4,14 @@
   menu with options to show the data on the map and delete the data.
 */
 
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
-import 'package:share_plus/share_plus.dart';
+import '../../../../Utils/get_icon.dart';
 import '../MapsPage/maps_page.dart';
 
 class OutputDataItem extends StatelessWidget {
@@ -25,325 +20,270 @@ class OutputDataItem extends StatelessWidget {
     required this.filename,
     required this.vehicleType,
     required this.time,
-    required this.onDeleteTap,
     required this.id,
   });
 
   final String filename;
   final int id;
-  final VoidCallback onDeleteTap;
   final String time;
   final String vehicleType;
 
-// Function to get the icon for the vehicle type
-  Icon getIcon(String vehicleType) {
-    if (vehicleType == 'Car') {
-      return const Icon(
-        Icons.directions_car_filled_outlined,
-        size: 40,
-        color: Colors.black87,
-      );
-    } else if (vehicleType == 'Bike') {
-      return const Icon(
-        Icons.motorcycle_outlined,
-        size: 40,
-        color: Colors.black87,
-      );
-    } else if (vehicleType == 'Auto') {
-      return const Icon(
-        Icons.electric_rickshaw_outlined,
-        size: 40,
-        color: Colors.black87,
-      );
-    } else if (vehicleType == 'Bus') {
-      return const Icon(
-        Icons.directions_bus_outlined,
-        size: 40,
-        color: Colors.black87,
-      );
-    } else {
-      return const Icon(
-        Icons.directions_run_outlined,
-        size: 40,
-        color: Colors.black87,
-      );
-    }
-  }
-
-  // velocity to pci
-  double velocityToPCI(double velocity) {
-    if (velocity >= 30) {
-      return 5;
-    } else if (velocity > 20) {
-      return 4;
-    } else if (velocity > 10) {
-      return 3;
-    } else if (velocity > 5) {
-      return 2;
-    } else {
-      return 1;
-    }
-  }
-
-  // export data
-  Future<void> exportData(String filename, String vehicle, String time,
-      List<Map<String, dynamic>> query) async {
-    List<List<dynamic>> csvData = [];
-    csvData.add([
-      'Road Name',
-      'Latitude',
-      'Longitude',
-      'PCI(prediction)',
-      'PCI(velocity)',
-      'Velocity(km/hr)',
-    ]);
-    for (var road in query) {
-      String roadName = road["roadName"];
-      List<dynamic> labels = jsonDecode(road["labels"]);
-
-      // add the velocity_prediction in the labels
-      for (int i = 0; i < labels.length; i++) {
-        labels[i]['vel_prediction'] =
-            velocityToPCI(labels[i]['velocity'] * 3.6); // convert to km/hr
-      }
-
-      for (int i = 0; i < labels.length; i++) {
-        List<dynamic> row = [];
-        row.add(roadName);
-        row.add(labels[i]['latitude']);
-        row.add(labels[i]['longitude']);
-        row.add(labels[i]['prediction']);
-        row.add(labels[i]['vel_prediction']);
-        row.add(labels[i]['velocity'] * 3.6); // convert to km/hr
-        csvData.add(row);
-      }
-    }
-    final tempdir = await getTemporaryDirectory();
-    String csv = const ListToCsvConverter().convert(csvData);
-    String fileName = '$filename-$vehicle-$time.csv';
-    String path = '${tempdir.path}/$fileName';
-    File file = File(path);
-    file.writeAsString(csv);
-    XFile fileToShare = XFile(path);
-    await fileToShare.readAsString();
-    Share.shareXFiles([fileToShare]).then((value) {
-      file.delete();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    MapPageController mapPageController = Get.find();
+    OutputDataController outputDataController = Get.find();
+    double left = 0, right = 0, top = 0, bottom = 0;
+    RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
       fontSize: 16,
     );
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.09,
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.black12,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Center(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-              child: getIcon(vehicleType),
-            ),
+    return InkWell(
+      onTapDown: (TapDownDetails tapdownDetails) {
+        // do something
+        left = tapdownDetails.globalPosition.dx;
+        top = tapdownDetails.globalPosition.dy;
+        overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+        right = overlay.size.width - left;
+        bottom = overlay.size.height - top;
+      },
+      onLongPress: () {
+        // multi-select
+        if (outputDataController.slectedFiles.contains(id)) {
+          outputDataController.slectedFiles.remove(id);
+        } else {
+          outputDataController.slectedFiles.add(id);
+        }
+      },
+      onTap: () {
+        // already selected
+        if (outputDataController.slectedFiles.contains(id)) {
+          outputDataController.slectedFiles.remove(id);
+          return;
+        }
+        // multi-selct enabled
+        if (outputDataController.slectedFiles.isNotEmpty) {
+          outputDataController.slectedFiles.add(id);
+          return;
+        }
+        showMenu(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            left,
+            top,
+            right,
+            bottom,
           ),
-          const Gap(5),
-          // Vetical line to separate the icon and the filename
-          Container(
-            height: MediaQuery.of(context).size.height * 0.1,
-            width: 1,
-            color: Colors.black26,
-          ),
-          const Gap(10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: FittedBox(
-                  alignment: Alignment.centerLeft,
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    filename,
-                    style: GoogleFonts.inter(
-                      color: Colors.black,
-                      fontWeight: FontWeight.normal,
-                      fontSize: 18,
+          items: [
+            PopupMenuItem(
+              onTap: () async {
+                outputDataController.slectedFiles.clear();
+                outputDataController.slectedFiles.add(id);
+                outputDataController.plotRoads().then((_) {
+                  Get.to(
+                    () => MapPage(),
+                    transition: Transition.cupertino,
+                  );
+                  outputDataController.slectedFiles.clear();
+                });
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.map_outlined,
+                      color: Colors.black87,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.clip,
+                  ),
+                  Text(
+                    "Show on Map",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              onTap: () async {
+                if (context.mounted) {
+                  Get.bottomSheet(
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.8,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: RoadStatistics(
+                        id: id,
+                      ),
+                    ),
+                    isScrollControlled: true,
+                    isDismissible: true,
+                    enableDrag: true,
+                    ignoreSafeArea: false,
+                  );
+                }
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.bar_chart_outlined,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Statistics",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              onTap: () async {
+                // Function to export the data
+                List<Map<String, dynamic>> query =
+                    await localDatabase.queryRoadOutputData(id);
+                outputDataController.exportData(
+                    filename, vehicleType, time, query);
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.file_download,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Export",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              onTap: () {
+                outputDataController.deleteData(id);
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Delete",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(
+          right: 10,
+          left: 10,
+          top: 2,
+          bottom: 2,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: MediaQuery.sizeOf(context).width * 0.15,
+                  height: MediaQuery.sizeOf(context).width * 0.15,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                  ),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Icon(
+                        getIcon(vehicleType),
+                        size: MediaQuery.sizeOf(context).width * 0.1,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
+                Gap(MediaQuery.sizeOf(context).width * 0.05),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.calendar_month_outlined,
-                      size: 16,
-                      color: Colors.teal,
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          filename,
+                          style: GoogleFonts.inter(
+                            color: Colors.black,
+                            fontWeight: FontWeight.normal,
+                            fontSize: 18,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.clip,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      time,
-                      style: GoogleFonts.inter(
-                        color: Colors.teal,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 14,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            size: 16,
+                            color: Colors.teal,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            time,
+                            style: GoogleFonts.inter(
+                              color: Colors.teal,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          PopupMenuButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+                const Spacer(),
+                Obx(() {
+                  return outputDataController.slectedFiles.contains(id)
+                      ? Icon(
+                          Icons.check_circle,
+                          color: Colors.blue.shade800,
+                        )
+                      : SizedBox();
+                }),
+              ],
             ),
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.black,
-            ),
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  onTap: () async {
-                    List<Map<String, dynamic>> roadOutputDataQuery =
-                        await localDatabase.queryRoadOutputData(id);
-                    mapPageController.currentRoad = {
-                      "filename": filename,
-                      "vehicleType": vehicleType,
-                      "time": time,
-                    };
-                    mapPageController.roadOutputDataQuery = roadOutputDataQuery;
-                    mapPageController.plotRoadData();
-
-                    if (context.mounted) {
-                      Get.to(
-                        () => MapPage(),
-                        transition: Transition.cupertino,
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.map_outlined,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        "Show on Map",
-                        style: popUpMenuTextStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  onTap: () async {
-                    if (context.mounted) {
-                      Get.bottomSheet(
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.8,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
-                            ),
-                          ),
-                          child: RoadStatistics(
-                            id: id,
-                          ),
-                        ),
-                        isScrollControlled: true,
-                        isDismissible: true,
-                        enableDrag: true,
-                        ignoreSafeArea: false,
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.bar_chart_outlined,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        "Statistics",
-                        style: popUpMenuTextStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  onTap: () async {
-                    // Function to export the data
-                    List<Map<String, dynamic>> query =
-                        await localDatabase.queryRoadOutputData(id);
-                    exportData(filename, vehicleType, time, query);
-                  },
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.file_download,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        "Export",
-                        style: popUpMenuTextStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  onTap: onDeleteTap,
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.delete_outline,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        "Delete",
-                        style: popUpMenuTextStyle,
-                      ),
-                    ],
-                  ),
-                ),
-              ];
-            },
-          ),
-        ],
+            Divider(
+              color: Colors.black12,
+              thickness: 0.5,
+              indent: MediaQuery.sizeOf(context).width * 0.2,
+            )
+          ],
+        ),
       ),
     );
   }

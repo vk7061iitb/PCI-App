@@ -12,6 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../../Controllers/map_page_controller.dart';
 import '../../Controllers/sensor_controller.dart';
@@ -29,7 +30,7 @@ class MapPage extends StatelessWidget {
     MapPageController mapPageController = Get.find();
     return Scaffold(
       body: SafeArea(
-        bottom: false,
+        top: true,
         child: Stack(
           children: [
             Positioned.fill(
@@ -81,14 +82,22 @@ class MapPage extends StatelessWidget {
                                 mapPageController.isDrrpLayerVisible =
                                     !mapPageController.isDrrpLayerVisible;
                                 if (mapPageController.isDrrpLayerVisible) {
-                                  mapPageController.plotDRRPLayer();
-                                } else {
-                                  mapPageController.pciPolylines.clear();
-                                  mapPageController.pciPolylines
-                                      .addAll(mapPageController.pciPolylines);
+                                  mapPageController.showIndicator = true;
+                                  mapPageController.plotDRRPLayer().then((_) {
+                                    mapPageController.showIndicator = false;
+                                  });
+                                  return;
                                 }
+                                // clear the DRRP layer
+                                mapPageController.showIndicator = true;
+                                mapPageController.plotRoadData().then((_) {
+                                  mapPageController.showIndicator = false;
+                                });
                               } catch (e) {
                                 // Handle any errors that occur during the onTap execution
+                                customGetSnackBar(
+                                    "'Error toggling DRRP layer: $e'",
+                                    Icons.error_outline);
                                 logger.e('Error toggling DRRP layer: $e');
                               }
                             },
@@ -126,10 +135,10 @@ class MapPage extends StatelessWidget {
                         const Gap(10),
                         TextButton(
                           onPressed: () {
+                            mapPageController.showIndicator = true;
                             mapPageController.showPCIlabel =
                                 !mapPageController.showPCIlabel;
-                            mapPageController.showIndicator = true;
-                            mapPageController.clearPolylines();
+                            logger.i(mapPageController.pciPolylines.length);
                             mapPageController.plotRoadData().then((value) {
                               mapPageController.showIndicator = false;
                             });
@@ -177,9 +186,9 @@ class MapPage extends StatelessWidget {
             ),
             Positioned(
               bottom: 10,
-              left: 0,
+              left: 10,
               // Row containing the buttons to zoom, clear, change map type and view road statistics
-              child: Row(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   const Gap(10),
@@ -229,7 +238,9 @@ class MapPage extends StatelessWidget {
                           isDismissible: true,
                           backgroundColor: Colors.white,
                           MapPageRoadStatistics(
-                              roadStats: mapPageController.getRoadStats),
+                            roadStats: mapPageController.getRoadStats,
+                            roadOutputData: mapPageController.selectedRoads,
+                          ),
                         );
                       },
                       icon: const Icon(
@@ -253,6 +264,23 @@ class MapPage extends StatelessWidget {
                   alignment: Alignment.center,
                   fit: BoxFit.contain,
                   child: const Legends(),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.08,
+              left: 0,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Obx(
+                  () {
+                    return mapPageController.showIndicator
+                        ? LinearProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.blue[800]!),
+                          )
+                        : const SizedBox();
+                  },
                 ),
               ),
             ),

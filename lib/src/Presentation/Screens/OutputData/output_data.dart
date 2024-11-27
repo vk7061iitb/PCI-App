@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/OutputData/output_data_tile.dart';
 
-class OutputDataPage extends StatefulWidget {
+import '../MapsPage/maps_page.dart';
+
+class OutputDataPage extends StatelessWidget {
   const OutputDataPage({super.key});
 
   @override
-  State<OutputDataPage> createState() => _OutputDataPageState();
-}
-
-class _OutputDataPageState extends State<OutputDataPage> {
-  late Future<List<Map<String, dynamic>>> outputDataFile;
-  Future<List<Map<String, dynamic>>> getData() async {
-    List<Map<String, dynamic>> outputData = [];
-    outputData = await localDatabase.queryTable('outputData');
-    return outputData;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    outputDataFile = getData();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    OutputDataController outputDataController = Get.put(OutputDataController());
+    TextStyle popUpMenuTextStyle = GoogleFonts.inter(
+      color: Colors.black,
+      fontWeight: FontWeight.normal,
+      fontSize: 16,
+    );
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
@@ -53,70 +46,166 @@ class _OutputDataPageState extends State<OutputDataPage> {
         ],
       ),
       body: SafeArea(
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: outputDataFile,
-          builder: (BuildContext context,
-              AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    assetsPath.emptyFile,
-                    width: 50,
-                  ),
-                  Center(
-                    child: Text(
-                      'There are no files to display',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  )
-                ],
-              );
-            }
-            List<Map<String, dynamic>> outputData = snapshot.data!;
-            return RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  outputDataFile = getData();
-                });
-              },
-              child: ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                itemCount: outputData.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: OutputDataItem(
-                      filename: outputData[index]["filename"],
-                      vehicleType: outputData[index]["vehicleType"],
-                      time: outputData[index]["Time"],
-                      id: outputData[index]["id"],
-                      onDeleteTap: () {
-                        localDatabase.deleteOutputData(outputData[index]["id"]);
-                        localDatabase
-                            .deleteRoadOutputData(outputData[index]["id"]);
-                        setState(() {
-                          outputDataFile = getData();
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
+        child: Obx(() {
+          if (outputDataController.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(),
             );
-          },
-        ),
+          }
+
+          if (outputDataController.outputDataFile.isEmpty) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  assetsPath.emptyFile,
+                  width: 50,
+                ),
+                Text(
+                  'There are no files to display',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: outputDataController.fetchData,
+            triggerMode: RefreshIndicatorTriggerMode.onEdge,
+            child: Column(
+              children: [
+                outputDataController.slectedFiles.isNotEmpty
+                    ? SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, -0.1), // Slides down slightly
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: const AlwaysStoppedAnimation(1),
+                            curve: Curves.easeOutQuad,
+                          ),
+                        ),
+                        child: FadeTransition(
+                          opacity: const AlwaysStoppedAnimation(1),
+                          child: SizedBox(
+                            height: MediaQuery.sizeOf(context).height * 0.1,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    outputDataController.slectedFiles.clear();
+                                  },
+                                  icon: Icon(
+                                    Icons.close,
+                                    color: Colors.black,
+                                    size: MediaQuery.sizeOf(context).height *
+                                        0.04,
+                                  ),
+                                ),
+                                const Gap(10),
+                                Text(
+                                  '${outputDataController.slectedFiles.length} selected',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const Spacer(),
+                                PopupMenuButton(
+                                  itemBuilder: (BuildContext context) {
+                                    return [
+                                      PopupMenuItem(
+                                        child: Row(
+                                          children: [
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 5),
+                                              child: Icon(
+                                                Icons.map_outlined,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              "Show on Map",
+                                              style: popUpMenuTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                        onTap: () {
+                                          // show on map
+                                          outputDataController
+                                              .plotRoads()
+                                              .then((_) {
+                                            Get.to(
+                                              () => MapPage(),
+                                              transition: Transition.cupertino,
+                                            );
+                                            outputDataController.slectedFiles
+                                                .clear();
+                                          });
+                                        },
+                                      ),
+                                      PopupMenuItem(
+                                        child: Row(
+                                          children: [
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 5),
+                                              child: Icon(
+                                                Icons.file_download,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              "Export",
+                                              style: popUpMenuTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                        onTap: () {
+                                          // export data
+                                          outputDataController.makeZip();
+                                        },
+                                      ),
+                                    ];
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : const Gap(0),
+                const Gap(10),
+                Expanded(
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    itemCount: outputDataController.outputDataFile.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final item = outputDataController.outputDataFile[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: OutputDataItem(
+                          filename: item["filename"],
+                          vehicleType: item["vehicleType"],
+                          time: item["Time"],
+                          id: item["id"],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
