@@ -33,6 +33,7 @@ dependencies:
   share_plus: ^10.0.0
   sqflite: ^2.3.2
   logger: ^2.5.0
+  archive: ^3.6.1
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 IconData getIcon(String dropdownValue) {
   switch (dropdownValue) {
     case 'Bike':
-      return Icons.directions_bike_rounded;
+      return Icons.two_wheeler;
     case 'Car':
       return Icons.directions_car_rounded;
     case 'Bus':
