@@ -81,7 +81,7 @@ class _UnsendDataState extends State<UnsendData> {
               physics: const BouncingScrollPhysics(),
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.only(left: 10, right: 10),
                   child: UnsentFileTile(
                     filename: unsentData[index]['filename'],
                     vehicleType: unsentData[index]['vehicleType'],
