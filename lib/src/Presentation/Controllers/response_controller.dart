@@ -65,7 +65,8 @@ class ResponseController extends GetxController {
         .sendData(
             accData: accData,
             userID: userID!,
-            filename: _fileNameController.value.text)
+            filename: _fileNameController.value.text,
+            dropdownValue: _dropdownValue.value)
         .then((value) async {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
@@ -125,7 +126,11 @@ class ResponseController extends GetxController {
     ('User ID: $userID');
 
     await sendDataToServer
-        .sendData(accData: accData, userID: userID!, filename: filename)
+        .sendData(
+            accData: accData,
+            userID: userID!,
+            filename: filename,
+            dropdownValue: _dropdownValue.value)
         .then((value) {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;

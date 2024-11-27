@@ -14,7 +14,8 @@ class SendDataToServer {
   Future<String> sendData(
       {required List<AccData> accData,
       required String userID,
-      required filename}) async {
+      required filename,
+      required dropdownValue}) async {
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
