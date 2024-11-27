@@ -7,8 +7,10 @@ import '../../../../../Objects/data.dart';
 import '../../../../Models/stats_data.dart';
 
 class MapPageRoadStatistics extends StatelessWidget {
-  const MapPageRoadStatistics({required this.roadStats, super.key});
+  const MapPageRoadStatistics(
+      {required this.roadStats, required this.roadOutputData, super.key});
   final List<RoadStats> roadStats;
+  final List<Map<String, dynamic>> roadOutputData;
 
   @override
   Widget build(BuildContext context) {
@@ -55,80 +57,92 @@ class MapPageRoadStatistics extends StatelessWidget {
                 itemCount: roadStats.length,
                 itemBuilder: (context, roadIndex) {
                   final outputStats = roadStats[roadIndex].roadStatsData;
-                  return ExpansionTile(
-                      title: Text(
-                        roadStats[roadIndex].roadName,
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                        ),
-                      ),
-                      children: [
-                        SingleChildScrollView(
-                          child: FittedBox(
-                            fit: BoxFit.fill,
-                            child: DataTable(
-                              columns: <DataColumn>[
-                                DataColumn(
-                                  label: Text(
-                                    'PCI',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Distance(km)',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Velocity(km/hr)',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              rows: [
-                                for (var stats in outputStats)
-                                  DataRow(
-                                    cells: <DataCell>[
-                                      DataCell(
-                                        Text(
-                                          stats.pci.toString(),
-                                          style: GoogleFonts.inter(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text((double.parse(
-                                                    stats.distanceTravelled) /
-                                                1000)
-                                            .toStringAsFixed(3)),
-                                      ),
-                                      DataCell(
-                                        Text((double.parse(stats.avgVelocity) *
-                                                3.6)
-                                            .toStringAsFixed(3)),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 5.0),
+                    child: ExpansionTile(
+                        title: Text(
+                          roadStats[roadIndex].roadName,
+                          style: GoogleFonts.inter(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 20,
                           ),
                         ),
-                      ]);
+                        subtitle: Text(
+                          roadOutputData[roadIndex]['filename'],
+                          style: GoogleFonts.inter(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                          ),
+                        ),
+                        children: [
+                          SingleChildScrollView(
+                            child: FittedBox(
+                              fit: BoxFit.fill,
+                              child: DataTable(
+                                columns: <DataColumn>[
+                                  DataColumn(
+                                    label: Text(
+                                      'PCI',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Distance(km)',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Velocity(km/hr)',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                rows: [
+                                  for (var stats in outputStats)
+                                    DataRow(
+                                      cells: <DataCell>[
+                                        DataCell(
+                                          Text(
+                                            stats.pci.toString(),
+                                            style: GoogleFonts.inter(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Text((double.parse(
+                                                      stats.distanceTravelled) /
+                                                  1000)
+                                              .toStringAsFixed(3)),
+                                        ),
+                                        DataCell(
+                                          Text(
+                                              (double.parse(stats.avgVelocity) *
+                                                      3.6)
+                                                  .toStringAsFixed(3)),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ]),
+                  );
                 }),
           ),
         ],
@@ -150,10 +164,10 @@ class _RoadStatisticsState extends State<RoadStatistics> {
   Widget build(BuildContext context) {
     MapPageController mapPageController = Get.find();
     Future<List<Map<String, dynamic>>> getRoadStats(int id) async {
-      mapPageController.roadOutputDataQuery = [];
+      mapPageController.roadOutputData = [];
       List<Map<String, dynamic>> res =
           await localDatabase.queryRoadOutputData(id);
-      mapPageController.roadOutputDataQuery = res;
+      mapPageController.roadOutputData.add(res);
       mapPageController.setRoadStatistics(res);
       return res;
     }
