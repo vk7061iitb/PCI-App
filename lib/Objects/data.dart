@@ -32,7 +32,6 @@ const List<String> vehicleType = <String>[
   'Others'
 ];
 
-String dropdownValue = vehicleType.first;
 AssetsPath assetsPath = AssetsPath();
 
 // Settings Page Data
