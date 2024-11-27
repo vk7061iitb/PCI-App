@@ -91,8 +91,10 @@ class HistoryDataPageState extends State<HistoryDataPage> {
         future: _savedFilesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: CircularProgressIndicator(
+                color: Colors.blue.shade900,
+              ),
             );
           } else if (snapshot.hasError) {
             return Center(
@@ -128,10 +130,12 @@ class HistoryDataPageState extends State<HistoryDataPage> {
               },
               child: ListView.builder(
                 itemCount: savedFiles.length,
+                physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
                 itemBuilder: (context, index) {
                   File file = savedFiles[index];
-                  return Container(
-                    padding: const EdgeInsets.all(10),
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
                     child: HistoryDataItem(
                       file: file,
                       deleteFile: () {

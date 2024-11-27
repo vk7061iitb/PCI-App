@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 
+import '../../../../Utils/get_icon.dart';
+
 class UnsentFileTile extends StatelessWidget {
   const UnsentFileTile({
     super.key,
@@ -23,175 +25,158 @@ class UnsentFileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ResponseController responseController = Get.find();
+    double left = 0, right = 0, top = 0, bottom = 0;
+    RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
       fontSize: 16,
     );
 
-    Icon getIcon(String vehicleType) {
-      if (vehicleType == 'Car') {
-        return const Icon(
-          Icons.directions_car,
-          size: 40,
-          color: Colors.black87,
-        );
-      } else if (vehicleType == 'Bike') {
-        return const Icon(
-          Icons.motorcycle,
-          size: 40,
-          color: Colors.black87,
-        );
-      } else if (vehicleType == 'Auto') {
-        return const Icon(
-          Icons.electric_rickshaw_outlined,
-          size: 40,
-          color: Colors.black87,
-        );
-      } else if (vehicleType == 'Bus') {
-        return const Icon(
-          Icons.directions_bus,
-          size: 40,
-          color: Colors.black87,
-        );
-      } else {
-        return const Icon(
-          Icons.directions_walk,
-          size: 40,
-          color: Colors.black87,
-        );
-      }
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.black12,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 10, right: 10, top: 5, bottom: 5),
-                child: getIcon(vehicleType),
-              ),
-            ),
+    return InkWell(
+      onTapDown: (TapDownDetails details) {
+        // do something
+        left = details.globalPosition.dx;
+        top = details.globalPosition.dy;
+        overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+        right = overlay.size.width - left;
+        bottom = overlay.size.height - top;
+      },
+      onTap: () {
+        showMenu(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            left,
+            top,
+            right,
+            bottom,
           ),
-          const Gap(5),
-          Container(
-            height: 50,
-            width: 1,
-            color: Colors.black26,
-          ),
-          const Gap(10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: Text(
-                  filename,
-                  style: GoogleFonts.inter(
-                    color: Colors.black,
-                    fontWeight: FontWeight.normal,
-                    fontSize: 18,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.clip,
-                ),
-              ),
-              Row(
+          items: [
+            PopupMenuItem(
+              onTap: () async {
+                // Send the data to the server
+                List<Map<String, dynamic>> data =
+                    await localDatabase.queryUnsentData(id);
+                int res = await responseController.reSendData(data, filename);
+                if (res == 200) {
+                  await localDatabase.deleteUnsentData(id);
+                  await localDatabase.deleteUnsentDataInfo(id);
+                  onDeleteTap();
+                }
+              },
+              child: Row(
                 children: [
-                  const Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Colors.teal,
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    time,
-                    style: GoogleFonts.inter(
-                      color: Colors.teal,
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.send_outlined,
+                      color: Colors.black87,
                     ),
+                  ),
+                  Text(
+                    "Submit",
+                    style: pupUpMenuTextStyle,
                   ),
                 ],
               ),
-            ],
-          ),
-          const Spacer(),
-          PopupMenuButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
             ),
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.black,
+            PopupMenuItem(
+              onTap: onDeleteTap,
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Delete",
+                    style: pupUpMenuTextStyle,
+                  ),
+                ],
+              ),
             ),
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  onTap: () async {
-                    // Send the data to the server
-                    List<Map<String, dynamic>> data =
-                        await localDatabase.queryUnsentData(id);
-                    int res =
-                        await responseController.reSendData(data, filename);
-                    if (res == 200) {
-                      await localDatabase.deleteUnsentData(id);
-                      await localDatabase.deleteUnsentDataInfo(id);
-                      onDeleteTap();
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.send_outlined,
-                          color: Colors.black87,
-                        ),
+          ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(
+          right: 10,
+          left: 10,
+          top: 2,
+          bottom: 2,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: MediaQuery.sizeOf(context).width * 0.15,
+                  height: MediaQuery.sizeOf(context).width * 0.15,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                  ),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Icon(
+                        getIcon(vehicleType),
+                        size: MediaQuery.sizeOf(context).width * 0.1,
+                        color: Colors.black87,
                       ),
-                      Text(
-                        "Submit",
-                        style: pupUpMenuTextStyle,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                PopupMenuItem(
-                  onTap: onDeleteTap,
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Icon(
-                          Icons.delete_outline,
-                          color: Colors.black87,
+                Gap(MediaQuery.sizeOf(context).width * 0.05),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: Text(
+                        filename,
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 18,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.clip,
                       ),
-                      Text(
-                        "Delete",
-                        style: pupUpMenuTextStyle,
-                      ),
-                    ],
-                  ),
+                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 16,
+                          color: Colors.teal,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          time,
+                          style: GoogleFonts.inter(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.normal,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ];
-            },
-          ),
-        ],
+              ],
+            ),
+            Divider(
+              color: Colors.black12,
+              thickness: 0.5,
+              indent: MediaQuery.sizeOf(context).width * 0.2,
+            ),
+          ],
+        ),
       ),
     );
   }
