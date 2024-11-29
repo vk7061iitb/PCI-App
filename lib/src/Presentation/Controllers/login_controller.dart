@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/API/auth_service.dart';
 import 'package:pci_app/src/Models/user_data.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 
 class LoginController extends GetxController {
   UserAuthenticationService userAuthenticationService =
@@ -20,9 +21,8 @@ class LoginController extends GetxController {
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode phoneFocusNode = FocusNode();
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  Rx<UserData> currUser =
-      UserData(phoneNumber: " ", email: " ", userRole: " ").obs;
   final RxString _userRole = "Admin".obs;
+  UserDataController userDataController = Get.find<UserDataController>();
 
   // Getters
   bool get isLoggedIn => _isLoggedIn.value;
@@ -46,20 +46,17 @@ class LoginController extends GetxController {
     // Update the current user data
     if (serverMessage['Message'] == 'User exists') {
       _isLoggedIn.value = true;
-      currUser.value = UserData(
-        email: emailController.text,
-        phoneNumber: phoneController.text,
-        userID: serverMessage['User_Id'].toString(),
-        userRole: _userRole.value,
-      );
+      final user = {
+        "ID": serverMessage['User_Id'].toString(),
+        "email": emailController.text,
+        "phone": phoneController.text,
+        "role": _userRole.value,
+        "isLoggedIn": true,
+      };
+      userDataController.storage.write("user", user);
+      userDataController.user = user;
 
       logger.i(serverMessage.toString());
-      Future.wait([
-        localDatabase.deleteUserData(),
-        localDatabase.insertUserData(
-          currUser.value,
-        ),
-      ]);
     }
   }
 
