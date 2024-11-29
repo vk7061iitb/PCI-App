@@ -16,7 +16,7 @@ class OutputDataController extends GetxController {
   var outputDataFile = <Map<String, dynamic>>[].obs;
   RxSet<int> slectedFiles = <int>{}.obs;
   var isLoading = true.obs;
-  final MapPageController _mapPageController = Get.find();
+  final MapPageController _mapPageController = Get.find<MapPageController>();
 
   Future<List<Map<String, dynamic>>> fetchData() async {
     try {
@@ -26,7 +26,8 @@ class OutputDataController extends GetxController {
         isLoading.value = false;
       });
     } catch (e) {
-      customGetSnackBar("Failed to fetch data: $e", Icons.error_outline);
+      customGetSnackBar(
+          "Database Error", "Failed to fetch data: $e", Icons.error_outline);
       logger.e(e.toString());
     }
     return outputDataFile;
@@ -38,7 +39,8 @@ class OutputDataController extends GetxController {
       await localDatabase.deleteRoadOutputData(id);
       fetchData();
     } catch (e) {
-      customGetSnackBar("Failed to delete data: $e", Icons.error_outline);
+      customGetSnackBar(
+          "Databse Error", "Failed to delete data: $e", Icons.error_outline);
       logger.e(e.toString());
     }
   }
@@ -89,6 +91,7 @@ class OutputDataController extends GetxController {
     });
   }
 
+  // export multiple roads as zip file
   Future<void> makeZip() async {
     final Archive archive = Archive();
     for (int id in slectedFiles) {
@@ -208,6 +211,9 @@ class OutputDataController extends GetxController {
 
   @override
   void onClose() {
+    outputDataFile = outputDataFile.toList().obs; // Convert to mutable list
+    slectedFiles = slectedFiles.toSet().obs; // Convert to mutable list
+
     outputDataFile.clear();
     slectedFiles.clear();
     super.onClose();
