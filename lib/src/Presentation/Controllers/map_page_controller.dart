@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Functions/get_road_color.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
 import '../../../Functions/cal_map_bounds.dart';
-import '../../../Functions/vel_to_pci.dart';
+import '../../../Functions/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
@@ -36,7 +34,7 @@ class MapPageController extends GetxController {
   RxString dropdownValue = 'Normal'.obs;
   final RxBool _showCircularProgress = false.obs;
   final RxBool _showPCIlabel = true.obs;
-  final RxBool _showIndicator = false.obs;
+  RxBool showIndicator = false.obs;
 
   // Getters
   bool get isDrrpLayerVisible => _isDrrpLayerVisible.value;
@@ -51,7 +49,6 @@ class MapPageController extends GetxController {
   String get dropdownvalue => dropdownValue.value;
   bool get showProgress => _showCircularProgress.value;
   bool get showPCIlabel => _showPCIlabel.value;
-  bool get showIndicator => _showIndicator.value;
 
   // Setters
   set isDrrpLayerVisible(bool value) => _isDrrpLayerVisible.value = value;
@@ -64,11 +61,6 @@ class MapPageController extends GetxController {
   set dropdownvalue(String value) => dropdownValue.value = value;
   set showProgress(bool value) => _showCircularProgress.value = value;
   set showPCIlabel(bool value) => _showPCIlabel.value = value;
-  set showIndicator(bool value) => _showIndicator.value = value;
-
-  void clearPolylines() {
-    _pciPolylines.clear();
-  }
 
   void clearData() {
     roadStats.clear();
@@ -118,91 +110,26 @@ class MapPageController extends GetxController {
 
   // fuction to plot the road data on the map
   Future<void> plotRoadData() async {
-    logger.i("${_pciPolylines.length}");
-    logger.i("${roadStats.length}");
     _pciPolylines.clear();
     roadStats.clear();
     logger.d("plotting road data...");
-    for (int i = 0; i < roadOutputData.length; i++) {
-      var roadQuery = roadOutputData[i];
-      for (int j = 0; j < roadQuery.length; j++) {
-        var road = roadQuery[j];
-        String roadName = road["roadName"];
-        List<dynamic> labels = jsonDecode(road["labels"]);
-        dynamic roadStatistics = jsonDecode(road["stats"]);
 
-        _minLat = (_minLat.latitude == 0)
-            ? LatLng(labels[0]['latitude'], labels[0]['longitude'])
-            : _minLat;
+    final receivePort = ReceivePort("plotRoadData(MapPageController)");
+    final isoData = {
+      'sendPort': receivePort.sendPort,
+      'roadOutputData': roadOutputData,
+      'showPCIlabel': _showPCIlabel.value,
+      'selectedRoads': selectedRoads,
+    };
 
-        // Adding the stats
-        List<RoadStatsData> roadStatsList = [];
-        for (int i = 1; i <= 5; i++) {
-          // Key represents each PCI value in the stats, which are only 1-5
-          String key = "$i";
-          roadStatsList.add(
-            RoadStatsData(
-              pci: key,
-              avgVelocity: roadStatistics[key]['avg_velocity'].toString(),
-              distanceTravelled:
-                  roadStatistics[key]['distance_travelled'].toString(),
-              numberOfSegments:
-                  roadStatistics[key]['number_of_segments'].toString(),
-            ),
-          );
-        }
-        roadStats.add(
-          RoadStats(
-            roadName: roadName,
-            roadStatsData: roadStatsList,
-          ),
-        );
-        // Adding the labels and polylines
-        for (int k = 1; k < labels.length; k++) {
-          _maxLat = LatLng(labels[k]['latitude'], labels[k]['longitude']);
-          double avgVelocity =
-              (labels[k]['velocity'] + labels[k - 1]['velocity']) / 2;
-          avgVelocity *= 3.6; // convert m/s to kmph
-          double prediction = max(
-              double.parse(labels[k]['prediction'].toString()),
-              double.parse(labels[k - 1]['prediction'].toString()));
-          double velocityPCI = velocityToPCI(avgVelocity);
-          var currentRoad = selectedRoads[i];
-          // Add the polyline
-          Polyline tempPolylne = Polyline(
-            consumeTapEvents: true,
-            polylineId: PolylineId("$roadName$i$j$k"),
-            color: _showPCIlabel.value
-                ? getRoadColor(prediction)
-                : getVelocityColor(avgVelocity),
-            width: 5,
-            endCap: Cap.roundCap,
-            startCap: Cap.roundCap,
-            jointType: JointType.round,
-            points: [
-              LatLng(labels[k - 1]['latitude'], labels[k - 1]['longitude']),
-              LatLng(labels[k]['latitude'], labels[k]['longitude']),
-            ],
-            onTap: () {
-              Map<String, dynamic> polylineOnTapData = {
-                'roadName': roadName,
-                'filename': currentRoad['filename'],
-                'time': currentRoad['time'],
-                'pci_pred': prediction,
-                'vel_pred': velocityPCI,
-                'avg_vel': avgVelocity,
-              };
-              Get.bottomSheet(
-                clipBehavior: Clip.antiAlias,
-                backgroundColor: Colors.white,
-                PolylineBottomSheet(data: polylineOnTapData),
-              );
-            },
-          );
-          _pciPolylines.add(tempPolylne);
-        }
-      }
-    }
+    await Isolate.spawn(plotMapIsolate, isoData);
+    final res = await receivePort.first as Map<String, dynamic>;
+    roadStats = res['roadStats'];
+    _pciPolylines.addAll(res['pciPolylines']);
+    _minLat = res['minLat'];
+    _maxLat = res['maxLat'];
+
+    logger.i("No. of plolylines = ${_pciPolylines.length}");
   }
 
   // Function to animate the camera to the location of the polylines
@@ -247,5 +174,6 @@ class MapPageController extends GetxController {
       );
       _pciPolylines.add(tempPolyline);
     }
+    logger.i(showIndicator.value);
   }
 }
