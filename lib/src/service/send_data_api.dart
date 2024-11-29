@@ -14,8 +14,9 @@ class SendDataToServer {
   Future<String> sendData(
       {required List<AccData> accData,
       required String userID,
-      required filename,
-      required dropdownValue}) async {
+      required String filename,
+      required String dropdownValue,
+      required DateTime time}) async {
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
@@ -49,8 +50,8 @@ class SendDataToServer {
         String geoJsonString = response.body;
         final responseData = jsonDecode(geoJsonString);
 
-        int outuputDataID =
-            await localDatabase.insertJourneyData(filename, dropdownValue);
+        int outuputDataID = await localDatabase.insertJourneyData(
+            filename, dropdownValue, time);
 
         // Extract the road data
         List<dynamic> roads = responseData['roads_covered'];

@@ -4,9 +4,12 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/Login/roles_dropdown.dart';
 import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+
+import '../../Controllers/signup_controller.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -14,6 +17,9 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     LoginController loginController = Get.put(LoginController());
+    // ignore: unused_local_variable
+    SignupController signupController = Get.put(SignupController());
+    UserDataController userDataController = Get.find<UserDataController>();
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
       body: SafeArea(
@@ -182,19 +188,33 @@ class LoginScreen extends StatelessWidget {
                           if (loginController.loginFormKey.currentState!
                               .validate()) {
                             await loginController.loginUser().then((_) {
-                              if (loginController.isLoggedIn) {
-                                Get.offNamed(myRoutes.homeRoute);
-                              } else {
+                              if (userDataController.user['isLoggedIn'] ==
+                                  false) {
                                 Get.showSnackbar(
                                   customGetSnackBar(
-                                      "User not found", Icons.error),
+                                    "Login Failed",
+                                    "User not found",
+                                    Icons.error_outline,
+                                  ),
                                 );
+                                return;
                               }
+                              Get.showSnackbar(
+                                customGetSnackBar(
+                                  "Login Successful",
+                                  "You've been successfully logged in",
+                                  Icons.check_circle_outline,
+                                ),
+                              );
+                              Get.offNamed(myRoutes.homeRoute);
                             });
                           } else {
                             Get.showSnackbar(
                               customGetSnackBar(
-                                  "Please enter valid details", Icons.error),
+                                "Invalid Details",
+                                "Please enter valid details",
+                                Icons.error_outline,
+                              ),
                             );
                           }
                         },

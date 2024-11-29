@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Utils/get_icon.dart';
 import '../MapsPage/maps_page.dart';
 
@@ -30,7 +31,7 @@ class OutputDataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    OutputDataController outputDataController = Get.find();
+    OutputDataController outputDataController = Get.find< OutputDataController>();
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -81,13 +82,19 @@ class OutputDataItem extends StatelessWidget {
               onTap: () async {
                 outputDataController.slectedFiles.clear();
                 outputDataController.slectedFiles.add(id);
-                outputDataController.plotRoads().then((_) {
-                  Get.to(
-                    () => MapPage(),
-                    transition: Transition.cupertino,
-                  );
-                  outputDataController.slectedFiles.clear();
-                });
+                try {
+                  outputDataController.plotRoads().then((_) {
+                    Get.to(
+                      () => MapPage(),
+                      transition: Transition.cupertino,
+                    );
+                    outputDataController.slectedFiles.clear();
+                  });
+                } catch (e) {
+                  customGetSnackBar("Plotting Error",
+                      "Error in plotting the road data", Icons.error_outline);
+                  logger.e(e.toString());
+                }
               },
               child: Row(
                 children: [

@@ -27,7 +27,7 @@ class MapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MapPageController mapPageController = Get.find();
+    MapPageController mapPageController = Get.find<MapPageController>();
     return Scaffold(
       body: SafeArea(
         top: true,
@@ -82,20 +82,17 @@ class MapPage extends StatelessWidget {
                                 mapPageController.isDrrpLayerVisible =
                                     !mapPageController.isDrrpLayerVisible;
                                 if (mapPageController.isDrrpLayerVisible) {
-                                  mapPageController.showIndicator = true;
-                                  mapPageController.plotDRRPLayer().then((_) {
-                                    mapPageController.showIndicator = false;
-                                  });
+                                  mapPageController
+                                      .plotDRRPLayer()
+                                      .then((_) {});
                                   return;
                                 }
                                 // clear the DRRP layer
-                                mapPageController.showIndicator = true;
-                                mapPageController.plotRoadData().then((_) {
-                                  mapPageController.showIndicator = false;
-                                });
+                                mapPageController.plotRoadData().then((_) {});
                               } catch (e) {
                                 // Handle any errors that occur during the onTap execution
                                 customGetSnackBar(
+                                    "Error",
                                     "'Error toggling DRRP layer: $e'",
                                     Icons.error_outline);
                                 logger.e('Error toggling DRRP layer: $e');
@@ -135,12 +132,16 @@ class MapPage extends StatelessWidget {
                         const Gap(10),
                         TextButton(
                           onPressed: () {
-                            mapPageController.showIndicator = true;
+                            if (mapPageController.showIndicator.value) return;
                             mapPageController.showPCIlabel =
                                 !mapPageController.showPCIlabel;
                             logger.i(mapPageController.pciPolylines.length);
-                            mapPageController.plotRoadData().then((value) {
-                              mapPageController.showIndicator = false;
+                            mapPageController.showIndicator.value = true;
+                            mapPageController.plotRoadData().then((_) {
+                              Future.delayed(const Duration(seconds: 1))
+                                  .then((_) {
+                                mapPageController.showIndicator.value = false;
+                              });
                             });
                           },
                           style: ButtonStyle(
@@ -181,6 +182,23 @@ class MapPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.08,
+              left: 0,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Obx(
+                  () {
+                    return mapPageController.showIndicator.value
+                        ? LinearProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.blue[800]!),
+                          )
+                        : const SizedBox();
+                  },
                 ),
               ),
             ),
@@ -264,23 +282,6 @@ class MapPage extends StatelessWidget {
                   alignment: Alignment.center,
                   fit: BoxFit.contain,
                   child: const Legends(),
-                ),
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).size.height * 0.08,
-              left: 0,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Obx(
-                  () {
-                    return mapPageController.showIndicator
-                        ? LinearProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blue[800]!),
-                          )
-                        : const SizedBox();
-                  },
                 ),
               ),
             ),

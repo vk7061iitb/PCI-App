@@ -1,31 +1,23 @@
 import 'package:get/get.dart';
-import 'package:pci_app/src/Models/user_data.dart';
-import '../../../Objects/data.dart';
+import 'package:get_storage/get_storage.dart';
 
 class UserDataController extends GetxController {
-  final Rx<UserData> _userData = UserData(
-    userID: 'null',
-    email: 'null',
-    userRole: 'null',
-    phoneNumber: 'null',
-  ).obs;
-
-  // getter
-  UserData get userData => _userData.value;
-  // setter
-  set userData(UserData value) => _userData.value = value;
+  final storage = GetStorage();
+  Map<String, dynamic> user = {
+    "ID": "",
+    "email": "",
+    "phone": "",
+    "role": "",
+    "isLoggedIn": false,
+  };
 
   Future<void> getUserData() async {
-    _userData.value = await localDatabase.queryUserData();
+    user = storage.read("user") ?? {};
   }
 
   @override
-  void onInit() async {
-    try {
-      _userData.value = await localDatabase.queryUserData();
-    } catch (e) {
-      logger.e('Error: $e');
-    }
+  void onInit() {
+    getUserData();
     super.onInit();
   }
 }

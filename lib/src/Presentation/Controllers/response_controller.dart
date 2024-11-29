@@ -3,6 +3,7 @@ import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/send_data_api.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,29 +12,42 @@ import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 
 class ResponseController extends GetxController {
+  SendDataToServer sendDataToServer = SendDataToServer();
+
   final RxString _dbMessage = ''.obs;
   final RxString _dropdownValue = vehicleType.first.obs;
   final Rx<TextEditingController> _fileNameController =
       TextEditingController().obs;
+
   final Rx<GlobalKey<FormState>> _formKey = GlobalKey<FormState>().obs;
   final RxBool _isSaveLocally = true.obs;
   final RxBool _savingData = false.obs;
   final RxString _serverMessage = ''.obs;
   final Rx<int> _serverResponseCode = 0.obs;
-  SendDataToServer sendDataToServer = SendDataToServer();
+  final UserDataController _userDataController = Get.find<UserDataController>();
 
   String get dropdownValue => _dropdownValue.value;
+
   String get dbMessage => _dbMessage.value;
+
   String get serverMessage => _serverMessage.value;
+
   bool get isSaveLocally => _isSaveLocally.value;
+
   bool get savingData => _savingData.value;
+
   GlobalKey<FormState> get formKey => _formKey.value;
+
   TextEditingController get fileNameController => _fileNameController.value;
 
   set dropdownValue(String value) => _dropdownValue.value = value;
+
   set isSaveLocally(bool value) => _isSaveLocally.value = value;
+
   set savingData(bool value) => _savingData.value = value;
+
   set dbMessage(String value) => _dbMessage.value = value;
+
   set serverMessage(String value) => _serverMessage.value = value;
 
   Future<void> saveData(List<AccData> accData) async {
@@ -43,6 +57,9 @@ class ResponseController extends GetxController {
       if (accData[i].latitude != accData[i - 1].latitude ||
           accData[i].longitude != accData[i - 1].longitude) {
         diffPoints++;
+        if (diffPoints > 1) {
+          break;
+        }
       }
     }
 
@@ -52,26 +69,26 @@ class ResponseController extends GetxController {
 
       Get.back();
       Get.showSnackbar(
-        customGetSnackBar(message, Icons.error_outline),
+        customGetSnackBar("Insufficient Data", message, Icons.error_outline),
       );
       return;
     }
 
     // send the data to the server
-    String? userID =
-        await localDatabase.queryUserData().then((user) => user.userID);
+    var userID = _userDataController.user['ID'];
     logger.i('User ID: $userID');
     await sendDataToServer
         .sendData(
-            accData: accData,
-            userID: userID!,
-            filename: _fileNameController.value.text,
-            dropdownValue: _dropdownValue.value)
+      accData: accData,
+      userID: userID!.toString(),
+      filename: _fileNameController.value.text,
+      dropdownValue: _dropdownValue.value,
+      time: DateTime.now(),
+    )
         .then((value) async {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       _savingData.value = false;
-
       // If the data is not sent successfully, save the data locally
       if (_serverResponseCode.value / 100 != 2) {
         // Save the data locally
@@ -87,8 +104,9 @@ class ResponseController extends GetxController {
       Get.back();
       Get.showSnackbar(
         customGetSnackBar(
+          "Server Message",
           _serverMessage.value,
-          Icons.check_circle_outline,
+          Icons.message_outlined,
         ),
       );
     });
@@ -102,8 +120,8 @@ class ResponseController extends GetxController {
     }
   }
 
-  Future<int> reSendData(
-      List<Map<String, dynamic>> unsentData, String filename) async {
+  Future<int> reSendData(List<Map<String, dynamic>> unsentData, String filename,
+      DateTime time) async {
     int responseCode = 0;
     List<AccData> accData = [];
     for (var data in unsentData) {
@@ -121,31 +139,21 @@ class ResponseController extends GetxController {
       );
     }
     // send the data to the server
-    String? userID =
-        await localDatabase.queryUserData().then((user) => user.userID);
-    ('User ID: $userID');
-
+    var userID = _userDataController.user['ID'];
     await sendDataToServer
         .sendData(
-            accData: accData,
-            userID: userID!,
-            filename: filename,
-            dropdownValue: _dropdownValue.value)
+      accData: accData,
+      userID: userID!,
+      filename: filename,
+      dropdownValue: _dropdownValue.value,
+      time: time,
+    )
         .then((value) {
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       responseCode = sendDataToServer.statusCode;
       _savingData.value = false;
-      if (_serverResponseCode.value == 200) {
-        // data sent successfully
-        Get.showSnackbar(
-          customGetSnackBar(
-            "Data sent successfully",
-            Icons.check_circle_outline,
-          ),
-        );
-        return responseCode;
-      }
+      return responseCode;
     });
     return responseCode;
   }

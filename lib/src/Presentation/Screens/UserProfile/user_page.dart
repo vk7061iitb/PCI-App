@@ -13,7 +13,7 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserDataController userDataController = Get.find();
+    UserDataController userDataController = Get.find<UserDataController>();
     userDataController.getUserData();
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
@@ -48,46 +48,71 @@ class UserPage extends StatelessWidget {
                 height: 100,
                 width: 1,
               ),
-              const Gap(10),
               Text(
-                'User ${userDataController.userData.userID}',
+                'User ${userDataController.user["ID"]}',
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w500,
                   color: Colors.black87,
                 ),
               ),
-              const Gap(20),
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: Colors.black12,
-                    width: 1,
+              Divider(
+                color: Colors.black12,
+                thickness: 1,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FittedBox(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildRow(
+                          'Role',
+                          Icons.person_2_outlined,
+                        ),
+                        buildRow(
+                          'Phone',
+                          Icons.phone_outlined,
+                        ),
+                        buildRow(
+                          'Email',
+                          Icons.email_outlined,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    buildRow(
-                      'Role',
-                      userDataController.userData.userRole,
-                      Icons.person_2_outlined,
-                    ),
-                    const Gap(10),
-                    buildRow(
-                      'Phone',
-                      userDataController.userData.phoneNumber,
-                      Icons.phone_outlined,
-                    ),
-                    const Gap(10),
-                    buildRow(
-                      'Email',
-                      userDataController.userData.email,
-                      Icons.email_outlined,
-                    ),
-                  ],
-                ),
+                  const Gap(20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userDataController.user["role"],
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      Text(
+                        userDataController.user["phone"],
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      Text(
+                        userDataController.user["email"],
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -96,7 +121,7 @@ class UserPage extends StatelessWidget {
     );
   }
 
-  Widget buildRow(String title, String value, IconData iconData) {
+  Widget buildRow(String title, IconData iconData) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -115,14 +140,6 @@ class UserPage extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black54,
-              ),
-            ),
-            const Gap(10),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.black87,
               ),
             ),
           ],

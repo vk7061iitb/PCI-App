@@ -14,7 +14,8 @@ class OutputDataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    OutputDataController outputDataController = Get.put(OutputDataController());
+    OutputDataController outputDataController =
+        Get.find<OutputDataController>();
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
@@ -54,22 +55,24 @@ class OutputDataPage extends StatelessWidget {
           }
 
           if (outputDataController.outputDataFile.isEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  assetsPath.emptyFile,
-                  width: 50,
-                ),
-                Text(
-                  'There are no files to display',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black,
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assetsPath.emptyFile,
+                    width: 50,
                   ),
-                ),
-              ],
+                  Text(
+                    'There are no files to display',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 

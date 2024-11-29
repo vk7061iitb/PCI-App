@@ -1,13 +1,12 @@
 name: pci_app
 description: "PCI App"
 publish_to: "none"
-version: 1.2.0
+version: 2.1.2
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
 
 dependencies:
-  auto_size_text: ^3.0.0
   collection: ^1.18.0
   cross_file: ^0.3.4+1
   csv: ^6.0.0
@@ -34,6 +33,7 @@ dependencies:
   sqflite: ^2.3.2
   logger: ^2.5.0
   archive: ^3.6.1
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:
@@ -48,11 +48,9 @@ flutter:
     - lib\Assets\SensorImages\location.svg
     - lib\Assets\SensorImages\speed.svg
     - lib\Assets\delete.svg
-    - lib\Assets\profile.svg
     - lib\Assets\share.svg
+    - lib\Assets\profile.svg
     - lib\Assets\settings.svg
-    - lib\Assets\past-trips.svg
-    - lib\Assets\past_trips_selected.svg
     - lib\Assets\journey1.svg
     - lib\Assets\journey2.svg
     - lib\Assets\empty_file.svg

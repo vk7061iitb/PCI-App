@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/signup_controller.dart';
 
 import '../../Controllers/login_controller.dart';
 
@@ -9,7 +10,8 @@ class RolesDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    LoginController loginController = Get.put(LoginController());
+    LoginController loginController = Get.find<LoginController>();
+    SignupController signupController = Get.find<SignupController>();
     return Container(
       padding: const EdgeInsets.only(
           left: 15.0, right: 15.0, top: 12.0, bottom: 12.0),
@@ -56,6 +58,7 @@ class RolesDropdown extends StatelessWidget {
           }).toList(),
           onChanged: (String? newValue) {
             loginController.userRole = newValue!;
+            signupController.userRole = newValue;
             logger.i('User Role: ${loginController.userRole}');
           },
         );

@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:location/location.dart' as loc;
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,7 @@ class AccDataController extends GetxController {
   final String progressMessage = 'Collecting the data...';
   String? _userID;
   int _count = 0;
+  final UserDataController _userDataController = Get.find<UserDataController>();
 
   @override
   void onInit() {
@@ -111,7 +113,8 @@ class AccDataController extends GetxController {
       downSampledDatapoints.clear();
       dataPointsList.clear();
       logger.i('Recording Started');
-      _userID = await localDatabase.queryUserData().then((user) => user.userID);
+
+      _userID = _userDataController.user['ID'];
       _accStream = accelerometerEventStream(
         samplingPeriod: const Duration(milliseconds: 10),
       ).listen(

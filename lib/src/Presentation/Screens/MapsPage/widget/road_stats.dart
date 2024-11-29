@@ -162,7 +162,7 @@ class RoadStatistics extends StatefulWidget {
 class _RoadStatisticsState extends State<RoadStatistics> {
   @override
   Widget build(BuildContext context) {
-    MapPageController mapPageController = Get.find();
+    MapPageController mapPageController = Get.find<MapPageController>();
     Future<List<Map<String, dynamic>>> getRoadStats(int id) async {
       mapPageController.roadOutputData = [];
       List<Map<String, dynamic>> res =

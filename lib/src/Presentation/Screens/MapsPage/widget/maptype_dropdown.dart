@@ -12,7 +12,7 @@ class SelectMapType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MapPageController mapPageController = Get.find();
+    MapPageController mapPageController = Get.find<MapPageController>();
 
     return PopupMenuButton<String>(
         style: ButtonStyle(

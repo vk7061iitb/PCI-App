@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Controllers/signup_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../Login/roles_dropdown.dart';
@@ -12,7 +13,8 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SignupController signupController = Get.put(SignupController());
+    SignupController signupController = Get.find<SignupController>();
+    UserDataController userDataController = Get.find<UserDataController>();
     return Scaffold(
       backgroundColor: const Color(0xFFF3EDF5),
       appBar: AppBar(
@@ -236,20 +238,24 @@ class SignupScreen extends StatelessWidget {
                           if (signupController.signupFormKey.currentState!
                               .validate()) {
                             await signupController.signUp().then((_) {
-                              if (signupController.isSignedUp) {
-                                Get.offNamed(myRoutes.loginRoute);
+                              if (userDataController.user["isLoggedIn"] ==
+                                  false) {
                                 Get.showSnackbar(
                                   customGetSnackBar(
-                                      "Success! Account created successfully.",
-                                      Icons.check_circle),
+                                      "Account Exists",
+                                      "Error! The user is already registered",
+                                      Icons.error_outline),
                                 );
-                              } else {
-                                Get.showSnackbar(
-                                  customGetSnackBar(
-                                      "Error! User already exists",
-                                      Icons.error),
-                                );
+
+                                return;
                               }
+                              Get.showSnackbar(
+                                customGetSnackBar(
+                                    "Welcome!",
+                                    "Success! Account created successfully.",
+                                    Icons.check_circle_outline),
+                              );
+                              Get.offNamed(myRoutes.homeRoute);
                             });
                           }
                         },

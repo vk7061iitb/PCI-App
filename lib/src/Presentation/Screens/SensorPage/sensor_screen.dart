@@ -46,15 +46,9 @@ class SensorScreen extends StatelessWidget {
                   );
                 }),
               ),
-
-              SizedBox(height: MediaQuery.sizeOf(context).height * 0.03),
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.025),
               const ReadingWidget(),
             ]),
-          ),
-
-          // Add some padding at the bottom
-          const SliverPadding(
-            padding: EdgeInsets.only(bottom: 20),
           ),
         ],
       ),
