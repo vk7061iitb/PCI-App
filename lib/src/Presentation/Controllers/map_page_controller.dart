@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../Functions/cal_map_bounds.dart';
 import '../../../Functions/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
@@ -12,6 +13,7 @@ import '../../Models/stats_data.dart';
 class MapPageController extends GetxController {
   final RxBool _isDrrpLayerVisible = false.obs;
   final RxSet<Polyline> _pciPolylines = <Polyline>{}.obs;
+  final Set<Polyline> _drrpPolylines = <Polyline>{};
   GoogleMapController? _googleMapController;
   List<List<Map<String, dynamic>>> roadOutputData =
       <List<Map<String, dynamic>>>[];
@@ -62,6 +64,11 @@ class MapPageController extends GetxController {
   set showProgress(bool value) => _showCircularProgress.value = value;
   set showPCIlabel(bool value) => _showPCIlabel.value = value;
 
+  /// Clears the data stored in the controller.
+  ///
+  /// This method is used to reset or clear any data that the controller
+  /// might be holding. It can be useful when you need to refresh the state
+  /// or remove any temporary data.
   void clearData() {
     roadStats.clear();
     _pciPolylines.clear();
@@ -72,14 +79,14 @@ class MapPageController extends GetxController {
     _maxLat = const LatLng(0, 0);
   }
 
-  void setRoadStatistics(List<Map<String, dynamic>> query) {
-    if (query.isEmpty) {
+  void setRoadStatistics({required List<Map<String, dynamic>> journeyData}) {
+    if (journeyData.isEmpty) {
       return;
     }
     if (roadStats.isNotEmpty) {
       roadStats.clear();
     }
-    for (var road in query) {
+    for (var road in journeyData) {
       String roadName = road["roadName"];
       dynamic roadStatistics = jsonDecode(road["stats"]);
       // Adding the stats
@@ -108,31 +115,63 @@ class MapPageController extends GetxController {
     }
   }
 
-  // fuction to plot the road data on the map
+  /// Plots road data on the map.
+  ///
+  /// This method fetches and displays road data on the map.
+  /// It is an asynchronous operation and should be awaited.
+  ///
+  /// Throws:
+  /// - `Exception` if there is an error while fetching or plotting the data.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await plotRoadData();
+  /// ```
   Future<void> plotRoadData() async {
     _pciPolylines.clear();
     roadStats.clear();
     logger.d("plotting road data...");
 
-    final receivePort = ReceivePort("plotRoadData(MapPageController)");
-    final isoData = {
-      'sendPort': receivePort.sendPort,
-      'roadOutputData': roadOutputData,
-      'showPCIlabel': _showPCIlabel.value,
-      'selectedRoads': selectedRoads,
-    };
+    try {
+      final receivePort = ReceivePort("plotRoadData(MapPageController)");
+      final isoData = {
+        'sendPort': receivePort.sendPort,
+        'roadOutputData': roadOutputData,
+        'showPCIlabel': _showPCIlabel.value,
+        'selectedRoads': selectedRoads,
+        'drrpPolylines': _drrpPolylines,
+      };
 
-    await Isolate.spawn(plotMapIsolate, isoData);
-    final res = await receivePort.first as Map<String, dynamic>;
-    roadStats = res['roadStats'];
-    _pciPolylines.addAll(res['pciPolylines']);
-    _minLat = res['minLat'];
-    _maxLat = res['maxLat'];
+      await Isolate.spawn(plotMapIsolate, isoData);
+      final res = await receivePort.first as Map<String, dynamic>;
+      roadStats = res['roadStats'];
+      _pciPolylines.addAll(res['pciPolylines']);
+      _minLat = res['minLat'];
+      _maxLat = res['maxLat'];
+    } catch (e) {
+      customGetSnackBar(
+          "Plotting Error",
+          "An error occurred while plotting the road data.",
+          Icons.error_outline);
+      logger.e(e.toString());
+    }
 
     logger.i("No. of plolylines = ${_pciPolylines.length}");
   }
 
   // Function to animate the camera to the location of the polylines
+  /// Animates the map view to the specified location bounds.
+  ///
+  /// This method takes two [LatLng] parameters, [min] and [max], which represent
+  /// the minimum and maximum coordinates of the bounding box to which the map
+  /// should be animated.
+  ///
+  /// The animation is performed asynchronously.
+  ///
+  /// - [min]: The minimum [LatLng] coordinate of the bounding box.
+  /// - [max]: The maximum [LatLng] coordinate of the bounding box.
+  ///
+  /// Returns a [Future] that completes when the animation is finished.
   Future<void> animateToLocation(LatLng min, LatLng max) async {
     LatLngBounds bounds = calculateBounds(min, max);
     _googleMapController
@@ -162,18 +201,22 @@ class MapPageController extends GetxController {
       Polyline tempPolyline = Polyline(
         polylineId: PolylineId('drrp_polyline$i'),
         color: Colors.black,
-        width: 5,
+        width: 2,
         endCap: Cap.roundCap,
         startCap: Cap.roundCap,
         jointType: JointType.round,
         points: points,
-        patterns: [
-          PatternItem.dash(10),
-          PatternItem.gap(10),
-        ],
       );
-      _pciPolylines.add(tempPolyline);
+      _drrpPolylines.add(tempPolyline);
     }
-    logger.i(showIndicator.value);
+    _pciPolylines.addAll(_drrpPolylines);
+  }
+
+// This function is used to remove the DRRP layer from the map.
+  Future<void> removeDRRPLayer() async {
+    for (Polyline polyline in _drrpPolylines) {
+      _pciPolylines.remove(polyline);
+    }
+    _drrpPolylines.clear();
   }
 }

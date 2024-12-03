@@ -10,15 +10,22 @@ import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/stats_data.dart';
 import '../src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
 
-void plotMapIsolate(Map<String, dynamic> data) async {
+/// Plots a map in an isolate with the given data.
+///
+/// This function runs asynchronously and performs the map plotting
+/// operation in a separate isolate to avoid blocking the main thread.
+///
+Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   logger.d('Isolate started');
-  final SendPort sendPort = data['sendPort'];
+  final SendPort sendPort = isolateData['sendPort'];
   final List<List<Map<String, dynamic>>> roadOutputData =
-      data['roadOutputData'];
-  final bool showPCIlabel = data['showPCIlabel'];
+      isolateData['roadOutputData'];
+  final bool showPCIlabel = isolateData['showPCIlabel'];
   final List<RoadStats> roadStats = [];
   final Set<Polyline> pciPolylines = <Polyline>{};
-  final List<Map<String, dynamic>> selectedRoads = data['selectedRoads'];
+  final Set<Polyline> drrpPolylines =
+      isolateData['drrpPolylines'] as Set<Polyline>;
+  final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
   var maxLat = const LatLng(0, 0);
   var minLat = const LatLng(0, 0);
 
@@ -103,6 +110,7 @@ void plotMapIsolate(Map<String, dynamic> data) async {
         }
       }
     }
+    pciPolylines.addAll(drrpPolylines);
     sendPort.send({
       'roadStats': roadStats,
       'pciPolylines': pciPolylines,
