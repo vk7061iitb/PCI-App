@@ -65,10 +65,12 @@ class RoadStatsData {
 
 class RoadStats {
   final String roadName;
-  final List<RoadStatsData> roadStatsData;
+  final List<RoadStatsData> predStats;
+  final List<RoadStatsData> velStats;
 
   RoadStats({
     required this.roadName,
-    required this.roadStatsData,
+    required this.predStats,
+    required this.velStats,
   });
 }
