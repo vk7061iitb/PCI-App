@@ -3,6 +3,8 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Functions/get_road_color.dart';
+import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 
 class PolylineBottomSheet extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -10,6 +12,7 @@ class PolylineBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MapPageController mapPageController = Get.find<MapPageController>();
     return Container(
       padding: const EdgeInsets.all(10),
       width: Get.width,
@@ -38,6 +41,20 @@ class PolylineBottomSheet extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              IconButton(
+                onPressed: () {
+                  logger.i(
+                      "Zooming to the location ${data['latlngs'][0]}, ${data['latlngs'][1]}");
+                  mapPageController.animateToLocation(
+                      data['latlngs'][0], data['latlngs'][1]);
+                  Get.back();
+                },
+                icon: Icon(
+                  Icons.zoom_in_outlined,
+                  color: Colors.blue,
+                  size: MediaQuery.sizeOf(context).width * 0.08,
+                ),
+              ),
             ],
           ),
           const Gap(10),
