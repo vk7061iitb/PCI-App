@@ -49,8 +49,9 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           logger.e('Error parsing labels: $e');
           continue;
         }
-        minLat = LatLng(labels[0]['latitude'], labels[0]['longitude']);
-        maxLat = LatLng(labels.last['latitude'], labels.last['longitude']);
+        minLat = (minLat.latitude == 0)
+            ? LatLng(labels[0]['latitude'], labels[0]['longitude'])
+            : minLat;
 
         List<LatLng> points = [];
         List<double> velocities = [];
@@ -63,8 +64,13 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             ? double.parse(firstLabel['prediction'].toString())
             : velocityToPCI(3.6 * firstLabel['velocity']);
 
+        LatLng point2 = LatLng(labels[0]['latitude'], labels[0]['longitude']);
+        LatLng point1 = LatLng(0, 0);
         // Process road segments
         for (int k = 0; k < labels.length - 1; k++) {
+          maxLat =
+              LatLng(labels[k + 1]['latitude'], labels[k + 1]['longitude']);
+
           var currLabel = labels[k];
           var nxtLabel = labels[k + 1];
 
@@ -93,13 +99,16 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
 
           // Create polyline when prediction changes
           if (currPred != nxtPred) {
+            point1 = point2;
+            point2 = currPoint;
             Map<String, dynamic> polylineOnTapData = {
               'roadName': roadName,
               'filename': currJourney['filename'],
               'time': currJourney['time'],
               'pci': currPred,
               'avg_vel': 3.6 * avg(velocities),
-              'distance': distance / 1000
+              'distance': distance / 1000,
+              'latlngs': [point1, point2]
             };
 
             Polyline polyline = Polyline(
@@ -128,6 +137,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
         }
 
         if (points.length == 1) {
+          point1 = point2;
+          point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
           // create a polyline of last segment
           Map<String, dynamic> polylineOnTapData = {
             'roadName': roadName,
@@ -135,7 +146,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             'time': currJourney['time'],
             'pci': nxtPred,
             'avg_vel': 3.6 * avg(velocities),
-            'distance': distance / 1000
+            'distance': distance / 1000,
+            'latlngs': [point1, point2]
           };
           Polyline polyline = Polyline(
             consumeTapEvents: true,
@@ -156,6 +168,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           );
           pciPolylines.add(polyline);
         } else {
+          point1 = point2;
+          point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
           // add the last point in the points and create a new polyline
           points.add(LatLng(labels.last['latitude'], labels.last['longitude']));
           velocities.add(labels.last['velocity']);
@@ -166,7 +180,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             'time': currJourney['time'],
             'pci': nxtPred,
             'avg_vel': 3.6 * avg(velocities),
-            'distance': distance / 1000
+            'distance': distance / 1000,
+            'latlngs': [point1, point2]
           };
           Polyline polyline = Polyline(
             consumeTapEvents: true,
