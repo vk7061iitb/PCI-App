@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Functions/get_road_color.dart';
 
 class PolylineBottomSheet extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -74,7 +75,7 @@ class PolylineBottomSheet extends StatelessWidget {
           Row(
             children: [
               Text(
-                "PCI(prediction)",
+                "PCI",
                 style: GoogleFonts.inter(
                   color: Colors.black,
                   fontSize: 18,
@@ -83,7 +84,7 @@ class PolylineBottomSheet extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                data['pci_pred'].toString(),
+                data['pci'].toString(),
                 style: GoogleFonts.inter(
                   color: Colors.black,
                   fontSize: 18,
@@ -94,44 +95,10 @@ class PolylineBottomSheet extends StatelessWidget {
               Expanded(
                 child: LinearProgressIndicator(
                   minHeight: 10,
-                  value: data['pci_pred'] / 5,
+                  value: data['pci'] / 5,
                   backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Colors.black87,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ],
-          ),
-          const Gap(10),
-          Row(
-            children: [
-              Text(
-                "PCI(velocity)",
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                data['vel_pred'].toString(),
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Gap(5),
-              Expanded(
-                child: LinearProgressIndicator(
-                  minHeight: 10,
-                  value: data['vel_pred'] / 5,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Colors.black87,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    getRoadColor(data['pci']),
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -161,6 +128,27 @@ class PolylineBottomSheet extends StatelessWidget {
             ],
           ),
           const Gap(10),
+          Row(
+            children: [
+              Text(
+                "Length",
+                style: GoogleFonts.inter(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                "${data['distance'].toStringAsFixed(4)} km",
+                style: GoogleFonts.inter(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

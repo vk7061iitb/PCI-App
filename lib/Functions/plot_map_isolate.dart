@@ -6,10 +6,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Functions/get_road_color.dart';
+import 'package:pci_app/Functions/set_road_stats.dart';
 import 'package:pci_app/Functions/vel_to_pci.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/stats_data.dart';
 import '../src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
+import 'avg.dart';
 
 /// Plots a map in an isolate with the given data.
 ///
@@ -27,91 +29,124 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   final Set<Polyline> drrpPolylines =
       isolateData['drrpPolylines'] as Set<Polyline>;
   final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
-  var maxLat = const LatLng(0, 0);
-  var minLat = const LatLng(0, 0);
+  LatLng maxLat = const LatLng(0, 0);
+  LatLng minLat = const LatLng(0, 0);
 
   try {
-    // for each seleced journey
+    // Process each selected journey
     for (int i = 0; i < roadOutputData.length; i++) {
       var roadQuery = roadOutputData[i];
-      // for each road in a journey
+      var currJourney = selectedRoads[i];
+      // Process each road in a journey
       for (int j = 0; j < roadQuery.length; j++) {
         var road = roadQuery[j];
+        List<dynamic> labels;
         String roadName = road["roadName"];
-        List<dynamic> labels = jsonDecode(road["labels"]);
-        dynamic roadStatistics = jsonDecode(road["stats"]);
+        try {
+          labels = jsonDecode(road["labels"]);
+          if (labels.isEmpty) continue;
+        } catch (e) {
+          logger.e('Error parsing labels: $e');
+          continue;
+        }
+        minLat = LatLng(labels[0]['latitude'], labels[0]['longitude']);
+        maxLat = LatLng(labels.last['latitude'], labels.last['longitude']);
 
-        minLat = (minLat.latitude == 0)
-            ? LatLng(labels[0]['latitude'], labels[0]['longitude'])
-            : minLat;
+        List<LatLng> points = [];
+        List<double> velocities = [];
+        double distance = 0.0;
 
-        Map<String, dynamic> stats = {};
-        var lastVelPredPCI = 0.0;
-        var velPredPCI = -1.0;
+        // Initialize first point and prediction
+        var firstLabel = labels[0];
 
-        /// Add the labels and polylines
-        for (int k = 1; k < labels.length; k++) {
-          maxLat = LatLng(labels[k]['latitude'], labels[k]['longitude']);
-          double avgVelocity =
-              (labels[k]['velocity'] + labels[k - 1]['velocity']) / 2;
-          avgVelocity *= 3.6; // convert m/s to kmph
-          double prediction = max(
-            double.parse(labels[k]['prediction'].toString()),
-            double.parse(labels[k - 1]['prediction'].toString()),
-          );
-          double velocityPCI = velocityToPCI(avgVelocity);
-          var currentRoad = selectedRoads[i];
+        double nxtPred = showPCIlabel
+            ? double.parse(firstLabel['prediction'].toString())
+            : velocityToPCI(3.6 * firstLabel['velocity']);
 
-          /// vel pred statistics
-          lastVelPredPCI = velPredPCI;
-          velPredPCI = velocityToPCI(avgVelocity);
-          double dist = Geolocator.distanceBetween(
-            labels[k - 1]['latitude'],
-            labels[k - 1]['longitude'],
-            labels[k]['latitude'],
-            labels[k]['longitude'],
-          );
-          // Check if the key exists in the stats map, if not, initialize it
-          if (!stats.containsKey(velPredPCI.toString())) {
-            stats[velPredPCI.toString()] = {
-              'avg_velocity': 0.0,
-              'distance_travelled': 0.0,
-              'number_of_segments': 0,
+        // Process road segments
+        for (int k = 0; k < labels.length - 1; k++) {
+          var currLabel = labels[k];
+          var nxtLabel = labels[k + 1];
+
+          // Calculate current prediction
+          double currPred = nxtPred;
+          nxtPred = showPCIlabel
+              ? min(double.parse(currLabel['prediction'].toString()),
+                  double.parse(nxtLabel['prediction'].toString()))
+              : velocityToPCI(
+                  3.6 * avg([nxtLabel['velocity'], currLabel['velocity']]));
+
+          // Calculate previous point and current point
+          LatLng currPoint =
+              LatLng(currLabel['latitude'], currLabel['longitude']);
+          LatLng nxtPoint = LatLng(nxtLabel['latitude'], nxtLabel['longitude']);
+
+          // Calculate distance between points
+          double segmentDistance = Geolocator.distanceBetween(
+              currPoint.latitude,
+              currPoint.longitude,
+              nxtPoint.latitude,
+              nxtPoint.longitude);
+
+          points.add(currPoint);
+          velocities.add(currLabel['velocity']);
+
+          // Create polyline when prediction changes
+          if (currPred != nxtPred) {
+            Map<String, dynamic> polylineOnTapData = {
+              'roadName': roadName,
+              'filename': currJourney['filename'],
+              'time': currJourney['time'],
+              'pci': currPred,
+              'avg_vel': 3.6 * avg(velocities),
+              'distance': distance / 1000
             };
-          }
-          stats[velPredPCI.toString()]['avg_velocity'] = (((avgVelocity / 3.6) +
-                  stats[velPredPCI.toString()]['avg_velocity']) /
-              2);
-          stats[velPredPCI.toString()]['distance_travelled'] += dist;
-          if ((velPredPCI != lastVelPredPCI)) {
-            stats[velPredPCI.toString()]['number_of_segments'] += 1;
-          }
 
-          ///
-          // Add the polyline
-          Polyline tempPolylne = Polyline(
+            Polyline polyline = Polyline(
+              consumeTapEvents: true,
+              polylineId: PolylineId("Polyline$i$j$k"),
+              color: getRoadColor(currPred),
+              width: 5,
+              endCap: Cap.roundCap,
+              startCap: Cap.roundCap,
+              jointType: JointType.round,
+              points: List.from(points),
+              onTap: () {
+                Get.bottomSheet(
+                  clipBehavior: Clip.antiAlias,
+                  backgroundColor: Colors.white,
+                  PolylineBottomSheet(data: polylineOnTapData),
+                );
+              },
+            );
+            pciPolylines.add(polyline);
+            // Reset for next segment
+            points = [currPoint];
+            velocities = [currLabel['velocity']];
+          }
+          distance += segmentDistance;
+        }
+
+        if (points.length == 1) {
+          // create a polyline of last segment
+          Map<String, dynamic> polylineOnTapData = {
+            'roadName': roadName,
+            'filename': currJourney['filename'],
+            'time': currJourney['time'],
+            'pci': nxtPred,
+            'avg_vel': 3.6 * avg(velocities),
+            'distance': distance / 1000
+          };
+          Polyline polyline = Polyline(
             consumeTapEvents: true,
-            polylineId: PolylineId("$roadName$i$j$k"),
-            color: showPCIlabel
-                ? getRoadColor(prediction)
-                : getVelocityColor(avgVelocity),
+            polylineId: PolylineId("Polyline$i$j${labels.length - 1}"),
+            color: getRoadColor(nxtPred),
             width: 5,
             endCap: Cap.roundCap,
             startCap: Cap.roundCap,
             jointType: JointType.round,
-            points: [
-              LatLng(labels[k - 1]['latitude'], labels[k - 1]['longitude']),
-              LatLng(labels[k]['latitude'], labels[k]['longitude']),
-            ],
+            points: List.from(points),
             onTap: () {
-              Map<String, dynamic> polylineOnTapData = {
-                'roadName': roadName,
-                'filename': currentRoad['filename'],
-                'time': currentRoad['time'],
-                'pci_pred': prediction,
-                'vel_pred': velocityPCI,
-                'avg_vel': avgVelocity,
-              };
               Get.bottomSheet(
                 clipBehavior: Clip.antiAlias,
                 backgroundColor: Colors.white,
@@ -119,46 +154,41 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               );
             },
           );
-          pciPolylines.add(tempPolylne);
-        }
+          pciPolylines.add(polyline);
+        } else {
+          // add the last point in the points and create a new polyline
+          points.add(LatLng(labels.last['latitude'], labels.last['longitude']));
+          velocities.add(labels.last['velocity']);
 
-        // Adding the statistictics - both prediction based and velocity based
-        List<RoadStatsData> velStatsList = [];
-        for (var key in stats.keys) {
-          // add to velPredList
-          velStatsList.add(
-            RoadStatsData(
-              pci: double.parse(key).toStringAsFixed(0),
-              avgVelocity: stats[key]['avg_velocity'].toString(),
-              distanceTravelled: stats[key]['distance_travelled'].toString(),
-              numberOfSegments: stats[key]['number_of_segments'].toString(),
-            ),
+          Map<String, dynamic> polylineOnTapData = {
+            'roadName': roadName,
+            'filename': currJourney['filename'],
+            'time': currJourney['time'],
+            'pci': nxtPred,
+            'avg_vel': 3.6 * avg(velocities),
+            'distance': distance / 1000
+          };
+          Polyline polyline = Polyline(
+            consumeTapEvents: true,
+            polylineId: PolylineId("Polyline$i$j${labels.length - 1}"),
+            color: getRoadColor(nxtPred),
+            width: 5,
+            endCap: Cap.roundCap,
+            startCap: Cap.roundCap,
+            jointType: JointType.round,
+            points: List.from(points),
+            onTap: () {
+              Get.bottomSheet(
+                clipBehavior: Clip.antiAlias,
+                backgroundColor: Colors.white,
+                PolylineBottomSheet(data: polylineOnTapData),
+              );
+            },
           );
+          pciPolylines.add(polyline);
         }
-        List<RoadStatsData> predStatsList = [];
-        for (int i = 1; i <= 5; i++) {
-          // Key represents each PCI value in the stats, which are only 1-5
-          String key = "$i";
-          predStatsList.add(
-            RoadStatsData(
-              pci: double.parse(key).toStringAsFixed(0),
-              avgVelocity: roadStatistics[key]['avg_velocity'].toString(),
-              distanceTravelled:
-                  roadStatistics[key]['distance_travelled'].toString(),
-              numberOfSegments:
-                  roadStatistics[key]['number_of_segments'].toString(),
-            ),
-          );
-        }
-        roadStats.add(
-          RoadStats(
-            roadName: roadName,
-            predStats: predStatsList,
-            velStats: velStatsList,
-          ),
-        );
-        logger.d(stats.toString());
       }
+      roadStats.add(setRoadStatistics(journeyData: roadQuery));
     }
     pciPolylines.addAll(drrpPolylines);
     sendPort.send({
