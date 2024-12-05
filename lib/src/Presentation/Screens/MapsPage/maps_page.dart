@@ -28,6 +28,8 @@ class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MapPageController mapPageController = Get.find<MapPageController>();
+    double h = MediaQuery.sizeOf(context).height;
+    double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
         top: true,
@@ -67,77 +69,90 @@ class MapPage extends StatelessWidget {
               child: Obx(
                 () => Container(
                   padding: const EdgeInsets.all(10),
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.08,
+                  width: w,
+                  height: h * 0.08,
                   color: const Color(0xFFF3EDF5),
                   child: FittedBox(
-                    alignment: Alignment.center,
                     child: Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: InkWell(
-                            onTap: () async {
-                              try {
-                                mapPageController.isDrrpLayerVisible =
-                                    !mapPageController.isDrrpLayerVisible;
-                                if (mapPageController.isDrrpLayerVisible) {
-                                  mapPageController
-                                      .plotDRRPLayer()
-                                      .then((_) {});
-                                  return;
-                                }
-                                // clear the DRRP layer
-                                mapPageController.plotRoadData().then((_) {});
-                              } catch (e) {
-                                // Handle any errors that occur during the onTap execution
-                                customGetSnackBar(
-                                    "Error",
-                                    "'Error toggling DRRP layer: $e'",
-                                    Icons.error_outline);
-                                logger.e('Error toggling DRRP layer: $e');
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              mapPageController.isDrrpLayerVisible =
+                                  !mapPageController.isDrrpLayerVisible;
+                              if (mapPageController.isDrrpLayerVisible) {
+                                mapPageController.showIndicator.value = true;
+                                mapPageController.plotDRRPLayer().then((_) {
+                                  Future.delayed(const Duration(seconds: 1))
+                                      .then((_) {
+                                    mapPageController.showIndicator.value =
+                                        false;
+                                  });
+                                });
+                                return;
                               }
-                            },
-                            child: Row(
-                              children: [
-                                const Gap(10),
-                                Icon(
-                                  Icons.layers_outlined,
-                                  size: MediaQuery.textScalerOf(context)
-                                      .scale(20),
+                              // clear the DRRP layer
+                              mapPageController.showIndicator.value = true;
+                              await mapPageController
+                                  .removeDRRPLayer()
+                                  .then((_) {
+                                Future.delayed(const Duration(seconds: 1))
+                                    .then((_) {
+                                  mapPageController.showIndicator.value = false;
+                                });
+                              });
+                            } catch (e) {
+                              // Handle any errors that occur during the onTap execution
+                              customGetSnackBar(
+                                  "Error",
+                                  "'Error toggling DRRP layer: $e'",
+                                  Icons.error_outline);
+                              logger.e('Error toggling DRRP layer: $e');
+                            }
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              mapPageController.isDrrpLayerVisible
+                                  ? Colors.blue.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.1),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Gap(10),
+                              Icon(
+                                Icons.layers_outlined,
+                                size:
+                                    MediaQuery.textScalerOf(context).scale(20),
+                                color: mapPageController.isDrrpLayerVisible
+                                    ? Colors.blue
+                                    : Colors.black,
+                              ),
+                              const Gap(5),
+                              Text(
+                                "DRRP Layer",
+                                style: GoogleFonts.inter(
                                   color: mapPageController.isDrrpLayerVisible
                                       ? Colors.blue
                                       : Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: MediaQuery.textScalerOf(context)
+                                      .scale(18),
                                 ),
-                                const Gap(5),
-                                Text(
-                                  "DRRP Layer",
-                                  style: GoogleFonts.inter(
-                                    color: mapPageController.isDrrpLayerVisible
-                                        ? Colors.blue
-                                        : Colors.black,
-                                    fontWeight:
-                                        mapPageController.isDrrpLayerVisible
-                                            ? FontWeight.w500
-                                            : FontWeight.w400,
-                                    fontSize: MediaQuery.textScalerOf(context)
-                                        .scale(18),
-                                  ),
-                                ),
-                                const Gap(10),
-                              ],
-                            ),
+                              ),
+                              const Gap(10),
+                            ],
                           ),
                         ),
                         const Gap(10),
                         TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (mapPageController.showIndicator.value) return;
                             mapPageController.showPCIlabel =
                                 !mapPageController.showPCIlabel;
                             logger.i(mapPageController.pciPolylines.length);
                             mapPageController.showIndicator.value = true;
-                            mapPageController.plotRoadData().then((_) {
+                            await mapPageController.plotRoadData().then((_) {
                               Future.delayed(const Duration(seconds: 1))
                                   .then((_) {
                                 mapPageController.showIndicator.value = false;
@@ -146,36 +161,33 @@ class MapPage extends StatelessWidget {
                           },
                           style: ButtonStyle(
                             backgroundColor: WidgetStatePropertyAll(
-                              mapPageController.showPCIlabel
-                                  ? Colors.blue.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.1),
+                              Colors.blue.withOpacity(0.1),
                             ),
                           ),
                           child: Row(
                             children: [
+                              Icon(
+                                // tick icon
+                                mapPageController.showPCIlabel
+                                    ? Icons.insights_rounded
+                                    : Icons.speed_rounded,
+                                color: Colors.blue,
+                                size:
+                                    MediaQuery.textScalerOf(context).scale(20),
+                              ),
+                              const Gap(10),
                               Text(
-                                'Show PCI Label',
+                                mapPageController.showPCIlabel
+                                    ? "PCI (Prediction)"
+                                    : "PCI (Velocity)",
                                 style: GoogleFonts.inter(
-                                  color: mapPageController.showPCIlabel
-                                      ? Colors.blue
-                                      : Colors.black,
+                                  color: Colors.blue,
                                   fontWeight: FontWeight.w400,
                                   fontSize: MediaQuery.textScalerOf(context)
                                       .scale(18),
                                 ),
                               ),
                               const Gap(5),
-                              Icon(
-                                // tick icon
-                                mapPageController.showPCIlabel
-                                    ? Icons.cancel_outlined
-                                    : Icons.check_rounded,
-                                color: mapPageController.showPCIlabel
-                                    ? Colors.blue
-                                    : Colors.black,
-                                size:
-                                    MediaQuery.textScalerOf(context).scale(20),
-                              )
                             ],
                           ),
                         ),
@@ -186,10 +198,10 @@ class MapPage extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: MediaQuery.of(context).size.height * 0.08,
+              top: h * 0.08,
               left: 0,
               child: SizedBox(
-                width: MediaQuery.of(context).size.width,
+                width: w,
                 child: Obx(
                   () {
                     return mapPageController.showIndicator.value
@@ -220,25 +232,40 @@ class MapPage extends StatelessWidget {
                         width: 1,
                       ),
                     ),
-                    child: IconButton(
-                      onPressed: () async {
-                        Future.delayed(const Duration(milliseconds: 500)).then(
-                          (value) => mapPageController.animateToLocation(
-                              mapPageController.getMinLat,
-                              mapPageController.getMaxLat),
-                        );
-                      },
-                      tooltip: 'Zoom to Fit',
-                      icon: const Icon(
-                        Icons.zoom_out_map,
-                        color: Colors.black,
-                        size: 30,
+                    child: SizedBox(
+                      width: w * 0.12,
+                      height: w * 0.12,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: IconButton(
+                          onPressed: () async {
+                            Future.delayed(const Duration(milliseconds: 500))
+                                .then(
+                              (value) => mapPageController.animateToLocation(
+                                  mapPageController.getMinLat,
+                                  mapPageController.getMaxLat),
+                            );
+                          },
+                          tooltip: 'Zoom to Fit',
+                          icon: const Icon(
+                            Icons.zoom_out_map,
+                            color: Colors.black,
+                            size: 30,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                   const Gap(20),
                   // Map Type Dropdown //
-                  const SelectMapType(),
+                  SizedBox(
+                    width: w * 0.12,
+                    height: w * 0.12,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: const SelectMapType(),
+                    ),
+                  ),
                   const Gap(20),
                   // Road Statistics Button //
                   Container(
@@ -250,38 +277,64 @@ class MapPage extends StatelessWidget {
                         width: 1,
                       ),
                     ),
-                    child: IconButton(
-                      onPressed: () {
-                        Get.bottomSheet(
-                          isDismissible: true,
-                          backgroundColor: Colors.white,
-                          MapPageRoadStatistics(
-                            roadStats: mapPageController.getRoadStats,
-                            roadOutputData: mapPageController.selectedRoads,
+                    child: SizedBox(
+                      width: w * 0.12,
+                      height: w * 0.12,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: IconButton(
+                          onPressed: () {
+                            Get.bottomSheet(
+                              isDismissible: true,
+                              backgroundColor: Colors.white,
+                              MapPageRoadStatistics(
+                                roadStats: mapPageController.getRoadStats,
+                                roadOutputData: mapPageController.selectedRoads,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            color: Colors.black,
+                            Icons.bar_chart_rounded,
+                            size: 30,
                           ),
-                        );
-                      },
-                      icon: const Icon(
-                        color: Colors.black,
-                        Icons.bar_chart_rounded,
-                        size: 30,
+                          tooltip: 'Road Statistics',
+                        ),
                       ),
-                      tooltip: 'Road Statistics',
                     ),
                   ),
                 ],
               ),
             ),
-            Positioned(
-              bottom: 10,
-              right: 10,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.2,
-                height: MediaQuery.of(context).size.height * 0.2,
-                child: FittedBox(
-                  alignment: Alignment.center,
-                  fit: BoxFit.contain,
-                  child: const Legends(),
+            Obx(
+              () => Positioned(
+                bottom: mapPageController.legendPos.value.dy,
+                right: mapPageController.legendPos.value.dx,
+                child: LongPressDraggable(
+                  onDragEnd: (details) {
+                    mapPageController.legendPos.value = Offset(
+                      w - details.offset.dx - w * 0.2,
+                      h - details.offset.dy - h * 0.2,
+                    );
+                  },
+                  feedback: SizedBox(
+                    width: w * 0.2,
+                    height: h * 0.2,
+                    child: FittedBox(
+                      alignment: Alignment.center,
+                      fit: BoxFit.contain,
+                      child: const Legends(),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: w * 0.2,
+                    height: h * 0.2,
+                    child: FittedBox(
+                      alignment: Alignment.center,
+                      fit: BoxFit.contain,
+                      child: const Legends(),
+                    ),
+                  ),
                 ),
               ),
             ),
