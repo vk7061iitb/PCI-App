@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Functions/vel_to_pci.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../Functions/cal_map_bounds.dart';
@@ -81,85 +79,6 @@ class MapPageController extends GetxController {
 
     _minLat = const LatLng(0, 0);
     _maxLat = const LatLng(0, 0);
-  }
-
-  void setRoadStatistics({required List<Map<String, dynamic>> journeyData}) {
-    if (journeyData.isEmpty) {
-      return;
-    }
-    if (roadStats.isNotEmpty) {
-      roadStats.clear();
-    }
-    for (var road in journeyData) {
-      String roadName = road["roadName"];
-      dynamic roadStatistics = jsonDecode(road["stats"]);
-      // Adding the statss
-      List<RoadStatsData> roadStatsList = [];
-      for (int i = 1; i <= 5; i++) {
-        // Key represents each PCI value in the stats, which are only 1-5
-        String key = "$i";
-        roadStatsList.add(
-          RoadStatsData(
-            pci: key,
-            avgVelocity: roadStatistics[key]['avg_velocity'].toString(),
-            distanceTravelled:
-                roadStatistics[key]['distance_travelled'].toString(),
-            numberOfSegments:
-                roadStatistics[key]['number_of_segments'].toString(),
-          ),
-        );
-      }
-
-      List<dynamic> labels = jsonDecode(road["labels"]);
-      Map<String, dynamic> stats = {};
-      var lastVelPredPCI = 0.0;
-      var velPredPCI = -1.0;
-      for (int k = 1; k < labels.length; k++) {
-        double avgVelocity =
-            (labels[k]['velocity'] + labels[k - 1]['velocity']) / 2;
-        lastVelPredPCI = velPredPCI;
-        velPredPCI = velocityToPCI(3.6 * avgVelocity);
-        double dist = Geolocator.distanceBetween(
-          labels[k - 1]['latitude'],
-          labels[k - 1]['longitude'],
-          labels[k]['latitude'],
-          labels[k]['longitude'],
-        );
-        // Check if the key exists in the stats map, if not, initialize it
-        if (!stats.containsKey(velPredPCI.toString())) {
-          stats[velPredPCI.toString()] = {
-            'avg_velocity': 0.0,
-            'distance_travelled': 0.0,
-            'number_of_segments': 0,
-          };
-        }
-        stats[velPredPCI.toString()]['avg_velocity'] =
-            (avgVelocity + stats[velPredPCI.toString()]['avg_velocity']) / 2;
-        stats[velPredPCI.toString()]['distance_travelled'] += dist;
-        if ((velPredPCI != lastVelPredPCI)) {
-          stats[velPredPCI.toString()]['number_of_segments'] += 1;
-        }
-      }
-      List<RoadStatsData> velStatsList = [];
-      for (var key in stats.keys) {
-        // add to velPredList
-        velStatsList.add(
-          RoadStatsData(
-            pci: double.parse(key).toStringAsFixed(0),
-            avgVelocity: stats[key]['avg_velocity'].toString(),
-            distanceTravelled: stats[key]['distance_travelled'].toString(),
-            numberOfSegments: stats[key]['number_of_segments'].toString(),
-          ),
-        );
-      }
-      roadStats.add(
-        RoadStats(
-          roadName: roadName,
-          predStats: roadStatsList,
-          velStats: velStatsList,
-        ),
-      );
-    }
   }
 
   /// Plots road data on the map.
