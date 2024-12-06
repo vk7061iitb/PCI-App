@@ -9,19 +9,41 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../Functions/set_road_stats.dart';
 import '../../../Functions/vel_to_pci.dart';
 import '../../../Objects/data.dart';
 
+/// Controller for managing output data(Jorney Data) in the PCI App.
+///
+/// This controller extends `GetxController` from the GetX package,
+/// providing reactive state management for the output data.
+///
+/// Example usage:
+/// ```dart
+/// final outputDataController = Get.put(OutputDataController());
+/// ```
+///
+/// See also:
+/// - [GetxController](https://pub.dev/documentation/get/latest/get/GetxController-class.html)
+/// - [GetX package](https://pub.dev/packages/get)
+///
 class OutputDataController extends GetxController {
   var outputDataFile = <Map<String, dynamic>>[].obs;
   RxSet<int> slectedFiles = <int>{}.obs;
   var isLoading = true.obs;
   final MapPageController _mapPageController = Get.find<MapPageController>();
 
+  /// This method retrieves the data related to the user's journey
+  /// from the local storage. It ensures that the data is up-to-date
+  /// and available for further processing or display within the app.
+  ///
+  /// Returns a Future that completes with the user's journey data.
+  /// Fetches the user's jouney data from the local database
   Future<List<Map<String, dynamic>>> fetchData() async {
+    String tableToFetch = 'outputData';
     try {
       isLoading.value = true;
-      await localDatabase.queryTable('outputData').then((value) {
+      await localDatabase.queryTable(tableToFetch).then((value) {
         outputDataFile.value = value;
         isLoading.value = false;
       });
@@ -33,11 +55,18 @@ class OutputDataController extends GetxController {
     return outputDataFile;
   }
 
+  /// Deletes the data associated with the given [id].
+  ///
+  /// This method performs an asynchronous operation to delete the data
+  /// from the data source. Ensure that the [id] provided is valid and
+  /// corresponds to an existing data entry.
+  ///
+  /// Throws an exception if the deletion fails.
   Future<void> deleteData(int id) async {
     try {
       await localDatabase.deleteOutputData(id);
       await localDatabase.deleteRoadOutputData(id);
-      fetchData();
+      fetchData(); // refresh the data
     } catch (e) {
       customGetSnackBar(
           "Databse Error", "Failed to delete data: $e", Icons.error_outline);
@@ -45,9 +74,21 @@ class OutputDataController extends GetxController {
     }
   }
 
-  // export data
-  Future<void> exportData(String filename, String vehicle, String time,
-      List<Map<String, dynamic>> query) async {
+  /// Exports data to a specified file.
+  ///
+  /// This function exports data to a file with the given [filename].
+  /// The [vehicle] parameter specifies the vehicle information to be included in the export.
+  /// The [time] parameter specifies the time information to be included in the export.
+  ///
+  /// Throws an [Exception] if the export fails.
+  /// Exports the data to a CSV file and shares it with the user
+  ///
+  Future<void> exportData({
+    required String filename,
+    required String vehicle,
+    required String time,
+    required List<Map<String, dynamic>> jouneyData,
+  }) async {
     List<List<dynamic>> csvData = [];
     csvData.add([
       'Road Name',
@@ -57,7 +98,7 @@ class OutputDataController extends GetxController {
       'PCI(velocity)',
       'Velocity(km/hr)',
     ]);
-    for (var road in query) {
+    for (var road in jouneyData) {
       String roadName = road["roadName"];
       List<dynamic> labels = jsonDecode(road["labels"]);
 
@@ -91,12 +132,18 @@ class OutputDataController extends GetxController {
     });
   }
 
-  // export multiple roads as zip file
+  /// Creates a ZIP file asynchronously.
+  ///
+  /// This method performs the necessary operations to generate a ZIP file
+  /// containing the required data. It does not take any parameters and
+  /// returns a [Future] that completes when the ZIP file creation is finished.
+  ///
+  /// Throws an exception if the ZIP file creation fails.
   Future<void> makeZip() async {
     final Archive archive = Archive();
     for (int id in slectedFiles) {
       List<Map<String, dynamic>> roadOutputDataQuery =
-          await localDatabase.queryRoadOutputData(id);
+          await localDatabase.queryRoadOutputData(jouneyID: id);
 
       Map<String, dynamic> currRoadData = {};
       for (var road in outputDataFile) {
@@ -154,7 +201,7 @@ class OutputDataController extends GetxController {
     }
     final List<int> zipData = ZipEncoder().encode(archive)!;
     final tempdir = await getTemporaryDirectory();
-    DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm");
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd_HH-mm");
     final time = dateFormat.format(DateTime.now());
     String zipPath = '${tempdir.path}/${time}_JourneyData.zip';
     final File file = File(zipPath);
@@ -171,18 +218,35 @@ class OutputDataController extends GetxController {
   Future<List<Map<String, dynamic>>> getRoadStats(int id) async {
     _mapPageController.roadOutputData = [];
     List<Map<String, dynamic>> res =
-        await localDatabase.queryRoadOutputData(id);
+        await localDatabase.queryRoadOutputData(jouneyID: id);
     _mapPageController.roadOutputData.add(res);
-    _mapPageController.setRoadStatistics(res);
+    if (_mapPageController.roadStats.isNotEmpty) {
+      _mapPageController.roadStats.clear();
+    }
+    _mapPageController.roadStats.add(setRoadStatistics(journeyData: res));
     return res;
   }
 
-  // plot-multiple roads
+  /// Plots the roads on the map.
+  ///
+  /// This method fetches the necessary data and updates the map with the
+  /// plotted roads. It is an asynchronous operation and should be awaited
+  /// to ensure the roads are plotted before proceeding.
+  ///
+  /// Throws:
+  /// - [Exception] if there is an error during the plotting process.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await plotRoads();
+  /// ```
+  ///
+  /// Note: Ensure that the map is initialized before calling this method.
   Future<void> plotRoads() async {
     _mapPageController.clearData();
     for (int id in slectedFiles) {
       List<Map<String, dynamic>> roadOutputDataQuery =
-          await localDatabase.queryRoadOutputData(id);
+          await localDatabase.queryRoadOutputData(jouneyID: id);
 
       Map<String, dynamic> currRoadData = {};
       for (var road in outputDataFile) {
@@ -200,7 +264,7 @@ class OutputDataController extends GetxController {
       _mapPageController.selectedRoads.add(roadMetaData);
       _mapPageController.roadOutputData.add(roadOutputDataQuery);
     }
-    _mapPageController.plotRoadData();
+    await _mapPageController.plotRoadData();
   }
 
   @override

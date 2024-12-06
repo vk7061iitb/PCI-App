@@ -41,10 +41,16 @@ class UserAuthenticationService {
         data = responseData;
         return data;
       } else {
+        data = {
+          'Message': response.body,
+        };
         logger.d(response.body);
         return data;
       }
     } catch (e) {
+      data = {
+        'Message': e.toString(),
+      };
       logger.e(e.toString());
       return data;
     }

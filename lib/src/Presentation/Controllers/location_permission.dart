@@ -12,6 +12,13 @@ class LocationController extends GetxController {
     super.onInit();
   }
 
+  /// Requests location permission from the user.
+  ///
+  /// Returns a [Future] that completes with a boolean value indicating
+  /// whether the location permission was granted (`true`) or denied (`false`).
+  ///
+  /// This method should be called before attempting to access the device's
+  /// location to ensure that the necessary permissions are in place.
   Future<bool> locationPermission() async {
     final locationService = await Permission.location.serviceStatus.isEnabled;
     List<Permission> permissions = [

@@ -31,9 +31,9 @@ class LoginController extends GetxController {
   set isLoggedIn(bool value) => _isLoggedIn.value = value;
   set userRole(String value) => _userRole.value = value;
 
-  Future<void> loginUser() async {
+  Future<int> loginUser() async {
     // Send the user data to the server
-    if (!loginFormKey.currentState!.validate()) return;
+    if (!loginFormKey.currentState!.validate()) return -1;
     Map<String, dynamic> serverMessage =
         await userAuthenticationService.loginUser(
       user: UserData(
@@ -43,20 +43,23 @@ class LoginController extends GetxController {
       ),
     );
 
-    // Update the current user data
-    if (serverMessage['Message'] == 'User exists') {
-      _isLoggedIn.value = true;
-      final user = {
-        "ID": serverMessage['User_Id'].toString(),
-        "email": emailController.text,
-        "phone": phoneController.text,
-        "role": _userRole.value,
-        "isLoggedIn": true,
-      };
-      userDataController.storage.write("user", user);
-      userDataController.user = user;
-
-      logger.i(serverMessage.toString());
+    try {
+      if (serverMessage['Message'] == 'User exists') {
+        _isLoggedIn.value = true;
+        final user = {
+          "ID": serverMessage['User_Id'].toString(),
+          "email": emailController.text,
+          "phone": phoneController.text,
+          "role": _userRole.value,
+          "isLoggedIn": true,
+        };
+        userDataController.storage.write("user", user);
+        userDataController.user = user;
+      }
+      return 0;
+    } catch (e) {
+      logger.e(e.toString());
+      return 1;
     }
   }
 

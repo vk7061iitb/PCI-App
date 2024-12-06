@@ -149,9 +149,10 @@ class SQLDatabaseHelper {
     });
   }
 
-  Future<List<Map<String, dynamic>>> queryRoadOutputData(int id) async {
+  Future<List<Map<String, dynamic>>> queryRoadOutputData(
+      {required jouneyID}) async {
     List<Map<String, dynamic>> roadOutputDataQuery = await _localDbInstance
-        .query('roadOutputData', where: 'journeyID = ?', whereArgs: [id]);
+        .query('roadOutputData', where: 'journeyID = ?', whereArgs: [jouneyID]);
     return roadOutputDataQuery;
   }
 
