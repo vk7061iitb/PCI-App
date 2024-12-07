@@ -3,7 +3,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/vehicle_type_dropdown.dart';
@@ -13,9 +12,7 @@ class SaveFile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ResponseController responseController = Get.put(ResponseController());
-    OutputDataController outputDataController =
-        Get.find<OutputDataController>();
+    ResponseController responseController = Get.find();
     AccDataController accDataController = Get.find();
     return PopScope(
       canPop: false,
@@ -24,8 +21,8 @@ class SaveFile extends StatelessWidget {
           return;
         }
         final bool shouldPop = await _showAlert(context) ?? false;
-        if (shouldPop && context.mounted) {
-          Navigator.of(context).pop();
+        if (shouldPop) {
+          Get.back(result: false);
         }
       },
       child: Container(
@@ -78,34 +75,6 @@ class SaveFile extends StatelessWidget {
                         ),
                       ),
                       const Gap(20),
-                      Row(
-                        children: [
-                          Text(
-                            "Save Locally",
-                            style: GoogleFonts.inter(
-                              fontSize:
-                                  MediaQuery.textScalerOf(context).scale(18),
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const Gap(10),
-                          Obx(() {
-                            return Switch(
-                              value: responseController.isSaveLocally,
-                              onChanged: (bool value) {
-                                responseController.isSaveLocally = value;
-                              },
-                              thumbIcon: WidgetStateProperty.all(
-                                responseController.isSaveLocally
-                                    ? const Icon(Icons.check)
-                                    : const Icon(Icons.close),
-                              ),
-                            );
-                          })
-                        ],
-                      ),
-                      const Gap(10),
                       Text(
                         "Vehicle Type",
                         style: GoogleFonts.inter(
@@ -171,6 +140,62 @@ class SaveFile extends StatelessWidget {
                       ),
                       const Gap(10),
                       // Notes
+                      (accDataController.currRoadType.value == "Pedestrian")
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Reason for Pedestrian",
+                                  style: GoogleFonts.inter(
+                                    fontSize: MediaQuery.textScalerOf(context)
+                                        .scale(18),
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const Gap(10),
+                                Form(
+                                  key: responseController.pedestrianFormKey,
+                                  child: TextFormField(
+                                    controller:
+                                        responseController.pedestianController,
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return "Please metion the reason";
+                                      }
+                                      return null;
+                                    },
+                                    expands: false,
+                                    maxLines: 2,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.notes),
+                                      enabled: true,
+                                      hintText:
+                                          'Describe why this is a Pedestrian area',
+                                      isDense: true,
+                                      labelStyle: GoogleFonts.inter(
+                                        color: Colors.black54,
+                                      ),
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(15),
+                                        ),
+                                      ),
+                                      border: const OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(15),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : SizedBox(),
                       Text(
                         "Notes",
                         style: GoogleFonts.inter(
@@ -224,14 +249,22 @@ class SaveFile extends StatelessWidget {
                                             .validate()) {
                                           return;
                                         }
+                                        if (accDataController
+                                                    .currRoadType.value ==
+                                                "pedestrian" &&
+                                            !responseController
+                                                .pedestrianFormKey.currentState!
+                                                .validate()) {
+                                          return;
+                                        }
                                         responseController.savingData = true;
                                         logger.d("Saving Data..");
-                                        await responseController
-                                            .saveData(accDataController
-                                                .downSampledDatapoints)
-                                            .then((_) {
-                                          outputDataController.fetchData();
-                                        });
+                                        await responseController.saveData(
+                                          accData: accDataController
+                                              .downSampledDatapoints,
+                                          roadType: accDataController
+                                              .currRoadType.value,
+                                        );
                                       },
                                       style: OutlinedButton.styleFrom(
                                         shape: RoundedRectangleBorder(
@@ -240,9 +273,7 @@ class SaveFile extends StatelessWidget {
                                         ),
                                       ),
                                       child: Text(
-                                        responseController.isSaveLocally
-                                            ? "Submit and Save"
-                                            : "Submit",
+                                        "Submit and Save",
                                         style: GoogleFonts.inter(
                                           fontSize:
                                               MediaQuery.textScalerOf(context)
@@ -298,7 +329,7 @@ Future<bool?> _showAlert(BuildContext context) async {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(false);
+              Get.back(result: false);
             },
             child: Text(
               'Save',
@@ -311,7 +342,7 @@ Future<bool?> _showAlert(BuildContext context) async {
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(true);
+              Get.back(result: true);
             },
             child: Text(
               'Discard',
