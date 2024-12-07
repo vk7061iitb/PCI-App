@@ -1,44 +1,43 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
+import '../../../../../Objects/data.dart';
 import '../../../../../Utils/get_icon.dart';
+import '../../../../Models/file_info.dart';
+import '../../../Controllers/response_controller.dart';
+import '../../../Widgets/snackbar.dart';
 
-class HistoryDataItem extends StatefulWidget {
+class HistoryDataItem extends StatelessWidget {
   const HistoryDataItem({
     super.key,
     required this.file,
     required this.shareFile,
     required this.deleteFile,
+    required this.unsentData,
   });
   final File file;
+  final List<Map<String, dynamic>> unsentData;
   final VoidCallback shareFile;
   final VoidCallback deleteFile;
-
-  @override
-  State<HistoryDataItem> createState() => _HistoryDataItemState();
-}
-
-class _HistoryDataItemState extends State<HistoryDataItem> {
   @override
   Widget build(BuildContext context) {
+    ResponseController responseController = Get.find();
+    SavedFileController savedFileController = Get.put(SavedFileController());
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    FileInfo getFileInfo(String input) {
-      String fileName = input.split('#')[0];
-      String dataType = 'AccData';
-      String timeString = input.split('#')[2];
-      String vehicleType = input.split('#').last.split('.csv').first;
-
-      return FileInfo(
-        fileName: fileName,
-        dataType: dataType,
-        time: timeString,
-        vehicleType: vehicleType,
+    late Map<String, dynamic> data; // Unsent data to be sent, if any
+    bool status(String filename, String vehicleType) {
+      data = unsentData.firstWhere(
+        (data) => (data['filename'] == filename &&
+            data['vehicleType'] == vehicleType),
+        orElse: () => {},
       );
+      return (data.isEmpty) ? false : true;
     }
 
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
@@ -47,7 +46,8 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
       fontSize: 16,
     );
 
-    FileInfo fileInfo = getFileInfo(widget.file.path.split('/').last);
+    FileInfo fileInfo =
+        savedFileController.getFileInfo(file.path.split('/').last);
 
     return InkWell(
       onTapDown: (TapDownDetails details) {
@@ -69,7 +69,7 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
           ),
           items: [
             PopupMenuItem(
-              onTap: widget.shareFile,
+              onTap: shareFile,
               child: Row(
                 children: [
                   Padding(
@@ -86,8 +86,59 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
                 ],
               ),
             ),
+            if (status(fileInfo.fileName, fileInfo.vehicleType))
+              PopupMenuItem(
+                onTap: () async {
+                  // do something
+                  List<Map<String, dynamic>> dataToSend =
+                      await localDatabase.queryUnsentData(data['id']);
+                  DateTime unsentTime = dateTimeParser.parseDateTime(
+                      data['Time'], 'dd-MMM-yyyy HH:mm')!;
+                  int res = await responseController.reSendData(
+                    unsentData: dataToSend,
+                    filename: data['filename'],
+                    time: unsentTime,
+                    roadType: data['roadType'],
+                    vehicleType: data['vehicleType'],
+                  );
+                  if (res == 200) {
+                    Get.showSnackbar(
+                      customGetSnackBar(
+                        "Submission Successful",
+                        "Data sent successfully",
+                        Icons.check_circle_outline,
+                      ),
+                    );
+                    await localDatabase.deleteUnsentData(data['id']);
+                    await localDatabase.deleteUnsentDataInfo(data['id']);
+                    return;
+                  }
+                  Get.showSnackbar(
+                    customGetSnackBar(
+                      "Submission Failed",
+                      "Failed to send data",
+                      Icons.error_outline,
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: Icon(
+                        Icons.replay_outlined,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      "Re-Submit",
+                      style: pupUpMenuTextStyle,
+                    ),
+                  ],
+                ),
+              ),
             PopupMenuItem(
-              onTap: widget.deleteFile,
+              onTap: deleteFile,
               child: Row(
                 children: [
                   Padding(
@@ -108,26 +159,25 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.only(
-          right: 10,
-          left: 10,
-          top: 2,
-          bottom: 2,
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: MediaQuery.sizeOf(context).width * 0.15,
-                  height: MediaQuery.sizeOf(context).width * 0.15,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 2,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment:
+                    CrossAxisAlignment.center, // Align all children to center
+                children: [
+                  Container(
+                    width: MediaQuery.sizeOf(context).width * 0.15,
+                    height: MediaQuery.sizeOf(context).width * 0.15,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                    ),
+                    child: Center(
                       child: Icon(
                         getIcon(fileInfo.vehicleType),
                         size: MediaQuery.sizeOf(context).width * 0.1,
@@ -135,72 +185,93 @@ class _HistoryDataItemState extends State<HistoryDataItem> {
                       ),
                     ),
                   ),
-                ),
-                Gap(MediaQuery.sizeOf(context).width * 0.05),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          fileInfo.fileName,
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 18,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.clip,
-                        ),
-                      ),
-                    ),
-                    Row(
+                  Gap(MediaQuery.sizeOf(context).width * 0.05),
+                  Expanded(
+                    // Ensures the second column takes available space
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment
+                          .start, // Align children to the left
                       children: [
-                        const Icon(
-                          Icons.calendar_month_outlined,
-                          size: 16,
-                          color: Colors.teal,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceBetween, // Space between file name and status
+                          children: [
+                            FittedBox(
+                              child: Text(
+                                fileInfo.fileName,
+                                style: GoogleFonts.inter(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 18,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                            FittedBox(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: status(
+                                    fileInfo.fileName,
+                                    fileInfo.vehicleType,
+                                  )
+                                      ? Colors.red.shade100
+                                      : Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Text(
+                                  status(
+                                    fileInfo.fileName,
+                                    fileInfo.vehicleType,
+                                  )
+                                      ? "Not Submitted"
+                                      : "Submitted",
+                                  style: GoogleFonts.inter(
+                                    color: status(
+                                      fileInfo.fileName,
+                                      fileInfo.vehicleType,
+                                    )
+                                        ? Colors.red.shade900
+                                        : Colors.green.shade900,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 5),
-                        Text(
-                          fileInfo.time,
-                          style: GoogleFonts.inter(
-                            color: Colors.teal,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              size: 16,
+                              color: Colors.teal,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              fileInfo.time,
+                              style: GoogleFonts.inter(
+                                color: Colors.teal,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-            Divider(
-              color: Colors.black12,
-              thickness: 0.5,
-              indent: MediaQuery.sizeOf(context).width * 0.2,
-            ),
-          ],
-        ),
-      ),
+                  ),
+                ],
+              ),
+              Divider(
+                color: Colors.black12,
+                thickness: 0.5,
+                indent: MediaQuery.sizeOf(context).width * 0.2,
+              ),
+            ],
+          )),
     );
   }
-}
-
-class FileInfo {
-  final String fileName;
-  String dataType;
-  final String time;
-  final String vehicleType;
-
-  FileInfo({
-    required this.fileName,
-    required this.dataType,
-    required this.time,
-    required this.vehicleType,
-  });
 }

@@ -11,41 +11,247 @@ class ReadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AccDataController accDataController = Get.find();
+    AccDataController accDataController = Get.find<AccDataController>();
     TextStyle sensorNameStyle = GoogleFonts.inter(
       fontSize: 18,
       fontWeight: FontWeight.w500,
-      color: Colors.black,
+      color: Color(0xFF202124),
+      textStyle: TextStyle(
+        overflow: TextOverflow.ellipsis,
+      ),
     );
     TextStyle labelTextStyle = GoogleFonts.inter(
       fontSize: 16,
       fontWeight: FontWeight.w500,
-      color: Colors.black,
+      color: Color(0xFF202124),
     );
-
-    TextStyle speedTextStyle = GoogleFonts.inter(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: Colors.black87,
-    );
-
-    TextStyle speedValueTextStyle = GoogleFonts.inter(
-      fontSize: 24,
-      fontWeight: FontWeight.w700,
-      color: Colors.black,
-    );
+    double h = MediaQuery.sizeOf(context).height;
+    double w = MediaQuery.sizeOf(context).width;
+    double totalH = h -
+        MediaQuery.of(context).padding.top -
+        kToolbarHeight -
+        kBottomNavigationBarHeight -
+        0.18 * w;
 
     return Column(
       children: [
-        Row(
+        Column(
           children: [
-            // Accelerometer Reading
-            Gap(MediaQuery.sizeOf(context).width * 0.025),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+                child: SizedBox(
+                  height: totalH * 0.05, // 5% of total height
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Text(
+                      "Road Type",
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Gap(totalH * 0.015), // 1.5% of total height
+            SizedBox(
+              width: w * 0.90,
+              height: h * 0.12, // 12% of total height
+              child: LayoutBuilder(builder: (context, constraints) {
+                return FittedBox(
+                  fit: BoxFit.contain,
+                  child: Row(
+                    children: [
+                      Obx(() {
+                        return InkWell(
+                          onTap: () {
+                            if (accDataController.showStartButton) {
+                              accDataController.currRoadType.value = "Paved";
+                            }
+                          },
+                          radius: 25,
+                          borderRadius: BorderRadius.circular(5),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  width: w * 0.1,
+                                  height: w * 0.1,
+                                  child: SvgPicture.asset(
+                                    colorFilter: ColorFilter.mode(
+                                      (accDataController.currRoadType.value ==
+                                              "Paved")
+                                          ? Colors.blue
+                                          : Colors.black,
+                                      BlendMode.srcIn,
+                                    ),
+                                    assetsPath.pave,
+                                  ),
+                                ),
+                                Gap(constraints.maxWidth * 0.05),
+                                Center(
+                                  child: Text(
+                                    "Paved",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: (accDataController
+                                                  .currRoadType.value ==
+                                              "Paved")
+                                          ? activeColor
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                      Gap(w * 0.05),
+                      Obx(() {
+                        return InkWell(
+                          onTap: () {
+                            if (accDataController.showStartButton) {
+                              accDataController.currRoadType.value = "Unpaved";
+                            }
+                          },
+                          radius: 25,
+                          borderRadius: BorderRadius.circular(5),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  width: w * 0.1,
+                                  height: w * 0.1,
+                                  child: SvgPicture.asset(
+                                    assetsPath.unPave,
+                                    colorFilter: ColorFilter.mode(
+                                      (accDataController.currRoadType.value ==
+                                              "Unpaved")
+                                          ? activeColor
+                                          : Colors.black,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                                Gap(constraints.maxWidth * 0.05),
+                                Center(
+                                  child: Text(
+                                    "Un-Paved",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: (accDataController
+                                                  .currRoadType.value ==
+                                              "Unpaved")
+                                          ? activeColor
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                      Gap(w * 0.05),
+                      Obx(() {
+                        return InkWell(
+                          onTap: () {
+                            if (accDataController.showStartButton) {
+                              accDataController.currRoadType.value =
+                                  "Pedestrian";
+                            }
+                          },
+                          radius: 25,
+                          borderRadius: BorderRadius.circular(5),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: w * 0.1,
+                                    height: w * 0.1,
+                                    child: SvgPicture.asset(
+                                      assetsPath.pedestrian,
+                                      colorFilter: ColorFilter.mode(
+                                        (accDataController.currRoadType.value ==
+                                                "Pedestrian")
+                                            ? Colors.blue
+                                            : Colors.black,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ),
+                                  Gap(constraints.maxWidth * 0.05),
+                                  Text(
+                                    "Pedestrian",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: (accDataController
+                                                  .currRoadType.value ==
+                                              "Pedestrian")
+                                          ? Colors.blue
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+
+        Gap(totalH * 0.025), // 2.5% of total height
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+            child: SizedBox(
+              height: totalH * 0.05, // 5% of total height
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Text(
+                  "Sensor Reading",
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Gap(totalH * 0.015), // 1.5% of total height
+
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Gap(w * 0.025),
+
+            /// Acceleration Widget
             Container(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.width * 0.45,
+              width: w * 0.45,
+              height: totalH * 0.3, // 30% of total height
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
+                color: white,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: LayoutBuilder(builder: (context, constraints) {
@@ -54,6 +260,7 @@ class ReadingWidget extends StatelessWidget {
                   children: [
                     FittedBox(
                       fit: BoxFit.contain,
+                      alignment: Alignment.center,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -89,7 +296,14 @@ class ReadingWidget extends StatelessWidget {
                             width: constraints.maxWidth * 0.50,
                             height: constraints.maxHeight * 0.20,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Center(
@@ -120,8 +334,15 @@ class ReadingWidget extends StatelessWidget {
                             width: constraints.maxWidth * 0.50,
                             height: constraints.maxHeight * 0.20,
                             decoration: BoxDecoration(
-                              color: Colors.white,
                               borderRadius: BorderRadius.circular(15),
+                              color: white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Center(
                               child: Obx(() {
@@ -151,7 +372,14 @@ class ReadingWidget extends StatelessWidget {
                             width: constraints.maxWidth * 0.50,
                             height: constraints.maxHeight * 0.20,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Center(
@@ -171,143 +399,25 @@ class ReadingWidget extends StatelessWidget {
                 );
               }),
             ),
-            Gap(MediaQuery.sizeOf(context).width * 0.05),
-            // Gyroscope Reading
+            Gap(w * 0.05),
+
+            /// Location Widget
             Container(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.width * 0.45,
+              width: w * 0.45,
+              height: totalH * 0.3,
               decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
-                  borderRadius: BorderRadius.circular(15)),
-              child: LayoutBuilder(builder: (context, constraints) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    FittedBox(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Gap(constraints.maxWidth * 0.05),
-                          SizedBox(
-                            width: 0.15 * constraints.maxWidth,
-                            height: 0.15 * constraints.maxHeight,
-                            child: SvgPicture.asset(assetsPath.gyroscope),
-                          ),
-                          Gap(constraints.maxWidth * 0.05),
-                          Text(
-                            "Gyroscope",
-                            style: sensorNameStyle,
-                          ),
-                          Gap(constraints.maxWidth * 0.05),
-                        ],
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.contain,
-                      child: Row(
-                        children: [
-                          Text(
-                            "X",
-                            style: labelTextStyle,
-                          ),
-                          Gap(constraints.maxWidth * 0.1),
-                          Container(
-                            width: constraints.maxWidth * 0.50,
-                            height: constraints.maxHeight * 0.20,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "0.000",
-                                style: labelTextStyle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.contain,
-                      child: Row(
-                        children: [
-                          Text(
-                            "Y",
-                            style: labelTextStyle,
-                          ),
-                          Gap(constraints.maxWidth * 0.1),
-                          Container(
-                            width: constraints.maxWidth * 0.50,
-                            height: constraints.maxHeight * 0.20,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "0.000",
-                                style: labelTextStyle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.contain,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text(
-                            "Z",
-                            style: labelTextStyle,
-                          ),
-                          Gap(constraints.maxWidth * 0.1),
-                          Container(
-                            width: constraints.maxWidth * 0.50,
-                            height: constraints.maxHeight * 0.20,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "0.000",
-                                style: labelTextStyle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }),
-            ),
-            Gap(MediaQuery.sizeOf(context).width * 0.025),
-          ],
-        ),
-        Gap(MediaQuery.sizeOf(context).width * 0.05),
-        Container(
-          width: MediaQuery.of(context).size.width * 0.95,
-          height: MediaQuery.of(context).size.width * 0.45,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE0E0E0),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.45,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Row(
+                borderRadius: BorderRadius.circular(15),
+                color: white,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        child: Row(
                           children: [
                             SizedBox(
                               width: 0.15 * constraints.maxWidth,
@@ -324,192 +434,138 @@ class ReadingWidget extends StatelessWidget {
                             Gap(constraints.maxWidth * 0.05),
                           ],
                         ),
-                        // latitude, longitude, accuracy
-                        FittedBox(
-                          fit: BoxFit.contain,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                "Lat",
-                                style: labelTextStyle,
+                      ),
+                      // latitude, longitude, accuracy
+                      FittedBox(
+                        fit: BoxFit.contain,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              "Lat",
+                              style: labelTextStyle,
+                            ),
+                            Gap(constraints.maxWidth * 0.1),
+                            Container(
+                              width: constraints.maxWidth * 0.50,
+                              height: constraints.maxHeight * 0.20,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              Gap(constraints.maxWidth * 0.1),
-                              Container(
-                                width: constraints.maxWidth * 0.50,
-                                height: constraints.maxHeight * 0.20,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Center(
-                                  child: Obx(() {
-                                    return Text(
-                                      accDataController.isRecordingData
-                                          ? accDataController
-                                              .devicePosition.latitude
-                                              .toStringAsFixed(3)
-                                          : "0.000",
-                                      style: labelTextStyle,
-                                    );
-                                  }),
-                                ),
+                              child: Center(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.isRecordingData
+                                        ? accDataController
+                                            .devicePosition.latitude
+                                            .toStringAsFixed(3)
+                                        : "0.000",
+                                    style: labelTextStyle,
+                                  );
+                                }),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
 
-                        FittedBox(
-                          fit: BoxFit.contain,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                "Lon",
-                                style: labelTextStyle,
+                      FittedBox(
+                        fit: BoxFit.contain,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              "Lon",
+                              style: labelTextStyle,
+                            ),
+                            Gap(constraints.maxWidth * 0.1),
+                            Container(
+                              width: constraints.maxWidth * 0.50,
+                              height: constraints.maxHeight * 0.20,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              Gap(constraints.maxWidth * 0.1),
-                              Container(
-                                width: constraints.maxWidth * 0.50,
-                                height: constraints.maxHeight * 0.20,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Center(
-                                  child: Obx(() {
-                                    return Text(
-                                      accDataController.isRecordingData
-                                          ? accDataController
-                                              .devicePosition.longitude
-                                              .toStringAsFixed(3)
-                                          : "0.000",
-                                      style: labelTextStyle,
-                                    );
-                                  }),
-                                ),
+                              child: Center(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.isRecordingData
+                                        ? accDataController
+                                            .devicePosition.longitude
+                                            .toStringAsFixed(3)
+                                        : "0.000",
+                                    style: labelTextStyle,
+                                  );
+                                }),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        FittedBox(
-                          fit: BoxFit.contain,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                "Acc",
-                                style: labelTextStyle,
+                      ),
+                      FittedBox(
+                        fit: BoxFit.contain,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              "Acc",
+                              style: labelTextStyle,
+                            ),
+                            Gap(constraints.maxWidth * 0.1),
+                            Container(
+                              width: constraints.maxWidth * 0.50,
+                              height: constraints.maxHeight * 0.20,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              Gap(constraints.maxWidth * 0.1),
-                              Container(
-                                width: constraints.maxWidth * 0.50,
-                                height: constraints.maxHeight * 0.20,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Center(
-                                  child: Obx(() {
-                                    return Text(
-                                      accDataController.isRecordingData
-                                          ? accDataController
-                                              .devicePosition.accuracy
-                                              .toStringAsFixed(3)
-                                          : "0.000",
-                                      style: labelTextStyle,
-                                    );
-                                  }),
-                                ),
+                              child: Center(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.isRecordingData
+                                        ? accDataController
+                                            .devicePosition.accuracy
+                                            .toStringAsFixed(3)
+                                        : "0.000",
+                                    style: labelTextStyle,
+                                  );
+                                }),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                    ],
+                  );
+                },
               ),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.30,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Obx(() {
-                          return Text(
-                            accDataController.isRecordingData
-                                ? (accDataController.devicePosition.speed * 3.6)
-                                    .toStringAsFixed(2)
-                                : "0.00",
-                            style: speedValueTextStyle,
-                          );
-                        }),
-                        Text(
-                          "km/h",
-                          style: speedTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Gap(MediaQuery.of(context).size.width * 0.05),
-            ],
-          ),
-        )
+            ),
+          ],
+        ),
+        //
       ],
     );
-  }
-}
-
-class RowWidget extends StatefulWidget {
-  const RowWidget({super.key, required this.label, required this.value});
-
-  final String label;
-  final double value;
-
-  @override
-  State<RowWidget> createState() => RowWidgetState();
-}
-
-class RowWidgetState extends State<RowWidget> {
-  @override
-  Widget build(BuildContext context) {
-    TextStyle labelTextStyle = GoogleFonts.inter(
-      fontSize: MediaQuery.textScalerOf(context).scale(16),
-      fontWeight: FontWeight.w500,
-      color: Colors.black,
-    );
-    return LayoutBuilder(builder: (context, constraints) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            widget.label,
-            style: labelTextStyle,
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width * 0.21,
-            height: (MediaQuery.of(context).size.width * 0.2) * 0.4,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Center(
-              child:
-                  Text(widget.value.toStringAsFixed(3), style: labelTextStyle),
-            ),
-          ),
-        ],
-      );
-    });
   }
 }

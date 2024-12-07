@@ -7,6 +7,7 @@
   select the map type (satellite, terrain, etc.).
  */
 
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ class MapPage extends StatelessWidget {
     MapPageController mapPageController = Get.find<MapPageController>();
     double h = MediaQuery.sizeOf(context).height;
     double w = MediaQuery.sizeOf(context).width;
+
     return Scaffold(
       body: SafeArea(
         top: true,
@@ -71,7 +73,7 @@ class MapPage extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   width: w,
                   height: h * 0.08,
-                  color: const Color(0xFFF3EDF5),
+                  color: backgroundColor,
                   child: FittedBox(
                     child: Row(
                       children: [
@@ -114,7 +116,7 @@ class MapPage extends StatelessWidget {
                             backgroundColor: WidgetStatePropertyAll(
                               mapPageController.isDrrpLayerVisible
                                   ? Colors.blue.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.1),
+                                  : Colors.black.withOpacity(0.05),
                             ),
                           ),
                           child: Row(
@@ -221,16 +223,58 @@ class MapPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  const Gap(10),
+                  // Road Statistics Button //
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: SizedBox(
+                      width: w * 0.12,
+                      height: w * 0.12,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: IconButton(
+                          onPressed: () {
+                            Get.bottomSheet(
+                              isDismissible: true,
+                              backgroundColor: Colors.white,
+                              MapPageRoadStatistics(
+                                roadStats: mapPageController.getRoadStats,
+                                roadOutputData: mapPageController.selectedRoads,
+                              ),
+                            );
+                          },
+                          icon: SvgPicture.asset(
+                            assetsPath.stats,
+                            height: 30,
+                            width: 30,
+                          ),
+                          tooltip: 'Road Statistics',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Gap(20),
                   // Zoom to Fit Button //
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black38,
-                        width: 1,
-                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: SizedBox(
                       width: w * 0.12,
@@ -258,49 +302,23 @@ class MapPage extends StatelessWidget {
                   ),
                   const Gap(20),
                   // Map Type Dropdown //
-                  SizedBox(
+                  Container(
                     width: w * 0.12,
                     height: w * 0.12,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: const SelectMapType(),
-                    ),
-                  ),
-                  const Gap(20),
-                  // Road Statistics Button //
-                  Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black38,
-                        width: 1,
-                      ),
-                    ),
-                    child: SizedBox(
-                      width: w * 0.12,
-                      height: w * 0.12,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: IconButton(
-                          onPressed: () {
-                            Get.bottomSheet(
-                              isDismissible: true,
-                              backgroundColor: Colors.white,
-                              MapPageRoadStatistics(
-                                roadStats: mapPageController.getRoadStats,
-                                roadOutputData: mapPageController.selectedRoads,
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            color: Colors.black,
-                            Icons.bar_chart_rounded,
-                            size: 30,
-                          ),
-                          tooltip: 'Road Statistics',
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
                         ),
-                      ),
+                      ],
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: const SelectMapType(),
                     ),
                   ),
                 ],

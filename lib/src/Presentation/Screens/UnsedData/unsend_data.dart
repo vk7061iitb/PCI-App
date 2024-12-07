@@ -15,7 +15,7 @@ class UnsendData extends StatefulWidget {
 
 class _UnsendDataState extends State<UnsendData> {
   late Future<List<Map<String, dynamic>>> unsentDataFiles;
-  ResponseController responseController = Get.put(ResponseController());
+  ResponseController responseController = Get.find();
   Future<List<Map<String, dynamic>>> getUnsentData() async {
     List<Map<String, dynamic>> unsendDataFiles = [];
     unsendDataFiles = await localDatabase.queryTable('unsendDataInfo');
@@ -31,17 +31,17 @@ class _UnsendDataState extends State<UnsendData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
-          'Unsend Files',
+          'Unsent Files',
           style: GoogleFonts.inter(
             fontSize: 24,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
-        backgroundColor: const Color(0xFFF3EDF5),
+        backgroundColor: backgroundColor,
       ),
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -86,6 +86,7 @@ class _UnsendDataState extends State<UnsendData> {
                     filename: unsentData[index]['filename'],
                     vehicleType: unsentData[index]['vehicleType'],
                     time: unsentData[index]['Time'],
+                    roadType: unsentData[index]['roadType'],
                     id: unsentData[index]['id'],
                     onDeleteTap: () {
                       localDatabase

@@ -15,18 +15,6 @@ class SelectMapType extends StatelessWidget {
     MapPageController mapPageController = Get.find<MapPageController>();
 
     return PopupMenuButton<String>(
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all<Color>(Colors.white),
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50.0),
-              side: const BorderSide(
-                color: Colors.black38,
-                width: 1,
-              ),
-            ),
-          ),
-        ),
         tooltip: 'Select Map Type',
         padding: const EdgeInsets.all(14),
         icon: const Icon(

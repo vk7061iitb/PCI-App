@@ -31,7 +31,8 @@ class OutputDataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    OutputDataController outputDataController = Get.find< OutputDataController>();
+    OutputDataController outputDataController =
+        Get.find<OutputDataController>();
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -117,8 +118,6 @@ class OutputDataItem extends StatelessWidget {
                 if (context.mounted) {
                   Get.bottomSheet(
                     Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.8,
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.only(
@@ -157,9 +156,13 @@ class OutputDataItem extends StatelessWidget {
               onTap: () async {
                 // Function to export the data
                 List<Map<String, dynamic>> query =
-                    await localDatabase.queryRoadOutputData(id);
+                    await localDatabase.queryRoadOutputData(jouneyID: id);
                 outputDataController.exportData(
-                    filename, vehicleType, time, query);
+                  filename: filename,
+                  vehicle: vehicleType,
+                  time: time,
+                  jouneyData: query,
+                );
               },
               child: Row(
                 children: [
@@ -178,8 +181,43 @@ class OutputDataItem extends StatelessWidget {
               ),
             ),
             PopupMenuItem(
+              onTap: () async {
+                // Function to export the data
+                final data = {
+                  'filename': filename,
+                  'vehicle': vehicleType,
+                  'time': time,
+                  'id': id,
+                };
+                try {
+                  await outputDataController.dowloadReport(data);
+                } catch (e) {
+                  logger.f(e.toString());
+                }
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.file_download,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Report",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem(
               onTap: () {
-                outputDataController.deleteData(id);
+                _showDeleteDialog(context, id).then((value) {
+                  if (value != null && value) {
+                    outputDataController.deleteData(id);
+                  }
+                });
               },
               child: Row(
                 children: [
@@ -294,4 +332,55 @@ class OutputDataItem extends StatelessWidget {
       ),
     );
   }
+}
+
+// Get alert dialog for the user to confirm the deletion of the data
+Future<bool?> _showDeleteDialog(BuildContext context, int id) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Delete File?'),
+        titleTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+          fontSize: 24,
+        ),
+        content: const Text('Are you sure you want to delete this file?'),
+        contentTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+          fontSize: 16,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: Text(
+              'No',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(result: true);
+            },
+            child: Text(
+              'Yes',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.red,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

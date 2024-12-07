@@ -34,6 +34,9 @@ dependencies:
   logger: ^2.5.0
   archive: ^3.6.1
   get_storage: ^2.1.1
+  syncfusion_flutter_datagrid: ^27.2.5
+  wakelock_plus: ^1.2.8
+  connectivity_plus: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -53,4 +56,8 @@ flutter:
     - lib\Assets\settings.svg
     - lib\Assets\journey1.svg
     - lib\Assets\journey2.svg
+    - lib\Assets\statistics.svg
     - lib\Assets\empty_file.svg
+    - lib\Assets\Roads\pave-road.svg
+    - lib\Assets\Roads\un-pave-road.svg
+    - lib\Assets\Roads\pedestrian-walk.svg

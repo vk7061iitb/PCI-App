@@ -27,7 +27,7 @@ class SignupController extends GetxController {
   final GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
   final RxBool _isSignedUp = false.obs;
   final RxString _userRole = "Admin".obs;
-  final UserDataController _userDataController = Get.find<UserDataController>();
+  final UserDataController _userDataController = UserDataController();
   // Getters
   bool get isSignedUp => _isSignedUp.value;
   String get userRole => _userRole.value;

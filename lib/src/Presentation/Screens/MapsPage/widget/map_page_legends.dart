@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import '../../../../../Objects/data.dart';
 
 class Legends extends StatelessWidget {
   const Legends({super.key});
@@ -9,7 +10,14 @@ class Legends extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white54,
+        color: backgroundColor,
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 5,
+            spreadRadius: 5,
+          ),
+        ],
       ),
       child: Column(
         children: [

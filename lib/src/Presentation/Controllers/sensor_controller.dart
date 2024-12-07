@@ -3,9 +3,13 @@
 // and the location data of the user and store it in the database.
 
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:location/location.dart' as loc;
+import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../Objects/data.dart';
 import '../../Models/data_points.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +23,7 @@ class AccDataController extends GetxController {
       .obs; // used to show the accelerometer data on the screen
 
   StreamSubscription<AccelerometerEvent>? _accStream;
+  StreamSubscription<List<ConnectivityResult>>? networkStream;
   final List<AccData> _dataPointsList = [];
   final Rx<Position> _devicePosition = Position(
     latitude: 0.0,
@@ -39,36 +44,78 @@ class AccDataController extends GetxController {
   final Rx<SensorPageColor> _sensorScreencolor = SensorPageColor().obs;
   final RxBool _showResponseSheet = false.obs;
   final RxBool _showStartButton = true.obs;
+  final RxBool _internetConnection = false.obs;
   final String startMessage = 'Tap "Start" to collect data';
   final String progressMessage = 'Collecting the data...';
   String? _userID;
   int _count = 0;
-  final UserDataController _userDataController = Get.find<UserDataController>();
+  final UserDataController _userDataController = UserDataController();
+  final LocationController locationController = Get.find<LocationController>();
+  List<String> roads = ["Paved", "Unpaved", "Pedestrian"];
+  RxString currRoadType = "".obs;
 
   @override
-  void onInit() {
-    // Start the location stream to record the location data points
-    loc.Location location = loc.Location();
-    location.changeSettings(
-      accuracy: loc.LocationAccuracy.high,
-      distanceFilter: 0,
-      interval: 1,
-    );
-    location.onLocationChanged.listen(
-      (loc.LocationData currentLocation) {
-        _count++;
-        _devicePosition.value = Position(
-          latitude: currentLocation.latitude!,
-          longitude: currentLocation.longitude!,
-          altitude: currentLocation.altitude!,
-          accuracy: currentLocation.accuracy!,
-          timestamp: DateTime.now(),
-          altitudeAccuracy: 0,
-          heading: currentLocation.heading!,
-          headingAccuracy: currentLocation.headingAccuracy!,
-          speed: currentLocation.speed!,
-          speedAccuracy: currentLocation.speedAccuracy!,
+  void onInit() async {
+    await locationController.locationPermission().then((val) async {
+      if (!val) {
+        // show dialog
+        Get.dialog(
+          AlertDialog(
+            title: const Text('Permission Required'),
+            content: const Text(
+              'Location permission is required to get the current location',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Geolocator.openAppSettings().then((_) {
+                    Get.back();
+                  });
+                },
+                child: const Text('Grant Permission'),
+              ),
+            ],
+          ),
         );
+        return;
+      }
+      // Start the location stream to record the location data points
+      loc.Location location = loc.Location();
+      await location.changeSettings(
+        accuracy: loc.LocationAccuracy.high,
+        distanceFilter: 0,
+        interval: 1,
+      );
+      location.onLocationChanged.listen(
+        (loc.LocationData currentLocation) {
+          _count++;
+          _devicePosition.value = Position(
+            latitude: currentLocation.latitude!,
+            longitude: currentLocation.longitude!,
+            altitude: currentLocation.altitude!,
+            accuracy: currentLocation.accuracy!,
+            timestamp: DateTime.now(),
+            altitudeAccuracy: 0,
+            heading: currentLocation.heading!,
+            headingAccuracy: currentLocation.headingAccuracy!,
+            speed: currentLocation.speed!,
+            speedAccuracy: currentLocation.speedAccuracy!,
+          );
+        },
+      ).onError((error, stackTrace) {
+        logger.e('Error in location stream: $error');
+      });
+    });
+    // Check the network status
+    networkStream = Connectivity().onConnectivityChanged.listen(
+      (List<ConnectivityResult> result) {
+        if (result.contains(ConnectivityResult.none)) {
+          // No internet connection
+          _internetConnection.value = false;
+        } else {
+          // Internet connection available
+          _internetConnection.value = true;
+        }
       },
     );
     super.onInit();
@@ -83,6 +130,7 @@ class AccDataController extends GetxController {
   String? get userID => _userID;
   bool get showResponseSheet => _showResponseSheet.value;
   Position get devicePosition => _devicePosition.value;
+  bool get internetConnection => _internetConnection.value;
   // Setters
   set devicePosition(Position value) => _devicePosition.value = value;
   set downSampledDatapoints(List<AccData> value) =>
@@ -94,8 +142,45 @@ class AccDataController extends GetxController {
       Get.dialog(
         AlertDialog(
           title: const Text('Cound not get location data'),
+          titleTextStyle: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.w500,
+            fontSize: 24,
+          ),
           content: const Text(
             'Please hit the start button again and give a try.',
+          ),
+          contentTextStyle: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+            fontSize: 16,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else if (currRoadType.value.isEmpty) {
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Road Type not selected'),
+          titleTextStyle: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.w500,
+            fontSize: 24,
+          ),
+          content: const Text(
+            'Please select the road type and try again.',
+          ),
+          contentTextStyle: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+            fontSize: 16,
           ),
           actions: [
             TextButton(
@@ -108,6 +193,7 @@ class AccDataController extends GetxController {
         ),
       );
     } else {
+      await WakelockPlus.toggle(enable: true);
       _isRecordingData.value = true;
       _showStartButton.value = false;
       downSampledDatapoints.clear();
@@ -148,5 +234,6 @@ class AccDataController extends GetxController {
     accData.value = AccelerometerEvent(0, 0, 0, DateTime.now());
     _showResponseSheet.value = true;
     _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
+    await WakelockPlus.toggle(enable: false);
   }
 }

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/Login/roles_dropdown.dart';
 import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
@@ -19,9 +18,8 @@ class LoginScreen extends StatelessWidget {
     LoginController loginController = Get.put(LoginController());
     // ignore: unused_local_variable
     SignupController signupController = Get.put(SignupController());
-    UserDataController userDataController = Get.find<UserDataController>();
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -187,26 +185,27 @@ class LoginScreen extends StatelessWidget {
                           // sign in logic
                           if (loginController.loginFormKey.currentState!
                               .validate()) {
-                            await loginController.loginUser().then((_) {
-                              if (userDataController.user['isLoggedIn'] ==
-                                  false) {
+                            await loginController.loginUser().then((value) {
+                              logger.i(value);
+                              if (value['val'] == 0) {
+                                // successfully logged in
+                                Get.showSnackbar(
+                                  customGetSnackBar(
+                                    "Login Successful",
+                                    "You've been successfully logged in",
+                                    Icons.check_circle_outline,
+                                  ),
+                                );
+                                Get.offNamed(myRoutes.homeRoute);
+                              } else {
                                 Get.showSnackbar(
                                   customGetSnackBar(
                                     "Login Failed",
-                                    "User not found",
+                                    value['Message'],
                                     Icons.error_outline,
                                   ),
                                 );
-                                return;
                               }
-                              Get.showSnackbar(
-                                customGetSnackBar(
-                                  "Login Successful",
-                                  "You've been successfully logged in",
-                                  Icons.check_circle_outline,
-                                ),
-                              );
-                              Get.offNamed(myRoutes.homeRoute);
                             });
                           } else {
                             Get.showSnackbar(

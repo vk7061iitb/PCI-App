@@ -13,10 +13,10 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserDataController userDataController = Get.find<UserDataController>();
+    UserDataController userDataController = UserDataController();
     userDataController.getUserData();
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text(
           'User Profile',
@@ -26,7 +26,7 @@ class UserPage extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: const Color(0xFFF3EDF5),
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(

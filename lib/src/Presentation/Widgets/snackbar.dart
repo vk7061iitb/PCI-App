@@ -1,41 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Creates a custom GetSnackBar widget with a title, message, and icon.
+///
+/// The GetSnackBar is a widget from the GetX package that displays a
+/// temporary notification at the bottom of the screen.
+///
+/// Parameters:
+/// - `title` (String): The title text to display in the snackbar.
+/// - `message` (String): The message text to display in the snackbar.
+/// - `icon` (IconData): The icon to display in the snackbar.
+///
+/// Returns:
+/// - `GetSnackBar`: A configured GetSnackBar widget.
 GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
   return GetSnackBar(
-    icon: Icon(
-      icon,
-      color: Colors.black,
-    ),
-    titleText: Text(
-      title,
-      style: GoogleFonts.inter(
-        color: Colors.black,
-        fontWeight: FontWeight.w500,
-        fontSize: 18,
-      ),
-    ),
-    messageText: Text(
-      message,
-      style: GoogleFonts.inter(
-        color: Colors.black,
-        fontWeight: FontWeight.normal,
-        fontSize: 16,
-      ),
-    ),
+    snackPosition: SnackPosition.BOTTOM, // Position at the bottom
+    backgroundColor: Colors.white, // Light background similar to Google's UI
+    borderRadius: 12, // Slightly rounded corners
+    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Padding
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    duration: const Duration(seconds: 4), // Dismiss after 4 seconds
     isDismissible: true,
-    snackPosition: SnackPosition.BOTTOM,
-    backgroundColor: Colors.white,
-    margin: const EdgeInsets.all(15),
-    duration: const Duration(seconds: 5),
-    borderRadius: 15,
     boxShadows: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        spreadRadius: 1,
-        blurRadius: 5,
+        color: Colors.black.withOpacity(0.2), // Subtle shadow
+        spreadRadius: 0,
+        blurRadius: 6,
+        offset: const Offset(0, 2),
       ),
     ],
+    icon: Icon(
+      icon,
+      color: Colors.black87,
+      size: 28, // Slightly larger icon
+    ),
+    titleText: Padding(
+      padding: const EdgeInsets.only(bottom: 4), // Add some spacing
+      child: Text(
+        title,
+        style: GoogleFonts.inter(
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+        ),
+      ),
+    ),
+    messageText: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Text(
+            message,
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.fade, // Truncate long messages
+          ),
+        ),
+        const SizedBox(width: 10),
+        InkWell(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: message));
+            Get.snackbar(
+              "Copied",
+              "Message copied to clipboard!",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Text(
+              "Copy",
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 }

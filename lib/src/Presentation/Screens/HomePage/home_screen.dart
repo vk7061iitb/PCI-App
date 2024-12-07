@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../Controllers/location_permission.dart';
-import '../../Controllers/sensor_controller.dart';
-import '../../Controllers/user_data_controller.dart';
+import 'package:pci_app/Objects/data.dart';
 import '../SensorPage/sensor_screen.dart';
 import '../SavedFile/saved_files_page.dart';
 import '../../../../Utils/assets.dart';
@@ -18,13 +16,9 @@ class HomeScreen extends StatelessWidget {
 
   final BottomNavController bottomNavController =
       Get.put(BottomNavController());
-  final AccDataController accDataController = Get.find<AccDataController>();
-  final LocationController locationController = Get.find<LocationController>();
-  final UserDataController userDataController = Get.find<UserDataController>();
 
   final List<Widget> _widgetOptions = <Widget>[
     const SensorScreen(),
-    // const MapPage(),
     const HistoryDataPage(),
     const OutputDataPage(),
   ];
@@ -33,6 +27,8 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const iconWidth = 25.0;
     final AssetsPath assetsPath = AssetsPath();
+    Color iconActive = Color(0xFF1A73E8);
+    Color iconInactive = Color(0xFF757575);
 
     return PopScope(
       canPop: false,
@@ -50,7 +46,7 @@ class HomeScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF3EDF5),
+        backgroundColor: backgroundColor,
         body: SafeArea(
           child: Obx(() {
             return _widgetOptions
@@ -59,32 +55,36 @@ class HomeScreen extends StatelessWidget {
         ),
         bottomNavigationBar: Obx(() {
           return NavigationBar(
+            backgroundColor: backgroundColor,
             animationDuration: const Duration(milliseconds: 500),
             height: 0.18 * MediaQuery.of(context).size.width,
             onDestinationSelected: bottomNavController.onTapped,
             indicatorColor: Colors.blue.shade100,
             selectedIndex: bottomNavController.selectedIndex.value,
             destinations: <Widget>[
-              const NavigationDestination(
+              NavigationDestination(
                 selectedIcon: Icon(
                   Icons.home,
-                  color: Colors.black,
+                  color: iconActive,
                   size: iconWidth,
                 ),
                 icon: Icon(
                   Icons.home_outlined,
                   size: iconWidth,
-                  color: Colors.black,
+                  color: iconInactive,
                 ),
                 label: 'Home',
               ),
-              const NavigationDestination(
-                selectedIcon: Icon(Icons.file_present_rounded,
-                    color: Colors.black, size: iconWidth),
+              NavigationDestination(
+                selectedIcon: Icon(
+                  Icons.file_present_rounded,
+                  color: iconActive,
+                  size: iconWidth,
+                ),
                 icon: Icon(
                   Icons.file_present_outlined,
                   size: iconWidth,
-                  color: Colors.black,
+                  color: iconInactive,
                 ),
                 label: 'Saved Files',
               ),
@@ -93,11 +93,19 @@ class HomeScreen extends StatelessWidget {
                   assetsPath.journeyHistorySelected,
                   width: 25,
                   height: 25,
+                  colorFilter: ColorFilter.mode(
+                    iconActive,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 icon: SvgPicture.asset(
                   assetsPath.journeyHistory,
                   width: 25,
                   height: 25,
+                  colorFilter: ColorFilter.mode(
+                    iconInactive,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 label: 'Past Trips',
               ),
@@ -129,7 +137,7 @@ Future<bool?> _showAlert(BuildContext context) async {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(false);
+              Get.back(result: false);
             },
             child: Text(
               'No',
@@ -142,7 +150,7 @@ Future<bool?> _showAlert(BuildContext context) async {
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(true);
+              Get.back(result: true);
             },
             child: Text(
               'Yes',

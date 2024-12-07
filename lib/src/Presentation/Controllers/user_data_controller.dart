@@ -1,7 +1,6 @@
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
-class UserDataController extends GetxController {
+class UserDataController {
   final storage = GetStorage();
   Map<String, dynamic> user = {
     "ID": "",
@@ -11,13 +10,8 @@ class UserDataController extends GetxController {
     "isLoggedIn": false,
   };
 
-  Future<void> getUserData() async {
+  Future<Map<String, dynamic>> getUserData() async {
     user = storage.read("user") ?? {};
-  }
-
-  @override
-  void onInit() {
-    getUserData();
-    super.onInit();
+    return user;
   }
 }

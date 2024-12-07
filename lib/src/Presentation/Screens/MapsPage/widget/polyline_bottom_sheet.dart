@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Functions/get_road_color.dart';
+import 'package:pci_app/Utils/get_road_color.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 
@@ -16,7 +16,7 @@ class PolylineBottomSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       width: Get.width,
-      color: Colors.white,
+      color: backgroundColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -24,7 +24,7 @@ class PolylineBottomSheet extends StatelessWidget {
           Text(
             "Features",
             style: GoogleFonts.inter(
-              color: Colors.black,
+              color: textColor,
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
@@ -49,11 +49,25 @@ class PolylineBottomSheet extends StatelessWidget {
                       data['latlngs'][0], data['latlngs'][1]);
                   Get.back();
                 },
-                icon: Icon(
-                  Icons.zoom_in_outlined,
-                  color: Colors.blue,
-                  size: MediaQuery.sizeOf(context).width * 0.08,
+                icon: Row(
+                  children: [
+                    Icon(
+                      Icons.zoom_in_outlined,
+                      color: Colors.blue,
+                      size: MediaQuery.sizeOf(context).width * 0.08,
+                    ),
+                    const Gap(5),
+                    Text(
+                      "Zoom",
+                      style: GoogleFonts.inter(
+                        color: Colors.blue,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
+                tooltip: "Zoom to seleceted road segment",
               ),
             ],
           ),

@@ -14,9 +14,9 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SignupController signupController = Get.find<SignupController>();
-    UserDataController userDataController = Get.find<UserDataController>();
+    UserDataController userDataController = UserDataController();
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

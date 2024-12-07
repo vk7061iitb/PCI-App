@@ -12,17 +12,25 @@ class StartButton extends StatelessWidget {
   Widget build(BuildContext context) {
     AccDataController accDataController = Get.find();
     LocationController locationController = Get.find();
+
+    double h = MediaQuery.sizeOf(context).height;
+    double w = MediaQuery.sizeOf(context).width;
+    double totalH = h -
+        MediaQuery.of(context).padding.top -
+        kToolbarHeight -
+        kBottomNavigationBarHeight -
+        0.18 * w;
     return Stack(
       children: [
         Center(
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.5,
-            height: MediaQuery.of(context).size.width * 0.5,
+            width: totalH * 0.3,
+            height: totalH * 0.3,
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                width: MediaQuery.of(context).size.width * 0.06,
+                width: w * 0.065,
               ),
               boxShadow: [
                 BoxShadow(
@@ -44,25 +52,25 @@ class StartButton extends StatelessWidget {
               } else {
                 await accDataController.onEndButtonPressed();
                 Get.bottomSheet(
-                  const SaveFile(),
+                  SaveFile(),
                   isDismissible: false,
                   enableDrag: false,
                   ignoreSafeArea: false,
                 );
               }
             },
-            borderRadius: BorderRadius.circular(85),
+            borderRadius: BorderRadius.circular(100),
             child: Obx(() {
               return Container(
-                width: MediaQuery.of(context).size.width * 0.5,
-                height: MediaQuery.of(context).size.width * 0.5,
+                width: totalH * 0.3,
+                height: totalH * 0.3,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
                       color: accDataController.showStartButton
                           ? accDataController.sensorScreencolor.startCircle
                           : accDataController.sensorScreencolor.endCircle,
-                      width: MediaQuery.of(context).size.width * 0.06,
+                      width: MediaQuery.of(context).size.width * 0.065,
                       style: BorderStyle.solid,
                       strokeAlign: BorderSide.strokeAlignInside),
                 ),
@@ -72,8 +80,8 @@ class StartButton extends StatelessWidget {
                     child: Text(
                       accDataController.showStartButton ? "Start" : "End",
                       style: GoogleFonts.inter(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
                     ),

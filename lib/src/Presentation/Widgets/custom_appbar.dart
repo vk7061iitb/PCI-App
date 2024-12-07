@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'package:pci_app/src/Presentation/Screens/UserProfile/user_page.dart';
 
@@ -25,7 +26,7 @@ class CustomAppBar extends StatelessWidget {
         'PCI App',
         style: titleTextStyle,
       ),
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       scrolledUnderElevation: 0,
       elevation: 0,
       forceMaterialTransparency: false,
@@ -119,8 +120,8 @@ class CustomSliverAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle titleTextStyle = GoogleFonts.inter(
       color: Colors.black,
-      fontWeight: FontWeight.w800,
-      fontSize: MediaQuery.textScalerOf(context).scale(32),
+      fontWeight: FontWeight.w700,
+      fontSize: MediaQuery.textScalerOf(context).scale(30),
     );
     TextStyle actionTextStyle = GoogleFonts.inter(
       color: Colors.black,
@@ -131,7 +132,7 @@ class CustomSliverAppBar extends StatelessWidget {
     return SliverAppBar(
       floating: true,
       snap: true,
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       title: Text(
         'PCI App',
         style: titleTextStyle,

@@ -3,14 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'Objects/data.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pci_app/firebase_options.dart';
-import 'Functions/init_download_folder.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
+import 'src/Presentation/Controllers/response_controller.dart';
 import 'src/Presentation/Controllers/user_data_controller.dart';
 import 'src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
@@ -23,20 +24,18 @@ import 'src/Presentation/Screens/SignUp/signup_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  Get.lazyPut(() => LocationController());
-  Get.lazyPut(() => AccDataController());
-  Get.lazyPut(() => MapPageController());
-  Get.lazyPut(() => UserDataController());
-  Get.lazyPut(() => OutputDataController());
+
+  Get.lazyPut(() => LocationController(), fenix: true);
+  Get.lazyPut(() => MapPageController(), fenix: true);
+  Get.lazyPut(() => OutputDataController(), fenix: true);
+  Get.lazyPut(() => ResponseController(), fenix: true);
+  Get.lazyPut(() => AccDataController(), fenix: true);
 
   await GetStorage.init();
   await localDatabase.initDB();
-  await initializeDirectory();
-
-  final userDataController = Get.find<UserDataController>();
+  await localDatabase.initializeDirectory();
+  final userDataController = UserDataController();
   final user = userDataController.storage.read('user');
-
   bool isLoggedIn = false;
 
   if (user != null) {
@@ -45,15 +44,13 @@ Future<void> main() async {
 
   logger.i('Is Logged In: $isLoggedIn');
 
+  await localDatabase.dbSize();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,
   );
-
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
-
-  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
@@ -90,12 +87,30 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     debugPaintSizeEnabled = false;
     SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-          statusBarColor: Color(0xFFF3EDF5),
-          systemNavigationBarColor: Color(0xFFF3EDF5),
+      SystemUiOverlayStyle(
+          statusBarColor: backgroundColor,
+          systemNavigationBarColor: backgroundColor,
           systemNavigationBarIconBrightness: Brightness.dark),
     );
     return GetMaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Inter',
+        scaffoldBackgroundColor: backgroundColor,
+        appBarTheme: AppBarTheme(
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.black),
+        ),
+        popupMenuTheme: PopupMenuThemeData(
+          color: backgroundColor,
+          textStyle: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+            fontSize: 16,
+          ),
+        ),
+      ),
       supportedLocales: const [
         Locale('en', 'US'),
       ],

@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SavedFile/widget/history_data_tile.dart';
-import 'package:share_plus/share_plus.dart';
 
 class HistoryDataPage extends StatefulWidget {
   const HistoryDataPage({super.key});
@@ -17,53 +15,11 @@ class HistoryDataPage extends StatefulWidget {
 }
 
 class HistoryDataPageState extends State<HistoryDataPage> {
-  bool isSelected = false;
-
-  late Future<List<File>> _savedFilesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _savedFilesFuture = loadSavedFiles();
-  }
-
-  Future<List<File>> loadSavedFiles() async {
-    Directory? appExternalStorageDir = await getExternalStorageDirectory();
-    Directory accDataDirectory =
-        Directory(join(appExternalStorageDir!.path, "Acceleration Data"));
-
-    List<FileSystemEntity> files = await accDataDirectory.list().toList();
-    return files.whereType<File>().toList();
-  }
-
-  Future<void> deleteFile(File file) async {
-    try {
-      await file.delete();
-      setState(() {
-        _savedFilesFuture = loadSavedFiles();
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error deleting file: $e");
-      }
-    }
-  }
-
-  Future<void> shareFile(File file) async {
-    try {
-      XFile xFile = XFile(file.path);
-      await Share.shareXFiles([xFile]);
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error sharing file: $e");
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    SavedFileController savedFileController = Get.put(SavedFileController());
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EDF5),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Saved Files',
@@ -73,7 +29,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
             color: Colors.black,
           ),
         ),
-        backgroundColor: const Color(0xFFF3EDF5),
+        backgroundColor: backgroundColor,
         foregroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -87,71 +43,134 @@ class HistoryDataPageState extends State<HistoryDataPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<File>>(
-        future: _savedFilesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: Colors.blue.shade900,
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error loading files: ${snapshot.error}'),
-            );
-          } else if (snapshot.data!.isEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  assetsPath.emptyFile,
-                  width: 50,
-                ),
-                Center(
-                  child: Text(
-                    'There are no files to display',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black,
-                    ),
-                  ),
-                )
-              ],
-            );
-          } else {
-            List<File> savedFiles = snapshot.data ?? [];
-            return RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  _savedFilesFuture = loadSavedFiles();
-                });
-              },
-              child: ListView.builder(
-                itemCount: savedFiles.length,
-                physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics()),
-                itemBuilder: (context, index) {
-                  File file = savedFiles[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: HistoryDataItem(
-                      file: file,
-                      deleteFile: () {
-                        deleteFile(file);
-                      },
-                      shareFile: () {
-                        shareFile(file);
-                      },
-                    ),
-                  );
-                },
-              ),
-            );
+      body: SafeArea(
+        child: Obx(() {
+          if (savedFileController.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
           }
-        },
+          return FutureBuilder<List<File>>(
+            future: savedFileController.savedFiles.value,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.blue.shade900,
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error loading files: ${snapshot.error}'),
+                );
+              } else if (snapshot.data!.isEmpty) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      assetsPath.emptyFile,
+                      width: 50,
+                    ),
+                    Center(
+                      child: Text(
+                        'There are no files to display',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              } else {
+                List<File> savedFiles = snapshot.data ?? [];
+                return RefreshIndicator(
+                  key: savedFileController.refreshKey,
+                  onRefresh: () async {
+                    savedFileController.refreshData();
+                    savedFileController.loadSavedFiles();
+                  },
+                  child: ListView.builder(
+                    itemCount: savedFiles.length,
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    itemBuilder: (context, index) {
+                      File file = savedFiles[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10),
+                        child: HistoryDataItem(
+                          file: file,
+                          deleteFile: () {
+                            _showDeleteDialog(context, file).then((value) {
+                              if (value != null && value) {
+                                savedFileController.deleteFile(file);
+                              }
+                            });
+                          },
+                          shareFile: () {
+                            savedFileController.shareFile(file);
+                          },
+                          unsentData: savedFileController.unsentFiles,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+            },
+          );
+        }),
       ),
     );
   }
+}
+
+// Get alert dialog to confirm deletion of file
+Future<bool?> _showDeleteDialog(BuildContext context, File file) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Delete File?'),
+        titleTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+          fontSize: 24,
+        ),
+        content: const Text('Are you sure you want to delete this file?'),
+        contentTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+          fontSize: 16,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: Text(
+              'No',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(result: true);
+            },
+            child: Text(
+              'Yes',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.red,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

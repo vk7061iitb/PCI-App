@@ -3,32 +3,29 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
-
 import '../../../../Utils/get_icon.dart';
 
 class UnsentFileTile extends StatelessWidget {
-  const UnsentFileTile({
-    super.key,
-    required this.filename,
-    required this.vehicleType,
-    required this.time,
-    required this.id,
-    required this.onDeleteTap,
-  });
+  const UnsentFileTile(
+      {super.key,
+      required this.filename,
+      required this.vehicleType,
+      required this.time,
+      required this.id,
+      required this.onDeleteTap,
+      required this.roadType});
   final String filename;
   final String time;
   final String vehicleType;
+  final String roadType;
   final int id;
   final VoidCallback onDeleteTap;
 
   @override
   Widget build(BuildContext context) {
     ResponseController responseController = Get.find();
-    OutputDataController outputDataController =
-        Get.find<OutputDataController>();
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -65,7 +62,12 @@ class UnsentFileTile extends StatelessWidget {
                 DateTime unsentTime =
                     dateTimeParser.parseDateTime(time, 'dd-MMM-yyyy HH:mm')!;
                 int res = await responseController.reSendData(
-                    data, filename, unsentTime);
+                  unsentData: data,
+                  filename: filename,
+                  roadType: roadType,
+                  vehicleType: vehicleType,
+                  time: unsentTime,
+                );
                 if (res == 200) {
                   Get.showSnackbar(
                     customGetSnackBar(
@@ -77,7 +79,7 @@ class UnsentFileTile extends StatelessWidget {
                   await localDatabase.deleteUnsentData(id);
                   await localDatabase.deleteUnsentDataInfo(id);
                   onDeleteTap();
-                  outputDataController.fetchData();
+
                   return;
                 }
                 Get.showSnackbar(
