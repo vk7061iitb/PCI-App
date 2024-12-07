@@ -22,7 +22,7 @@ class LoginController extends GetxController {
   final FocusNode phoneFocusNode = FocusNode();
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final RxString _userRole = "Admin".obs;
-  UserDataController userDataController = Get.find<UserDataController>();
+  UserDataController userDataController = UserDataController();
 
   // Getters
   bool get isLoggedIn => _isLoggedIn.value;
@@ -31,9 +31,14 @@ class LoginController extends GetxController {
   set isLoggedIn(bool value) => _isLoggedIn.value = value;
   set userRole(String value) => _userRole.value = value;
 
-  Future<int> loginUser() async {
+  Future<Map<String, dynamic>> loginUser() async {
     // Send the user data to the server
-    if (!loginFormKey.currentState!.validate()) return -1;
+    if (!loginFormKey.currentState!.validate()) {
+      return {
+        "val": -1,
+        "Message": "Form not validated",
+      };
+    }
     Map<String, dynamic> serverMessage =
         await userAuthenticationService.loginUser(
       user: UserData(
@@ -42,6 +47,7 @@ class LoginController extends GetxController {
         userRole: _userRole.value,
       ),
     );
+    logger.i(serverMessage.toString());
 
     try {
       if (serverMessage['Message'] == 'User exists') {
@@ -55,11 +61,22 @@ class LoginController extends GetxController {
         };
         userDataController.storage.write("user", user);
         userDataController.user = user;
+        return {
+          "val": 0,
+          "Message": serverMessage['Message'],
+        };
+      } else {
+        return {
+          "val": 1,
+          "Message": serverMessage['Message'].toString(),
+        };
       }
-      return 0;
     } catch (e) {
       logger.e(e.toString());
-      return 1;
+      return {
+        "val": 2,
+        "Message": e.toString(),
+      };
     }
   }
 
