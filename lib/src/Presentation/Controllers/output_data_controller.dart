@@ -8,8 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pci_app/src/service/report_pdf_api.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../Functions/set_road_stats.dart';
+import '../../../Utils/set_road_stats.dart';
 import '../../../Functions/vel_to_pci.dart';
 import '../../../Objects/data.dart';
 
@@ -265,6 +266,27 @@ class OutputDataController extends GetxController {
       _mapPageController.roadOutputData.add(roadOutputDataQuery);
     }
     await _mapPageController.plotRoadData();
+  }
+
+  Future<void> dowloadReport(Map<String, dynamic> data) async {
+    GenerateReport report = GenerateReport();
+    try {
+      await report
+          .generateReport(
+        filename: data['filename'],
+      )
+          .then((message) {
+        Get.showSnackbar(
+          customGetSnackBar(
+            "Report",
+            message,
+            Icons.message_outlined,
+          ),
+        );
+      });
+    } catch (e) {
+      logger.e(e.toString());
+    }
   }
 
   @override
