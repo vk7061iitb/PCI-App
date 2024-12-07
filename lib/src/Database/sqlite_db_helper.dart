@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Models/data_points.dart';
@@ -21,20 +23,50 @@ class SQLDatabaseHelper {
           db.execute(
               'CREATE TABLE IF NOT EXISTS unsendData(id INTEGER PRIMARY KEY AUTOINCREMENT, unsendDataID INTEGER, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE IF NOT EXISTS unsendDataInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS unsendDataInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, roadType TEXT, Time TIMESTAMP)');
           db.execute(
-              'CREATE TABLE IF NOT EXISTS outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, Time TIMESTAMP)');
+              'CREATE TABLE IF NOT EXISTS outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, roadType TEXT, Time TIMESTAMP)');
           db.execute(
             'CREATE TABLE IF NOT EXISTS roadOutputData(id INTEGER PRIMARY KEY AUTOINCREMENT, journeyID INTEGER, roadName TEXT, labels TEXT, stats TEXT)',
           );
         },
-        version: 1,
+        onUpgrade: onUpgrade,
+        version: 2,
       );
     } catch (error) {
       if (kDebugMode) {
         print(error.toString());
       }
     }
+  }
+
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < newVersion) {
+      if (oldVersion < 2) {
+        await db
+            .execute('ALTER TABLE unsendDataInfo ADD COLUMN roadType TEXT;');
+        await db.execute('ALTER TABLE outputData ADD COLUMN roadType TEXT;');
+      }
+      // Future migrations (for version 3, version 4, etc.) can go here
+    }
+  }
+
+  Future<void> dbSize() async {
+    int? pgCont = Sqflite.firstIntValue(
+        await _localDbInstance.rawQuery('PRAGMA page_count'));
+    int? pgSz = Sqflite.firstIntValue(
+        await _localDbInstance.rawQuery('PRAGMA page_size'));
+    final dbSizeinMB = (pgCont! * pgSz!) / (1024 * 1024);
+    final message = 'Database size: $dbSizeinMB MB';
+    logger.i(message);
+  }
+
+  Future<String> initializeDirectory() async {
+    String rawData = "Acceleration Data";
+    Directory? appExternalStorageDir = await getExternalStorageDirectory();
+    Directory path = await Directory(join(appExternalStorageDir!.path, rawData))
+        .create(recursive: true);
+    return path.path;
   }
 
   Future<void> insertToUnsendData({
@@ -61,8 +93,11 @@ class SQLDatabaseHelper {
     });
   }
 
-  Future<int> insertUnsendDataInfo(
-      {required String fileName, required String vehicleType}) async {
+  Future<int> insertUnsendDataInfo({
+    required String fileName,
+    required String vehicleType,
+    required String roadType,
+  }) async {
     int id = -1;
     try {
       id = await _localDbInstance.insert(
@@ -70,6 +105,7 @@ class SQLDatabaseHelper {
         {
           'filename': fileName,
           'vehicleType': vehicleType,
+          'roadType': roadType,
           'Time': DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())
         },
       );
@@ -102,13 +138,18 @@ class SQLDatabaseHelper {
   }
 
   /// Insert the output data to the local database
-  Future<int> insertJourneyData(
-      String filename, String vehicleType, DateTime time) async {
+  Future<int> insertJourneyData({
+    required String filename,
+    required String vehicleType,
+    required DateTime time,
+    required String roadType,
+  }) async {
     int id = -1;
     try {
       id = await _localDbInstance.insert('outputData', {
         'filename': filename,
         'vehicleType': vehicleType,
+        'roadType': roadType,
         'Time': DateFormat('dd-MMM-yyyy HH:mm').format(time)
       });
       logger.d('OutputData ID: $id');
