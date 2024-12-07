@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
-import '../../../Functions/cal_map_bounds.dart';
-import '../../../Functions/plot_map_isolate.dart';
+import '../../../Utils/cal_map_bounds.dart';
+import '../../../Utils/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
