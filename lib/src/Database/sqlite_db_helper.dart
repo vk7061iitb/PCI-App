@@ -47,7 +47,6 @@ class SQLDatabaseHelper {
             .execute('ALTER TABLE unsendDataInfo ADD COLUMN roadType TEXT;');
         await db.execute('ALTER TABLE outputData ADD COLUMN roadType TEXT;');
       }
-      // Future migrations (for version 3, version 4, etc.) can go here
     }
   }
 
@@ -65,6 +64,14 @@ class SQLDatabaseHelper {
     String rawData = "Acceleration Data";
     Directory? appExternalStorageDir = await getExternalStorageDirectory();
     Directory path = await Directory(join(appExternalStorageDir!.path, rawData))
+        .create(recursive: true);
+    return path.path;
+  }
+
+  Future<String> getReportDir() async {
+    String report = "Reports";
+    Directory? appExternalStorageDir = await getExternalStorageDirectory();
+    Directory path = await Directory(join(appExternalStorageDir!.path, report))
         .create(recursive: true);
     return path.path;
   }
