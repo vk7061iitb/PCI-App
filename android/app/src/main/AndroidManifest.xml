@@ -12,7 +12,8 @@
     <application
         android:label="PCI App"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
 
         <activity
             android:name=".MainActivity"
@@ -35,6 +36,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <!-- This is used to create a foreground service for the location tracking, required for Android 10 and above -->
 
         <!-- Don't delete the meta-data below.
