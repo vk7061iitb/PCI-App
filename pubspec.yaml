@@ -37,6 +37,7 @@ dependencies:
   syncfusion_flutter_datagrid: ^27.2.5
   wakelock_plus: ^1.2.8
   connectivity_plus: ^6.1.0
+  open_file: ^3.5.10
 
 dev_dependencies:
   flutter_test:

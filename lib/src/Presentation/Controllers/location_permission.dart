@@ -19,6 +19,7 @@ class LocationController extends GetxController {
   ///
   /// This method should be called before attempting to access the device's
   /// location to ensure that the necessary permissions are in place.
+
   Future<bool> locationPermission() async {
     final locationService = await Permission.location.serviceStatus.isEnabled;
     List<Permission> permissions = [

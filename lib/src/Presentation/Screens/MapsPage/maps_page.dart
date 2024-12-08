@@ -329,6 +329,7 @@ class MapPage extends StatelessWidget {
                 bottom: mapPageController.legendPos.value.dy,
                 right: mapPageController.legendPos.value.dx,
                 child: LongPressDraggable(
+                  rootOverlay: false,
                   onDragEnd: (details) {
                     mapPageController.legendPos.value = Offset(
                       w - details.offset.dx - w * 0.2,

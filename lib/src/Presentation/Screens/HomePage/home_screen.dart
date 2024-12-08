@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import '../SensorPage/sensor_screen.dart';
 import '../SavedFile/saved_files_page.dart';
 import '../../../../Utils/assets.dart';
@@ -16,6 +16,7 @@ class HomeScreen extends StatelessWidget {
 
   final BottomNavController bottomNavController =
       Get.put(BottomNavController());
+  final LocationController locationController = Get.find();
 
   final List<Widget> _widgetOptions = <Widget>[
     const SensorScreen(),
@@ -25,7 +26,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const iconWidth = 25.0;
+    final iconWidth = MediaQuery.sizeOf(context).height * 0.03;
     final AssetsPath assetsPath = AssetsPath();
     Color iconActive = Color(0xFF1A73E8);
     Color iconInactive = Color(0xFF757575);
