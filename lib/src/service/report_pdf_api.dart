@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:share_plus/share_plus.dart';
 import '../config/config.dart';
@@ -59,8 +58,8 @@ void _saveNshareReport({
   required List<int> responseData,
 }) async {
   try {
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/$filename.pdf');
+    final reportDirectory = await localDatabase.getReportDir();
+    final file = File('$reportDirectory/$filename.pdf');
     await file.writeAsBytes(responseData);
     logger.i('PDF file saved to: ${file.path}');
     XFile fileToShare = XFile(file.path);
