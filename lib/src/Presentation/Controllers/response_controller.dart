@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart
 import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pci_app/src/service/method_channel_helper.dart';
 import 'package:pci_app/src/service/send_data_api.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../Objects/data.dart';
@@ -55,8 +57,11 @@ class ResponseController extends GetxController {
     // Initially check whether data has lat lon changes or not
     int diffPoints = 0;
     for (int i = 1; i < accData.length; i++) {
-      if (accData[i].latitude != accData[i - 1].latitude ||
-          accData[i].longitude != accData[i - 1].longitude) {
+      AccData prevPoint = accData[i - 1];
+      AccData currentPoint = accData[i];
+      bool isSame = currentPoint.latitude == prevPoint.latitude &&
+          currentPoint.longitude == prevPoint.longitude;
+      if (!isSame) {
         diffPoints++;
         if (diffPoints > 1) {
           break;
@@ -67,33 +72,43 @@ class ResponseController extends GetxController {
     if (diffPoints < 1) {
       // show snackbar
       String message = 'Not enough data to send';
-
       Get.back();
       Get.showSnackbar(
         customGetSnackBar("Insufficient Data", message, Icons.error_outline),
       );
       return;
     }
-
-    // send the data to the server
+    PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
     var user = await _userDataController.getUserData();
-    var userID = _userDataController.user['ID'];
-    logger.i('User ID: $userID');
-    await sendDataToServer
-        .sendData(
-      accData: accData,
-      userID: userID!.toString(),
-      filename: _fileNameController.value.text,
-      vehicleType: _dropdownValue.value,
-      roadType: roadType,
-      time: DateTime.now(),
-    )
-        .then((value) async {
+    try {
+      // this data will be send to server
+      List<Map<String, dynamic>> sensorData =
+          accData.map((datapoint) => datapoint.toJson()).toList();
+      // send the data to the server
+      var userID = _userDataController.user['ID'];
+      logger.i('User ID: $userID');
+      await pciMethodsCalls.startSending();
+      var value = await sendDataToServer.sendData(
+        accData: sensorData,
+        userID: userID!.toString(),
+        filename: _fileNameController.value.text,
+        vehicleType: _dropdownValue.value,
+        roadType: roadType,
+        time: DateTime.now(),
+      );
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       _savingData.value = false;
-      // If the data is not sent successfully, save the data locally
-      if (_serverResponseCode.value / 100 != 2) {
+      Get.back();
+      if (_serverResponseCode.value == 200) {
+        Get.showSnackbar(
+          customGetSnackBar(
+            "Server Message",
+            _serverMessage.value,
+            Icons.message_outlined,
+          ),
+        );
+      } else {
         // Save the data locally
         int id = await localDatabase.insertUnsendDataInfo(
           fileName: _fileNameController.value.text,
@@ -107,27 +122,40 @@ class ResponseController extends GetxController {
             id: id,
           );
         }
+
+        Get.showSnackbar(
+          customGetSnackBar(
+            "Server Message",
+            _serverMessage.value,
+            Icons.message_outlined,
+          ),
+        );
       }
-      Get.back();
+    } catch (e) {
+      logger.e(e.toString());
       Get.showSnackbar(
         customGetSnackBar(
-          "Server Message",
-          _serverMessage.value,
-          Icons.message_outlined,
+          "Error",
+          e.toString(),
+          Icons.error_outline,
         ),
       );
-    });
-    // Save the data locally
-    await saveDataToCSV(
-      dataPointsToSave: accData,
-      fileName: _fileNameController.value.text,
-      vehicleType: _dropdownValue.value,
-      roadType: roadType,
-      userNo: user['phone'],
-    );
-    await _outputDataController.fetchData();
-    await _savedFileController.refreshData();
-    _fileNameController.value.clear();
+    } finally {
+      Future.wait([
+        saveDataToCSV(
+          dataPointsToSave: accData,
+          fileName: _fileNameController.value.text,
+          vehicleType: _dropdownValue.value,
+          roadType: roadType,
+          userNo: user['phone'],
+        ),
+        _outputDataController.fetchData(),
+        _savedFileController.refreshData(),
+      ]);
+      pciMethodsCalls.stopSending();
+      _formKey.value.currentState!.reset();
+      _fileNameController.value.clear();
+    }
   }
 
   Future<int> reSendData({
@@ -138,27 +166,12 @@ class ResponseController extends GetxController {
     required DateTime time,
   }) async {
     int responseCode = 0;
-    List<AccData> accData = [];
-    for (var data in unsentData) {
-      accData.add(
-        AccData(
-          xAcc: data['x_acc'],
-          yAcc: data['y_acc'],
-          zAcc: data['z_acc'],
-          latitude: data['Latitude'],
-          longitude: data['Longitude'],
-          speed: data['Speed'],
-          accTime: dateTimeParser.parseDateTime(
-              data['Time'], 'yyyy-MM-dd HH:mm:ss:S')!,
-        ),
-      );
-    }
     // send the data to the server
     _userDataController.getUserData();
     var userID = _userDataController.user['ID'];
     await sendDataToServer
         .sendData(
-      accData: accData,
+      accData: unsentData,
       userID: userID!,
       filename: filename,
       vehicleType: vehicleType,
@@ -193,7 +206,7 @@ class ResponseController extends GetxController {
     String savedCSVdata = _convertToCsv(csvData);
     String filePath = await _getFilePath(fileName, vehicleType);
     await _saveFile(savedCSVdata, filePath);
-    await _shareFile(filePath);
+    // await _shareFile(filePath);
   }
 
   List<List<dynamic>> _prepareCsvData(
@@ -262,8 +275,22 @@ class ResponseController extends GetxController {
     await savedFile.writeAsString(savedCSVdata);
   }
 
-  Future<void> _shareFile(String filePath) async {
+  Future<void> shareFile(String filePath) async {
     XFile fileToShare = XFile(filePath);
     await Share.shareXFiles([fileToShare]);
+  }
+
+  /// Compresses a JSON Map<String, dynamic> to GZIP binary format.
+  List<int> compressJson(Map<String, dynamic> jsonData) {
+    String jsonString = jsonEncode(jsonData);
+    List<int> jsonBytes = utf8.encode(jsonString);
+    return gzip.encode(jsonBytes);
+  }
+
+  /// Decompresses GZIP binary back to JSON Map<String, dynamic>.
+  Map<String, dynamic> decompressJson(List<int> compressedData) {
+    List<int> decompressedBytes = gzip.decode(compressedData);
+    String jsonString = utf8.decode(decompressedBytes);
+    return jsonDecode(jsonString);
   }
 }
