@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:path/path.dart';
 import 'package:pci_app/Objects/data.dart';
-import '../Models/data_points.dart';
 import '../Models/stats_data.dart';
 import '../config/config.dart';
 import 'package:http/http.dart' as http;
@@ -12,17 +11,17 @@ class SendDataToServer {
   final String sendBaseURL;
   int statusCode = 0;
   Future<String> sendData(
-      {required List<AccData> accData,
+      {required List<Map<String, dynamic>> accData,
       required String userID,
       required String filename,
       required String vehicleType,
       required String roadType,
       required DateTime time}) async {
+    ///
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
-    List<Map<String, dynamic>> sensorData =
-        accData.map((datapoint) => datapoint.toJson()).toList();
+
     List<RoadOutputData> roadOutputData = [];
 
     try {
@@ -36,15 +35,19 @@ class SendDataToServer {
           'Roadname': filename,
           'Roadtype': roadType
         },
-        body: jsonEncode(sensorData),
+        body: jsonEncode(accData),
       )
           .timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60),
         onTimeout: () {
           message = "Server took too long to respond";
           return http.Response('Server took too long to respond', 408);
         },
-      );
+      ).onError((error, stackTrace) {
+        logger.e(error.toString());
+        logger.e(stackTrace.toString());
+        return http.Response('Error: $error', 500);
+      });
       // Get the status code
       statusCode = response.statusCode;
 
