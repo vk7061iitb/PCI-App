@@ -199,7 +199,7 @@ class _RoadStatisticsState extends State<RoadStatistics>
       if (mapPageController.roadStats.isNotEmpty) {
         mapPageController.roadStats.clear();
       }
-      mapPageController.roadStats.add(setRoadStatistics(journeyData: res));
+      mapPageController.roadStats.addAll(setRoadStatistics(journeyData: res));
       return res;
     }
 
@@ -264,43 +264,71 @@ class _RoadStatisticsState extends State<RoadStatistics>
                       fontSize: 16,
                     ),
                   ),
-                  const Gap(20),
-
-                  // TabBar to switch between Prediction-Based and Velocity-Based stats
-                  TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(text: 'Prediction Based'),
-                      Tab(text: 'Velocity Based'),
-                    ],
-                    labelColor: Colors.blue,
-                    unselectedLabelColor: Colors.black,
-                    indicatorColor: Colors.blue,
-                    indicatorWeight: 3.0,
-                    labelStyle: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                    unselectedLabelStyle: GoogleFonts.inter(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 16,
-                    ),
-                  ),
-
-                  // Content for the selected tab
                   Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // Prediction-Based stats
-                        _buildDataTable(
-                            mapPageController.roadStats[0].predStats),
+                    child: ListView.builder(
+                        itemCount: mapPageController.roadStats.length,
+                        itemBuilder: (context, roadIndex) {
+                          final outputStats =
+                              mapPageController.roadStats[roadIndex].predStats;
+                          final velBasedStats =
+                              mapPageController.roadStats[roadIndex].velStats;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 5.0),
+                            child: ExpansionTile(
+                                initiallyExpanded: true,
+                                collapsedBackgroundColor:
+                                    Colors.black.withOpacity(0.05),
+                                collapsedShape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                title: Text(
+                                  mapPageController
+                                      .roadStats[roadIndex].roadName,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                children: [
+                                  // TabBar to switch between Prediction-Based and Velocity-Based stats
+                                  TabBar(
+                                    controller: _tabController,
+                                    tabs: const [
+                                      Tab(text: 'Prediction Based'),
+                                      Tab(text: 'Velocity Based'),
+                                    ],
+                                    labelColor: Colors.blue,
+                                    unselectedLabelColor: Colors.black,
+                                    indicatorColor: Colors.blue,
+                                    indicatorWeight: 3.0,
+                                    labelStyle: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                    unselectedLabelStyle: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16,
+                                    ),
+                                  ),
 
-                        // Velocity-Based stats
-                        _buildDataTable(
-                            mapPageController.roadStats[0].velStats),
-                      ],
-                    ),
+                                  // Content for the selected tab
+                                  SizedBox(
+                                    height: context.height * 0.4,
+                                    child: TabBarView(
+                                      controller: _tabController,
+                                      children: [
+                                        // Prediction-Based stats
+                                        _buildDataTable(outputStats),
+
+                                        // Velocity-Based stats
+                                        _buildDataTable(velBasedStats),
+                                      ],
+                                    ),
+                                  ),
+                                ]),
+                          );
+                        }),
                   ),
                 ],
               ),
@@ -346,6 +374,16 @@ Widget _buildDataTable(List<dynamic> statsList) {
             ),
           ),
         ),
+        DataColumn(
+          label: Text(
+            'No. of segments',
+            style: GoogleFonts.inter(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
       ],
       rows: <DataRow>[
         for (var stats in statsList)
@@ -370,6 +408,11 @@ Widget _buildDataTable(List<dynamic> statsList) {
               DataCell(
                 Text(
                   (double.parse(stats.avgVelocity) * 3.6).toStringAsFixed(3),
+                ),
+              ),
+              DataCell(
+                Text(
+                  stats.numberOfSegments.toString(),
                 ),
               ),
             ],
