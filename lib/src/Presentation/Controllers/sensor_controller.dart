@@ -156,13 +156,15 @@ class AccDataController extends GetxController {
         accData.value = event;
         if (_count > 5) {
           dataPointsList.add(
+            // Rounding is done to reduce the size of the data
             AccData(
-              xAcc: event.x,
-              yAcc: event.y,
-              zAcc: event.z,
+              xAcc: double.parse(event.x.toStringAsFixed(4)),
+              yAcc: double.parse(event.y.toStringAsFixed(4)),
+              zAcc: double.parse(event.z.toStringAsFixed(4)),
               latitude: _devicePosition.value.latitude,
               longitude: _devicePosition.value.longitude,
-              speed: _devicePosition.value.speed,
+              speed:
+                  double.parse(_devicePosition.value.speed.toStringAsFixed(3)),
               accTime: DateTime.now(),
             ),
           );
