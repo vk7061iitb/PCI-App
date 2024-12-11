@@ -31,13 +31,6 @@ class NotificationService: Service(){
         const val NOTIFICATION_ID = 107
     }
 
-    // Called when the service is first created
-    // Used for one-time setup that doesn't need to be repeated each time the service starts
-    override fun onCreate() {
-        super.onCreate()
-        // You can add initialization code here if needed
-    }
-
     // Called every time startService() is called
     // This is where you define what happens when the service starts
     @RequiresApi(Build.VERSION_CODES.O)
@@ -57,7 +50,7 @@ class NotificationService: Service(){
     // Creates and configures the notification for the foreground service
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotification():Notification{
-        Log.d("createNotification", "function called")
+        Log.d("createNotification", "createNotification() function called")
         // Create a NotificationChannel (required for Android Oreo and above)
         // Allows you to group and configure different types of notifications
         val notChannel = NotificationChannel(
@@ -80,6 +73,8 @@ class NotificationService: Service(){
             .setPriority(/* pri = */ NotificationCompat.PRIORITY_HIGH) // High priority ensures visibility
             .build()
     }
+
+
 
     // Required method for binding a service (not used in this foreground service)
     // Must be implemented even if not used
