@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
     <application
         android:label="PCI App"
@@ -40,6 +41,9 @@
         <service
             android:name=".NotificationService"
             android:foregroundServiceType="location"
+            android:exported="false"/>
+        <service android:name=".SendNotification"
+            android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
 
