@@ -33,12 +33,14 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   LatLng minLat = const LatLng(0, 0);
 
   try {
-    // Process each selected journey
+    /// Process each selected journey
     for (int i = 0; i < roadOutputData.length; i++) {
       var roadQuery = roadOutputData[i];
       var currJourney = selectedRoads[i];
-      // Process each road in a journey
+
+      /// Process each road in a journey
       for (int j = 0; j < roadQuery.length; j++) {
+        /// each journey can have multiple roads, therefore running loop for each road
         var road = roadQuery[j];
         List<dynamic> labels;
         String roadName = road["roadName"];
@@ -203,7 +205,11 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           pciPolylines.add(polyline);
         }
       }
-      roadStats.add(setRoadStatistics(journeyData: roadQuery));
+
+      /// Set road statistics
+      for (var stats in setRoadStatistics(journeyData: roadQuery)) {
+        roadStats.add(stats);
+      }
     }
     pciPolylines.addAll(drrpPolylines);
     sendPort.send({
