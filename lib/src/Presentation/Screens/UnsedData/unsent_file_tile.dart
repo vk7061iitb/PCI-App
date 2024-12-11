@@ -3,8 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pci_app/src/Presentation/Controllers/unsent_data_controller.dart';
 import '../../../../Utils/get_icon.dart';
 
 class UnsentFileTile extends StatelessWidget {
@@ -25,7 +24,8 @@ class UnsentFileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ResponseController responseController = Get.find();
+    UnsentDataController unsentDataController = Get.find();
+
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -57,38 +57,15 @@ class UnsentFileTile extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 // Send the data to the server
-                List<Map<String, dynamic>> data =
-                    await localDatabase.queryUnsentData(id);
                 DateTime unsentTime =
                     dateTimeParser.parseDateTime(time, 'dd-MMM-yyyy HH:mm')!;
-                int res = await responseController.reSendData(
-                  unsentData: data,
-                  filename: filename,
-                  roadType: roadType,
-                  vehicleType: vehicleType,
-                  time: unsentTime,
-                );
-                if (res == 200) {
-                  Get.showSnackbar(
-                    customGetSnackBar(
-                      "Submission Successful",
-                      "Data sent successfully",
-                      Icons.check_circle_outline,
-                    ),
-                  );
-                  await localDatabase.deleteUnsentData(id);
-                  await localDatabase.deleteUnsentDataInfo(id);
-                  onDeleteTap();
-
-                  return;
-                }
-                Get.showSnackbar(
-                  customGetSnackBar(
-                    "Submission Failed",
-                    "Failed to send data",
-                    Icons.error_outline,
-                  ),
-                );
+                Map<String, dynamic> info = {
+                  'filename': filename,
+                  'vehicleType': vehicleType,
+                  'roadType': roadType,
+                  'Time': unsentTime,
+                };
+                await unsentDataController.resubmitData(id, info);
               },
               child: Row(
                 children: [
