@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
+import 'package:pci_app/src/service/method_channel_helper.dart';
 import '../../../../../Objects/data.dart';
 import '../../../../../Utils/get_icon.dart';
 import '../../../../Models/file_info.dart';
@@ -39,7 +40,6 @@ class HistoryDataItem extends StatelessWidget {
       );
       return (data.isEmpty) ? false : true;
     }
-
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
@@ -90,36 +90,54 @@ class HistoryDataItem extends StatelessWidget {
               PopupMenuItem(
                 onTap: () async {
                   // do something
-                  List<Map<String, dynamic>> dataToSend =
-                      await localDatabase.queryUnsentData(data['id']);
-                  DateTime unsentTime = dateTimeParser.parseDateTime(
-                      data['Time'], 'dd-MMM-yyyy HH:mm')!;
-                  int res = await responseController.reSendData(
-                    unsentData: dataToSend,
-                    filename: data['filename'],
-                    time: unsentTime,
-                    roadType: data['roadType'],
-                    vehicleType: data['vehicleType'],
-                  );
-                  if (res == 200) {
+                  PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
+                  try {
+                    List<Map<String, dynamic>> dataToSend =
+                        await localDatabase.queryUnsentData(data['id']);
+                    DateTime unsentTime = dateTimeParser.parseDateTime(
+                        data['Time'], 'dd-MMM-yyyy HH:mm')!;
+                    await pciMethodsCalls.startSending();
+                    int res = await responseController.reSendData(
+                      unsentData: dataToSend,
+                      filename: data['filename'],
+                      time: unsentTime,
+                      roadType: data['roadType'],
+                      vehicleType: data['vehicleType'],
+                    );
+                    logger.i('Response Code: $res');
+                    if (res == 200) {
+                      Get.showSnackbar(
+                        customGetSnackBar(
+                          "Submission Successful",
+                          "Data sent successfully",
+                          Icons.check_circle_outline,
+                        ),
+                      );
+                      await Future.wait([
+                        localDatabase.deleteUnsentData(data['id']),
+                        localDatabase.deleteUnsentDataInfo(data['id']),
+                      ]);
+                    } else {
+                      Get.showSnackbar(
+                        customGetSnackBar(
+                          "Submission Failed",
+                          "Failed to send data",
+                          Icons.error_outline,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    logger.e(e);
                     Get.showSnackbar(
                       customGetSnackBar(
-                        "Submission Successful",
-                        "Data sent successfully",
-                        Icons.check_circle_outline,
+                        "Error",
+                        e.toString(),
+                        Icons.error_outline,
                       ),
                     );
-                    await localDatabase.deleteUnsentData(data['id']);
-                    await localDatabase.deleteUnsentDataInfo(data['id']);
-                    return;
+                  } finally {
+                    await pciMethodsCalls.stopSending();
                   }
-                  Get.showSnackbar(
-                    customGetSnackBar(
-                      "Submission Failed",
-                      "Failed to send data",
-                      Icons.error_outline,
-                    ),
-                  );
                 },
                 child: Row(
                   children: [
