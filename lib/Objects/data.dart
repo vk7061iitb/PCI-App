@@ -6,6 +6,7 @@ import 'package:pci_app/Utils/datetime_format.dart';
 import 'package:pci_app/Utils/assets.dart';
 import '../src/Database/sqlite_db_helper.dart';
 import '../Utils/routes.dart';
+import '../src/Presentation/Controllers/user_data_controller.dart';
 
 MyRoutes myRoutes = MyRoutes();
 const List<String> mapType = [
@@ -34,7 +35,8 @@ const List<String> vehicleType = <String>[
 ];
 
 AssetsPath assetsPath = AssetsPath();
-
+UserDataController userDataController = UserDataController();
+final user = userDataController.storage.read('user');
 // Settings Page Data
 LocationAccuracy geolocatorLocationAccuracy = LocationAccuracy.best;
 SQLDatabaseHelper localDatabase = SQLDatabaseHelper();
