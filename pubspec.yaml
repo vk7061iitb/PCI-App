@@ -34,10 +34,11 @@ dependencies:
   logger: ^2.5.0
   archive: ^3.6.1
   get_storage: ^2.1.1
-  syncfusion_flutter_datagrid: ^27.2.5
   wakelock_plus: ^1.2.8
   connectivity_plus: ^6.1.0
-  open_file: ^3.5.10
+  pdf: ^3.11.1
+  printing: ^5.13.4
+  flutter_markdown: ^0.7.4+3
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +60,8 @@ flutter:
     - lib\Assets\journey2.svg
     - lib\Assets\statistics.svg
     - lib\Assets\empty_file.svg
-    - lib\Assets\Roads\pave-road.svg
-    - lib\Assets\Roads\un-pave-road.svg
-    - lib\Assets\Roads\pedestrian-walk.svg
+    - lib\Assets\roadType\pave-road.svg
+    - lib\Assets\roadType\un-pave-road.svg
+    - lib\Assets\roadType\pedestrian-walk.svg
+    - lib\Assets\roadType\break.svg
+    - lib\Assets\roadType\no_break.svg
