@@ -13,6 +13,8 @@ class AccData {
   final double latitude;
   final double longitude;
   final double speed;
+  final int roadType;
+  final int bnb; // Break-NoBreak = 0-> NO, 1-> YES
   final DateTime accTime;
 
   AccData(
@@ -22,33 +24,23 @@ class AccData {
       required this.latitude,
       required this.longitude,
       required this.speed,
+      required this.roadType,
+      required this.bnb,
       required this.accTime});
 
 // Convert the data points to a JSON format.
 // (Used to convert the object to json for sending the data to the server.)
   Map<String, dynamic> toJson() {
     return {
-      'x_acc': xAcc,
-      'y_acc': yAcc,
-      'z_acc': zAcc,
+      'x_acc': double.parse(xAcc.toStringAsFixed(4)),
+      'y_acc': double.parse(yAcc.toStringAsFixed(4)),
+      'z_acc': double.parse(zAcc.toStringAsFixed(4)),
       'Latitude': latitude,
       'Longitude': longitude,
-      'Velocity': speed,
+      'Velocity': double.parse(speed.toStringAsFixed(4)),
+      'RoadType': roadType,
+      'bnb': bnb,
       'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(accTime),
     };
   }
-}
-
-// Not used in the current implementation.
-class GyroData {
-  final double xGyro;
-  final double yGyro;
-  final double zGyro;
-  DateTime gyroTime;
-
-  GyroData(
-      {required this.xGyro,
-      required this.yGyro,
-      required this.zGyro,
-      required this.gyroTime});
 }
