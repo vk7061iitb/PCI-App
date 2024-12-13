@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -35,7 +34,9 @@ class HistoryDataPageState extends State<HistoryDataPage> {
         scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              //localDatabase.deleteTable('savedData');
+            },
             icon: const Icon(
               Icons.search,
               color: Colors.black,
@@ -48,8 +49,8 @@ class HistoryDataPageState extends State<HistoryDataPage> {
           if (savedFileController.isLoading.value) {
             return const Center(child: CircularProgressIndicator());
           }
-          return FutureBuilder<List<File>>(
-            future: savedFileController.savedFiles.value,
+          return FutureBuilder<List<Map<String, dynamic>>>(
+            future: savedFileController.loadSavedFiles(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
@@ -82,7 +83,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                   ],
                 );
               } else {
-                List<File> savedFiles = snapshot.data ?? [];
+                List<Map<String, dynamic>> savedFiles = snapshot.data ?? [];
                 return RefreshIndicator(
                   key: savedFileController.refreshKey,
                   onRefresh: () async {
@@ -94,13 +95,13 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                     physics: const BouncingScrollPhysics(
                         parent: AlwaysScrollableScrollPhysics()),
                     itemBuilder: (context, index) {
-                      File file = savedFiles[index];
+                      Map<String, dynamic> file = savedFiles[index];
                       return Padding(
                         padding: const EdgeInsets.only(left: 10, right: 10),
                         child: HistoryDataItem(
                           file: file,
                           deleteFile: () {
-                            _showDeleteDialog(context, file).then((value) {
+                            _showDeleteDialog(context).then((value) {
                               if (value != null && value) {
                                 savedFileController.deleteFile(file);
                               }
@@ -125,7 +126,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
 }
 
 // Get alert dialog to confirm deletion of file
-Future<bool?> _showDeleteDialog(BuildContext context, File file) async {
+Future<bool?> _showDeleteDialog(BuildContext context) async {
   return await showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
