@@ -64,13 +64,24 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
 /// - Note: The `xAcc`, `yAcc`, and `zAcc` fields of the returned object are the average of the corresponding fields in `accData1` and `accData2`.
 AccData average(AccData accData1, AccData accData2) {
   AccData avgAccData;
+  double avgX = (accData1.xAcc + accData2.xAcc) / 2.0;
+  double avgY = (accData1.yAcc + accData2.yAcc) / 2.0;
+  double avgZ = (accData1.zAcc + accData2.zAcc) / 2.0;
+  double speed = accData2.speed;
+  // round them to 4 decimal places
+  avgX = double.parse(avgX.toStringAsFixed(4));
+  avgY = double.parse(avgY.toStringAsFixed(4));
+  avgZ = double.parse(avgZ.toStringAsFixed(4));
+  speed = double.parse(speed.toStringAsFixed(4));
   avgAccData = AccData(
-      xAcc: (accData1.xAcc + accData2.xAcc) / 2.0,
-      yAcc: (accData1.yAcc + accData2.yAcc) / 2.0,
-      zAcc: (accData1.zAcc + accData2.zAcc) / 2.0,
+      xAcc: avgX,
+      yAcc: avgY,
+      zAcc: avgZ,
       latitude: accData2.latitude,
       longitude: accData2.longitude,
-      speed: accData2.speed,
+      speed: speed,
+      roadType: accData2.roadType,
+      bnb: accData2.bnb,
       accTime: accData2.accTime);
   return avgAccData;
 }
@@ -88,14 +99,21 @@ AccData linInterpolate(AccData before, AccData after, DateTime curr) {
   double interpolatedX = before.xAcc + (after.xAcc - before.xAcc) * fraction;
   double interpolatedY = before.yAcc + (after.yAcc - before.yAcc) * fraction;
   double interpolatedZ = before.zAcc + (after.zAcc - before.zAcc) * fraction;
-
+  double speed = after.speed;
+  // round them to 4 decimal places
+  interpolatedX = double.parse(interpolatedX.toStringAsFixed(4));
+  interpolatedY = double.parse(interpolatedY.toStringAsFixed(4));
+  interpolatedZ = double.parse(interpolatedZ.toStringAsFixed(4));
+  speed = double.parse(speed.toStringAsFixed(4));
   AccData interpolatedData = AccData(
       xAcc: interpolatedX,
       yAcc: interpolatedY,
       zAcc: interpolatedZ,
       latitude: after.latitude,
       longitude: after.longitude,
-      speed: after.speed,
+      speed: speed,
+      roadType: after.roadType,
+      bnb: after.bnb,
       accTime: curr);
 
   return interpolatedData;
