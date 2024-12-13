@@ -10,7 +10,6 @@ import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/report_pdf_api.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../Utils/set_road_stats.dart';
 import '../../../Functions/vel_to_pci.dart';
 import '../../../Objects/data.dart';
 
@@ -133,6 +132,21 @@ class OutputDataController extends GetxController {
     });
   }
 
+  Future<void> exportJSON(
+      List<Map<String, dynamic>> query, Map<String, dynamic> metaData) async {
+    final data = {"data": query, "info": metaData};
+    final tempDir = await getTemporaryDirectory();
+    String path = '${tempDir.path}/${metaData['filename']}.json';
+    File file = File(path);
+    file.writeAsString(jsonEncode(data));
+    XFile fileToShare = XFile(path);
+    await fileToShare.readAsString();
+    Share.shareXFiles([fileToShare]).then((value) {
+      file.delete();
+    });
+  }
+
+
   /// Creates a ZIP file asynchronously.
   ///
   /// This method performs the necessary operations to generate a ZIP file
@@ -213,19 +227,6 @@ class OutputDataController extends GetxController {
     Share.shareXFiles([fileToShare]).then((value) {
       file.delete();
     });
-  }
-
-  // get road stats
-  Future<List<Map<String, dynamic>>> getRoadStats(int id) async {
-    _mapPageController.roadOutputData = [];
-    List<Map<String, dynamic>> res =
-        await localDatabase.queryRoadOutputData(jouneyID: id);
-    _mapPageController.roadOutputData.add(res);
-    if (_mapPageController.roadStats.isNotEmpty) {
-      _mapPageController.roadStats.clear();
-    }
-    _mapPageController.roadStats.add(setRoadStatistics(journeyData: res));
-    return res;
   }
 
   /// Plots the roads on the map.
