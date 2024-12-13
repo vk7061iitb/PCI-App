@@ -74,3 +74,35 @@ class RoadStats {
     required this.velStats,
   });
 }
+
+class SegmentStats {
+  final String name;
+  final String roadNo;
+  final String segmentNo;
+  final String from;
+  final String to;
+  final String distance;
+  final String pci;
+  final String remarks;
+
+  SegmentStats({
+    required this.name,
+    required this.roadNo,
+    required this.segmentNo,
+    required this.from,
+    required this.to,
+    required this.distance,
+    required this.pci,
+    required this.remarks,
+  });
+}
+
+class SegStats {
+  final List<SegmentStats> predictedStats;
+  final List<SegmentStats> velocityStats;
+
+  SegStats({
+    required this.predictedStats,
+    required this.velocityStats,
+  });
+}
