@@ -13,9 +13,11 @@ class AssetsPath {
   final String journeyHistory = 'lib/Assets/journey1.svg';
   final String journeyHistorySelected = 'lib/Assets/journey2.svg';
   final String emptyFile = 'lib/Assets/empty_file.svg';
-  final String pave = 'lib/Assets/Roads/pave-road.svg';
-  final String unPave = 'lib/Assets/Roads/un-pave-road.svg';
-  final String pedestrian = 'lib/Assets/Roads/pedestrian-walk.svg';
+  final String pave = 'lib/Assets/roadType/pave-road.svg';
+  final String unPave = 'lib/Assets/roadType/un-pave-road.svg';
+  final String pedestrian = 'lib/Assets/roadType/pedestrian-walk.svg';
+  final String breAk = 'lib/Assets/roadType/break.svg';
+  final String noBreak = 'lib/Assets/roadType/no_break.svg';
 
   // Roads
   final String roadDRRP = "lib/Assets/Roads/road_drrp.geojson";
