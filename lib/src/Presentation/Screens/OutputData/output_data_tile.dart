@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Utils/get_icon.dart';
@@ -41,6 +42,8 @@ class OutputDataItem extends StatelessWidget {
       fontWeight: FontWeight.normal,
       fontSize: 16,
     );
+    UserDataController userDataController = UserDataController();
+    final user = userDataController.storage.read('user');
 
     return InkWell(
       onTapDown: (TapDownDetails tapdownDetails) {
@@ -116,23 +119,12 @@ class OutputDataItem extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 if (context.mounted) {
-                  Get.bottomSheet(
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                      ),
-                      child: RoadStatistics(
-                        id: id,
-                      ),
+                  Get.to(
+                    () => RoadStatistics(
+                      id: id,
+                      filename: filename,
                     ),
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    enableDrag: true,
-                    ignoreSafeArea: false,
+                    transition: Transition.cupertino,
                   );
                 }
               },
@@ -174,7 +166,36 @@ class OutputDataItem extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Export",
+                    "Export CSV",
+                    style: popUpMenuTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              onTap: () async {
+                // Function to export the data
+                List<Map<String, dynamic>> query =
+                    await localDatabase.queryRoadOutputData(jouneyID: id);
+                Map<String, dynamic> metaData = {
+                  'filename': filename,
+                  'vehicleType': vehicleType,
+                  'time': time,
+                  'user': user,
+                };
+                outputDataController.exportJSON(query, metaData);
+              },
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.file_download,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "Export JSON",
                     style: popUpMenuTextStyle,
                   ),
                 ],
