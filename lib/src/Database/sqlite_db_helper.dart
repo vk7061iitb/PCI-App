@@ -21,17 +21,62 @@ class SQLDatabaseHelper {
         localDatabasePath,
         onCreate: (db, version) {
           db.execute(
-              'CREATE TABLE IF NOT EXISTS unsendData(id INTEGER PRIMARY KEY AUTOINCREMENT, unsendDataID INTEGER, x_acc REAL, y_acc REAL, z_acc REAL, Latitude REAL, Longitude REAL, Speed REAL, Time TIMESTAMP)');
+            '''CREATE TABLE IF NOT EXISTS unsendData(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  unsendDataID INTEGER, 
+                  x_acc REAL, 
+                  y_acc REAL, 
+                  z_acc REAL, 
+                  Latitude REAL, 
+                  Longitude REAL, 
+                  Speed REAL,
+                  roadType INTEGER, 
+                  bnb INTEGER,
+                  Time TIMESTAMP
+            )''',
+          );
           db.execute(
-              'CREATE TABLE IF NOT EXISTS unsendDataInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, roadType TEXT, Time TIMESTAMP)');
+            '''CREATE TABLE IF NOT EXISTS unsendDataInfo(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  filename TEXT, 
+                  vehicleType TEXT,
+                  Time TIMESTAMP,
+                  planned TEXT
+            )''',
+          );
           db.execute(
-              'CREATE TABLE IF NOT EXISTS outputData(id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, vehicleType TEXT, roadType TEXT, Time TIMESTAMP)');
+            '''CREATE TABLE IF NOT EXISTS outputData(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  filename TEXT, 
+                  vehicleType TEXT, 
+                  Time TIMESTAMP,
+                  planned TEXT
+              )''',
+          );
           db.execute(
-            'CREATE TABLE IF NOT EXISTS roadOutputData(id INTEGER PRIMARY KEY AUTOINCREMENT, journeyID INTEGER, roadName TEXT, labels TEXT, stats TEXT)',
+            '''CREATE TABLE IF NOT EXISTS roadOutputData(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  journeyID INTEGER, 
+                  roadName TEXT, 
+                  labels TEXT, 
+                  stats TEXT
+            )''',
+          );
+
+          /// status will be 0 for unsent, 1 for sent
+          db.execute(
+            '''CREATE TABLE IF NOT EXISTS savedData(
+              id INTEGER PRIMARY KEY AUTOINCREMENT, 
+              filename TEXT, 
+              time TEXT,
+              vehicleType TEXT,
+              path TEXT,
+              status INTEGER
+          )''',
           );
         },
         onUpgrade: onUpgrade,
-        version: 2,
+        version: 3,
       );
     } catch (error) {
       if (kDebugMode) {
@@ -42,11 +87,7 @@ class SQLDatabaseHelper {
 
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      if (oldVersion < 2) {
-        await db
-            .execute('ALTER TABLE unsendDataInfo ADD COLUMN roadType TEXT;');
-        await db.execute('ALTER TABLE outputData ADD COLUMN roadType TEXT;');
-      }
+      ///
     }
   }
 
@@ -83,18 +124,21 @@ class SQLDatabaseHelper {
     await _localDbInstance.transaction((txn) async {
       var accBatch = txn.batch();
       for (var data in accdata) {
-        accBatch.rawInsert(
-            'INSERT INTO unsendData(unsendDataID, x_acc, y_acc, z_acc, Latitude, Longitude, Speed, Time) VALUES(?,?,?,?,?,?,?,?)',
-            [
-              id,
-              data.xAcc,
-              data.yAcc,
-              data.zAcc,
-              data.latitude,
-              data.longitude,
-              data.speed,
-              DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime)
-            ]);
+        accBatch.insert(
+          'unsendData',
+          {
+            'unsendDataID': id,
+            'x_acc': data.xAcc,
+            'y_acc': data.yAcc,
+            'z_acc': data.zAcc,
+            'Latitude': data.latitude,
+            'Longitude': data.longitude,
+            'Speed': data.speed,
+            'roadType': data.roadType,
+            'bnb': data.bnb,
+            'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime),
+          },
+        );
       }
       await accBatch.commit();
     });
@@ -103,7 +147,8 @@ class SQLDatabaseHelper {
   Future<int> insertUnsendDataInfo({
     required String fileName,
     required String vehicleType,
-    required String roadType,
+    required DateTime time,
+    required String planned,
   }) async {
     int id = -1;
     try {
@@ -112,8 +157,8 @@ class SQLDatabaseHelper {
         {
           'filename': fileName,
           'vehicleType': vehicleType,
-          'roadType': roadType,
-          'Time': DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())
+          'Time': DateFormat('dd-MMM-yyyy HH:mm').format(time),
+          'planned': planned,
         },
       );
       logger.d('UnsendDataInfo ID: $id');
@@ -149,15 +194,15 @@ class SQLDatabaseHelper {
     required String filename,
     required String vehicleType,
     required DateTime time,
-    required String roadType,
+    required String planned,
   }) async {
     int id = -1;
     try {
       id = await _localDbInstance.insert('outputData', {
         'filename': filename,
         'vehicleType': vehicleType,
-        'roadType': roadType,
-        'Time': DateFormat('dd-MMM-yyyy HH:mm').format(time)
+        'Time': DateFormat('dd-MMM-yyyy HH:mm').format(time),
+        'planned': planned,
       });
       logger.d('OutputData ID: $id');
       return id;
@@ -167,7 +212,8 @@ class SQLDatabaseHelper {
     }
   }
 
-  /// Delete the output data from the local database, used in the output screen for deleting the data
+  /// Delete the output data from the local database,
+  ///  used in the output screen for deleting the data
   Future<void> deleteOutputData(int id) async {
     await _localDbInstance.delete(
       'outputData',
@@ -210,5 +256,69 @@ class SQLDatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<List<Map<String, dynamic>>> querySavedFiles() async {
+    try {
+      List<Map<String, dynamic>> savedFiles =
+          await _localDbInstance.query('savedData');
+      return savedFiles;
+    } catch (e) {
+      logger.f("error while quering savedData: $e");
+      return [];
+    }
+  }
+
+  Future<void> deleteSavedFile(Map<String, dynamic> data) async {
+    try {
+      int count = await _localDbInstance.delete(
+        'savedData',
+        where: 'time = ?',
+        whereArgs: [data['time']],
+      );
+      logger.i("$count files have been deleted");
+    } catch (e, s) {
+      logger.i("Error while deleting saved files : $e");
+      logger.i("stacktrace: $s");
+    }
+  }
+
+  Future<int> insertToSavedData(
+    Map<String, dynamic> data,
+  ) async {
+    int id = -1;
+    try {
+      id = await _localDbInstance.insert('savedData', {
+        'filename': data['filename'],
+        'time': data['time'],
+        'vehicleType': data['vehicleType'],
+        'path': data['path'],
+        'status': data['status']
+      });
+      return id;
+    } catch (e, s) {
+      logger.f("error while inserting to saved data:$e");
+      logger.d("stacktrace: $s");
+      return id;
+    }
+  }
+
+  Future<void> updateSavedStatus(Map<String, dynamic> data) async {
+    _localDbInstance.update(
+      'savedData',
+      {
+        'filename': data['filename'],
+        'time': data['time'],
+        'vehicleType': data['vehicleType'],
+        'path': data['path'],
+        'status': data['status']
+      },
+      where: 'time = ?',
+      whereArgs: [data['time']],
+    );
+  }
+
+  Future<void> deleteTable(String table) async {
+    _localDbInstance.delete(table);
   }
 }
