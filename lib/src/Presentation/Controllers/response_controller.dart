@@ -23,13 +23,13 @@ class ResponseController extends GetxController {
       TextEditingController().obs;
   final Rx<TextEditingController> _pedestianController =
       TextEditingController().obs;
-
   final Rx<GlobalKey<FormState>> _formKey = GlobalKey<FormState>().obs;
   final Rx<GlobalKey<FormState>> _pedestrianFormKey =
       GlobalKey<FormState>().obs;
   final RxBool _savingData = false.obs;
   final RxString _serverMessage = ''.obs;
   final Rx<int> _serverResponseCode = 0.obs;
+  final RxBool isPlanned = false.obs;
   final UserDataController _userDataController = UserDataController();
   final OutputDataController _outputDataController =
       Get.find<OutputDataController>();
@@ -52,7 +52,6 @@ class ResponseController extends GetxController {
 
   Future<void> saveData({
     required List<AccData> accData,
-    required roadType,
   }) async {
     // Initially check whether data has lat lon changes or not
     int diffPoints = 0;
@@ -80,6 +79,9 @@ class ResponseController extends GetxController {
     }
     PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
     var user = await _userDataController.getUserData();
+    // will be inserted in savedData table
+    int status = -1;
+    DateTime currTime = DateTime.now();
     try {
       // this data will be send to server
       List<Map<String, dynamic>> sensorData =
@@ -93,14 +95,16 @@ class ResponseController extends GetxController {
         userID: userID!.toString(),
         filename: _fileNameController.value.text,
         vehicleType: _dropdownValue.value,
-        roadType: roadType,
         time: DateTime.now(),
+        planned: isPlanned.value ? "Planned" : "Unplanned",
       );
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       _savingData.value = false;
       Get.back();
+
       if (_serverResponseCode.value == 200) {
+        status = 1; // submitted
         Get.showSnackbar(
           customGetSnackBar(
             "Server Message",
@@ -109,12 +113,13 @@ class ResponseController extends GetxController {
           ),
         );
       } else {
+        status = 0; // not-submitted
         // Save the data locally
         int id = await localDatabase.insertUnsendDataInfo(
-          fileName: _fileNameController.value.text,
-          vehicleType: _dropdownValue.value,
-          roadType: roadType,
-        );
+            fileName: _fileNameController.value.text,
+            vehicleType: _dropdownValue.value,
+            time: currTime,
+            planned: isPlanned.value ? "Planned" : "Unplanned");
         if (id != 0) {
           // Insert the data points to unsendData table
           localDatabase.insertToUnsendData(
@@ -141,19 +146,31 @@ class ResponseController extends GetxController {
         ),
       );
     } finally {
+      String path = await _getFilePath(
+          _fileNameController.value.text, _dropdownValue.value);
+      Map<String, dynamic> data = {
+        "filename": _fileNameController.value.text,
+        "time": dateTimeParser.formatDateTime(currTime, "dd-MMM-yyyy HH:mm"),
+        "vehicleType": _dropdownValue.value,
+        "path": path,
+        "status": status
+      };
+
       Future.wait([
+        localDatabase.insertToSavedData(data),
         saveDataToCSV(
           dataPointsToSave: accData,
           fileName: _fileNameController.value.text,
           vehicleType: _dropdownValue.value,
-          roadType: roadType,
+          planned: isPlanned.value ? "Planned" : "Unplanned",
           userNo: user['phone'],
         ),
         _outputDataController.fetchData(),
         _savedFileController.refreshData(),
       ]);
+
+      ///
       pciMethodsCalls.stopSending();
-      _formKey.value.currentState!.reset();
       _fileNameController.value.clear();
     }
   }
@@ -161,32 +178,52 @@ class ResponseController extends GetxController {
   Future<int> reSendData({
     required List<Map<String, dynamic>> unsentData,
     required String filename,
-    required String roadType,
     required String vehicleType,
     required DateTime time,
+    required String planned,
   }) async {
     int responseCode = 0;
-    // send the data to the server
-    _userDataController.getUserData();
-    var userID = _userDataController.user['ID'];
-    await sendDataToServer
-        .sendData(
-      accData: unsentData,
-      userID: userID!,
-      filename: filename,
-      vehicleType: vehicleType,
-      roadType: roadType,
-      time: time,
-    )
-        .then((value) {
+
+    try {
+      // Fetch user data and ensure it's valid
+      _userDataController.getUserData();
+      var user = _userDataController.user;
+      if (user['ID'] == null) {
+        throw Exception("User ID is missing or invalid.");
+      }
+      var userID = user['ID'];
+
+      // Send data to the server
+      final value = await sendDataToServer.sendData(
+        accData: unsentData,
+        userID: userID,
+        filename: filename,
+        vehicleType: vehicleType,
+        time: time,
+        planned: planned,
+      );
+
+      // Handle server response
       _serverMessage.value = value;
       _serverResponseCode.value = sendDataToServer.statusCode;
       responseCode = sendDataToServer.statusCode;
-      _savingData.value = false;
-      return responseCode;
-    });
-    await _outputDataController.fetchData();
-    await _savedFileController.refreshData();
+
+      if (responseCode == 200) {
+        // Refresh data only if the submission is successful
+        await _outputDataController.fetchData();
+      } else {
+        _serverMessage.value =
+            "Failed to send data. Server responded with code $responseCode.";
+      }
+    } catch (e) {
+      // Log the error and set response code
+      _serverMessage.value = "An error occurred: $e";
+      _serverResponseCode.value = 500;
+      responseCode = 500;
+    } finally {
+      _savingData.value = false; // Ensure savingData is reset
+    }
+    logger.i("ResssssssssPonse Code : $responseCode");
     return responseCode;
   }
 
@@ -194,14 +231,14 @@ class ResponseController extends GetxController {
     required List<AccData> dataPointsToSave,
     required String fileName,
     required String vehicleType,
-    required String roadType,
     required String userNo,
+    required String planned,
   }) async {
     List<List<dynamic>> csvData = _prepareCsvData(
       dataPointsToSave,
       fileName,
       vehicleType,
-      roadType,
+      planned,
     );
     String savedCSVdata = _convertToCsv(csvData);
     String filePath = await _getFilePath(fileName, vehicleType);
@@ -213,7 +250,7 @@ class ResponseController extends GetxController {
     List<AccData> dataPointsToSave,
     String fileName,
     String vehicleType,
-    String roadType,
+    String planned,
   ) {
     List<List<dynamic>> csvData = [];
 
@@ -221,15 +258,15 @@ class ResponseController extends GetxController {
     csvData.add([
       'FileName',
       'VehicleType',
-      'RoadType',
       'UserNo',
-      'Date',
+      'Planned/Unplanned'
+          'Date',
       'Time',
     ]);
     csvData.add([
       fileName,
       vehicleType,
-      roadType,
+      planned,
       _userDataController.user['phone'],
       DateFormat('yyyy-MM-dd').format(DateTime.now()),
       DateFormat('HH:mm:ss').format(DateTime.now()),
@@ -242,6 +279,8 @@ class ResponseController extends GetxController {
       'Latitude',
       'Longitude',
       'Speed',
+      'roadType',
+      'bnb',
       'accTime'
     ]);
     // Add data points
@@ -253,6 +292,8 @@ class ResponseController extends GetxController {
         element.latitude,
         element.longitude,
         element.speed,
+        element.roadType,
+        element.bnb,
         DateFormat('yyyy-MM-dd HH:mm:ss:S').format(element.accTime)
       ]);
     }
@@ -266,7 +307,7 @@ class ResponseController extends GetxController {
   Future<String> _getFilePath(String fileName, String vehicleType) async {
     String accDataDirectoryPath = await localDatabase.initializeDirectory();
     String savedFileName =
-        '$fileName#AccelerationData#${DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())}#$vehicleType.csv';
+        '$fileName#${DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())}#$vehicleType.csv';
     return '$accDataDirectoryPath/$savedFileName';
   }
 
