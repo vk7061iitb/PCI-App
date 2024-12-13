@@ -1,40 +1,54 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Functions/vel_to_pci.dart';
-import 'package:share_plus/share_plus.dart';
 import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
 import '../Functions/avg.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 
-List<RoadStats> setRoadStatistics(
-    {required List<Map<String, dynamic>> journeyData}) {
+List<dynamic> setRoadStatistics({
+  required List<Map<String, dynamic>> journeyData,
+  required String filename,
+}) {
   if (journeyData.isEmpty) {
     return [];
   }
   List<RoadStats> roadStatistics = [];
+  List<SegStats> segStats = [];
+  List<SegmentStats> predSegStats = [];
+  List<SegmentStats> velSegStats = [];
   for (var road in journeyData) {
     String roadName = road["roadName"];
     roadStatistics.add(RoadStats(
       roadName: roadName,
-      predStats: _predStats(road),
-      velStats: _velStats(road),
+      predStats: _predStats(road, predSegStats, filename, roadName),
+      velStats: _velStats(road, velSegStats, filename, roadName),
     ));
   }
-
-  return roadStatistics;
+  logger.i(predSegStats.length);
+  logger.i(velSegStats.length);
+  segStats
+      .add(SegStats(predictedStats: predSegStats, velocityStats: velSegStats));
+  return [roadStatistics, segStats];
 }
 
-List<RoadStatsData> _velStats(Map<String, dynamic> road) {
+String formatChainage(double distanceInMeters) {
+  // Round to nearest integer to avoid floating-point issues
+  int totalMeters = (distanceInMeters).round();
+
+  // Calculate kilometers and remaining meters
+  int kilometers = totalMeters ~/ 1000; // Integer division for kilometers
+  int meters = totalMeters % 1000; // Remainder for meters
+  String chainageTo = '$kilometers/${meters.toString().padLeft(3, '0')}';
+  return chainageTo;
+}
+
+List<RoadStatsData> _velStats(Map<String, dynamic> road,
+    List<SegmentStats> velSegStats, String filename, String roadName) {
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
-
     Map<String, dynamic> stats = {};
     // initialize the stats
     for (double i = 0; i <= 5; i++) {
@@ -49,6 +63,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
     double secondPointPCI = 0.0;
     double distance = 0.0;
     double td = 0.0;
+    int totalSegments = 0;
     for (int k = 0; k < labels.length - 1; k++) {
       var firstLabel = labels[k];
       var secondLabel = labels[k + 1];
@@ -68,7 +83,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
         secondPoint.latitude,
         secondPoint.longitude,
       ); // in meters
-      td += d;
+
       velocities.add(firstLabel['velocity']);
 
       if (secondPointPCI != firstPointPCI) {
@@ -79,11 +94,26 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
                     avg(velocities)) /
                 n;
         stats[firstPointPCI.toString()]['distance_travelled'] += distance;
-
+        if (firstPointPCI != 0) {
+          // add the segment to the list
+          totalSegments += 1;
+          velSegStats.add(
+            SegmentStats(
+                name: filename,
+                roadNo: roadName,
+                segmentNo: totalSegments.toString(),
+                from: formatChainage(td - distance),
+                to: formatChainage(td),
+                distance: (distance.round() / 1000).toStringAsFixed(4),
+                pci: firstPointPCI.toString(),
+                remarks: "Remarks"),
+          );
+        }
         // reset the data
         velocities = [firstLabel['velocity']];
         distance = 0.0;
       }
+      td += d;
       distance += d;
     }
     if (velocities.length == 1) {
@@ -96,6 +126,21 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
                   avg(velocities)) /
               n;
       stats[secondPointPCI.toString()]['distance_travelled'] += distance;
+      if (secondPointPCI != 0) {
+        // add the segment to the list
+        totalSegments += 1;
+        velSegStats.add(
+          SegmentStats(
+              name: filename,
+              roadNo: roadName,
+              segmentNo: totalSegments.toString(),
+              from: formatChainage(td - distance),
+              to: formatChainage(td),
+              distance: (distance.round() / 1000).toStringAsFixed(4),
+              pci: secondPointPCI.toString(),
+              remarks: "Remarks"),
+        );
+      }
     } else {
       // the last segment has the same PCI as the previous one, but the loop has ended before adding it to the stats,
       // so we need to add it now
@@ -107,6 +152,21 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
                   avg(velocities)) /
               n;
       stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+      if (secondPointPCI != 0) {
+        // add the segment to the list
+        totalSegments += 1;
+        velSegStats.add(
+          SegmentStats(
+              name: filename,
+              roadNo: roadName,
+              segmentNo: totalSegments.toString(),
+              from: formatChainage(td - distance),
+              to: formatChainage(td),
+              distance: (distance.round() / 1000).toStringAsFixed(4),
+              pci: secondPointPCI.toString(),
+              remarks: "Remarks"),
+        );
+      }
     }
 
     List<RoadStatsData> velStatsList = [];
@@ -121,7 +181,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
           pci: double.parse(key).toStringAsFixed(0),
           avgVelocity: stats[key]['avg_velocity'].toString(),
           distanceTravelled: stats[key]['distance_travelled'].toString(),
-          numberOfSegments: stats[key]['number_of_segments'].toString(),
+          numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
       );
       td2 += stats[key]['distance_travelled'];
@@ -136,7 +196,8 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road) {
 }
 
 ///
-List<RoadStatsData> _predStats(Map<String, dynamic> road) {
+List<RoadStatsData> _predStats(Map<String, dynamic> road,
+    List<SegmentStats> predSegStats, String filename, String roadName) {
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
@@ -152,6 +213,8 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
     double firstPointPCI = 0.0;
     double secondPointPCI = 0.0;
     double distance = 0.0;
+    double td = 0.0;
+    int totalSegments = 0;
     for (int k = 0; k < labels.length - 1; k++) {
       var firstLabel = labels[k];
       var secondLabel = labels[k + 1];
@@ -180,11 +243,26 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
                     avg(velocities)) /
                 n;
         stats[firstPointPCI.toString()]['distance_travelled'] += distance;
-
+        // add the segment to the list
+        if (firstPointPCI != 0) {
+          totalSegments += 1;
+          predSegStats.add(
+            SegmentStats(
+                name: filename,
+                roadNo: roadName,
+                segmentNo: totalSegments.toString(),
+                from: formatChainage(td - distance),
+                to: formatChainage(td),
+                distance: (distance.round() / 1000).toStringAsFixed(4),
+                pci: firstPointPCI.toString(),
+                remarks: "Remarks"),
+          );
+        }
         // reset the data
         velocities = [firstLabel['velocity']];
         distance = 0.0;
       }
+      td += d;
       distance += d;
     }
     if (velocities.length == 1) {
@@ -197,8 +275,24 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
                   avg(velocities)) /
               n;
       stats[secondPointPCI.toString()]['distance_travelled'] += distance;
+      if (secondPointPCI != 0) {
+        // add the segment to the list
+        totalSegments += 1;
+        predSegStats.add(
+          SegmentStats(
+              name: filename,
+              roadNo: roadName,
+              segmentNo: totalSegments.toStringAsFixed(0),
+              from: formatChainage(td - distance),
+              to: formatChainage(td),
+              distance: (distance.round() / 1000).toStringAsFixed(4),
+              pci: secondPointPCI.toString(),
+              remarks: "Remarks"),
+        );
+      }
     } else {
-      // the last segment has the same PCI as the previous one, but the loop has ended before adding it to the stats,
+      // the last segment has the same PCI as the previous one, 
+      // but the loop has ended before adding it to the stats,
       // so we need to add it now
       velocities.add(labels.last['velocity']);
       stats[firstPointPCI.toString()]['number_of_segments'] += 1;
@@ -208,6 +302,21 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
                   avg(velocities)) /
               n;
       stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+      if (secondPointPCI != 0) {
+        // add the segment to the list
+        totalSegments += 1;
+        predSegStats.add(
+          SegmentStats(
+              name: filename,
+              roadNo: roadName,
+              segmentNo: totalSegments.toStringAsFixed(0),
+              from: formatChainage(td - distance),
+              to: formatChainage(td),
+              distance: (distance.round() / 1000).toStringAsFixed(4),
+              pci: secondPointPCI.toString(),
+              remarks: "Remarks"),
+        );
+      }
     }
 
     List<RoadStatsData> predStatsList = [];
@@ -221,7 +330,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
           pci: double.parse(key).toStringAsFixed(0),
           avgVelocity: stats[key]['avg_velocity'].toString(),
           distanceTravelled: stats[key]['distance_travelled'].toString(),
-          numberOfSegments: stats[key]['number_of_segments'].toString(),
+          numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
       );
       td2 += stats[key]['distance_travelled'];
@@ -232,72 +341,5 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road) {
     logger.e('Error parsing labels: $e');
     logger.e(stackTrace.toString());
     return [];
-  }
-}
-
-Future<void> generatePdf(Map<String, dynamic> jsonData) async {
-  final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
-
-  pdf.addPage(
-    pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            // Title
-            pw.Text(
-              "Summary",
-              style: pw.TextStyle(
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            pw.SizedBox(height: 20),
-
-            // Table
-            pw.TableHelper.fromTextArray(
-              border: pw.TableBorder.all(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
-              headers: [
-                "Key",
-                "Avg Velocity",
-                "Distance Travelled",
-                "Number of Segments"
-              ],
-              data: jsonData.entries.map((entry) {
-                final key = entry.key;
-
-                final avgVelocity = entry.value['avg_velocity'];
-                final distanceTravelled = entry.value['distance_travelled'];
-                final numberOfSegments = entry.value['number_of_segments'];
-
-                return [
-                  key,
-                  avgVelocity.toStringAsFixed(3),
-                  distanceTravelled.toStringAsFixed(3),
-                  numberOfSegments.toStringAsFixed(1),
-                ];
-              }).toList(),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-
-  try {
-    // Get temporary directory
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/summary_table.pdf');
-
-    // Write PDF
-    await file.writeAsBytes(await pdf.save());
-
-    // Share the PDF
-    await Share.shareXFiles([XFile(file.path)]);
-  } catch (e) {
-    logger.i('Error generating/sharing PDF: $e');
   }
 }
