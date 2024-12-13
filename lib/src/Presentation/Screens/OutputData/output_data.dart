@@ -47,7 +47,32 @@ class _OutputDataPageState extends State<OutputDataPage> {
             duration: const Duration(milliseconds: 300),
             child: outputDataController.slectedFiles.isNotEmpty
                 ? _buildSelectedBar(outputDataController, popUpMenuTextStyle)
-                : _buildDefaultAppBar(),
+                : AppBar(
+                    key: const ValueKey("DefaultAppBar"),
+                    title: Text(
+                      'Journey History',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                    backgroundColor: backgroundColor,
+                    foregroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    scrolledUnderElevation: 0,
+                    actions: [
+                      IconButton(
+                        onPressed: () async {
+                          //
+                        },
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
           );
         }),
       ),
@@ -85,33 +110,6 @@ class _OutputDataPageState extends State<OutputDataPage> {
           );
         }),
       ),
-    );
-  }
-
-  Widget _buildDefaultAppBar() {
-    return AppBar(
-      key: const ValueKey("DefaultAppBar"),
-      title: Text(
-        'Journey History',
-        style: GoogleFonts.inter(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          color: Colors.black,
-        ),
-      ),
-      backgroundColor: backgroundColor,
-      foregroundColor: Colors.transparent,
-      shadowColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      actions: [
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.search,
-            color: Colors.black,
-          ),
-        ),
-      ],
     );
   }
 
