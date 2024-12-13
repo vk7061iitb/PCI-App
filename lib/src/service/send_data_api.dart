@@ -33,7 +33,7 @@ class SendDataToServer {
           'Userid': userID,
           'vehicle_type': vehicleType,
           'Roadname': filename,
-          'Roadtype': ""
+          'Roadtype': "roadType"
         },
         body: jsonEncode(accData),
       )
@@ -41,6 +41,7 @@ class SendDataToServer {
         const Duration(seconds: 60),
         onTimeout: () {
           message = "Server took too long to respond";
+
           return http.Response('Server took too long to respond', 408);
         },
       ).onError((error, stackTrace) {
@@ -83,7 +84,8 @@ class SendDataToServer {
         }
 
         await localDatabase.insertToRoadOutputData(
-            roadOutputData: roadOutputData);
+          roadOutputData: roadOutputData,
+        );
         return message;
       } else {
         logger.f('Failed to send data. Status code: ${response.statusCode}');

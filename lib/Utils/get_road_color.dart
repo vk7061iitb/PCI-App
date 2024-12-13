@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 Color getRoadColor(double quality) {
-  switch (quality) {
+  switch (quality.toInt()) {
     case 1:
       return Colors.red;
     case 2:

@@ -139,77 +139,72 @@ class SaveFile extends StatelessWidget {
                         ],
                       ),
                       const Gap(10),
-                      // Pedestrian reason
-                      (accDataController.isPedestrianFound)
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Reason for Pedestrian",
-                                  style: GoogleFonts.inter(
-                                    fontSize: MediaQuery.textScalerOf(context)
-                                        .scale(18),
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Gap(10),
-                                Form(
-                                  key: responseController.pedestrianFormKey,
-                                  child: TextFormField(
-                                    controller:
-                                        responseController.pedestianController,
-                                    validator: (value) {
-                                      if (value!.isEmpty) {
-                                        return "Please metion the reason";
-                                      }
-                                      return null;
-                                    },
-                                    expands: false,
-                                    maxLines: 2,
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.notes),
-                                      enabled: true,
-                                      hintText:
-                                          'Describe why there was a Pedestrian area',
-                                      isDense: true,
-                                      labelStyle: GoogleFonts.inter(
-                                        color: Colors.black54,
-                                      ),
-                                      focusedBorder: const OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.black,
-                                          width: 2,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(15),
-                                        ),
-                                      ),
-                                      border: const OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(15),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : SizedBox(),
-                      const Gap(5),
                       Obx(() {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Reason for Pedestrian",
-                              style: GoogleFonts.inter(
-                                fontSize:
-                                    MediaQuery.textScalerOf(context).scale(18),
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
-                            ),
+                            // Pedestrian reason
+                            (accDataController.isPedestrianFound.value)
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Reason for Pedestrian",
+                                        style: GoogleFonts.inter(
+                                          fontSize:
+                                              MediaQuery.textScalerOf(context)
+                                                  .scale(18),
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const Gap(10),
+                                      Form(
+                                        key: responseController
+                                            .pedestrianFormKey,
+                                        child: TextFormField(
+                                          controller: responseController
+                                              .pedestianController,
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return "Please metion the reason";
+                                            }
+                                            return null;
+                                          },
+                                          expands: false,
+                                          maxLines: 2,
+                                          decoration: InputDecoration(
+                                            prefixIcon: const Icon(Icons.notes),
+                                            enabled: true,
+                                            hintText:
+                                                'Describe why there was a Pedestrian area',
+                                            isDense: true,
+                                            labelStyle: GoogleFonts.inter(
+                                              color: Colors.black54,
+                                            ),
+                                            focusedBorder:
+                                                const OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Colors.black,
+                                                width: 2,
+                                              ),
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(15),
+                                              ),
+                                            ),
+                                            border: const OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(15),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : SizedBox(),
+
                             const Gap(10),
                             Row(
                                 mainAxisAlignment:
@@ -301,7 +296,7 @@ class SaveFile extends StatelessWidget {
                                           return;
                                         }
                                         if (accDataController
-                                                .isPedestrianFound &&
+                                                .isPedestrianFound.value &&
                                             !responseController
                                                 .pedestrianFormKey.currentState!
                                                 .validate()) {

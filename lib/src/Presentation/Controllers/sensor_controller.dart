@@ -56,7 +56,7 @@ class AccDataController extends GetxController {
   RxString currRoadType = "".obs;
   RxInt bnb = (-1).obs;
   RxInt currRoadIndex = (-1).obs;
-  bool isPedestrianFound = false;
+  RxBool isPedestrianFound = false.obs;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
 
   // Getters
@@ -147,7 +147,7 @@ class AccDataController extends GetxController {
     pciMethodsCalls.startNotification();
     _isRecordingData.value = true;
     _showStartButton.value = false;
-    isPedestrianFound = false;
+    isPedestrianFound.value = false;
     downSampledDatapoints.clear();
     dataPointsList.clear();
     logger.i('Recording Started');

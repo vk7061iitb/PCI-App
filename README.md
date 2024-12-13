@@ -1,4 +1,4 @@
-# Pave Track Master: Automating Road Pavement Assessment in Maharashtra
+# PCI App: Automating Road Pavement Assessment in Maharashtra
 
 There exists no systematic way to centrally organize road development in Maharashtra, and much of India. This project aims to contribute to change this by automating the assessment of road pavement conditions.
 

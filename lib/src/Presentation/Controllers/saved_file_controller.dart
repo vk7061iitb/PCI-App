@@ -23,7 +23,7 @@ class SavedFileController extends GetxController {
     isLoading.value = true;
     try {
       savedFiles.value = await loadSavedFiles();
-      outputDataController.refresh();
+      await outputDataController.fetchData();
       unsentFiles.value = await localDatabase.queryTable('unsendDataInfo');
     } finally {
       isLoading.value = false;

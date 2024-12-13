@@ -64,17 +64,20 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
     double distance = 0.0;
     double td = 0.0;
     int totalSegments = 0;
+    Map<String, dynamic> firstLabel = {};
+    Map<String, dynamic> secondLabel = {};
     for (int k = 0; k < labels.length - 1; k++) {
-      var firstLabel = labels[k];
-      var secondLabel = labels[k + 1];
+      firstLabel = labels[k];
+      secondLabel = labels[k + 1];
       LatLng firstPoint =
           LatLng(firstLabel['latitude'], firstLabel['longitude']);
       LatLng secondPoint =
           LatLng(secondLabel['latitude'], secondLabel['longitude']);
 
       firstPointPCI = secondPointPCI;
-      secondPointPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
+      double velPredPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
           velocityToPCI(3.6 * firstLabel['velocity']));
+      secondPointPCI = velPredPCI.toDouble();
 
       // Calculate distance between points
       double d = Geolocator.distanceBetween(
@@ -106,7 +109,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
                 pci: firstPointPCI.toString(),
-                remarks: "Remarks"),
+                remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
         // reset the data
@@ -138,7 +141,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
               pci: secondPointPCI.toString(),
-              remarks: "Remarks"),
+              remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
     } else {
@@ -164,14 +167,13 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
               pci: secondPointPCI.toString(),
-              remarks: "Remarks"),
+              remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
     }
 
     List<RoadStatsData> velStatsList = [];
     logger.i("Distance Travelled(Actual): $td");
-    double td2 = 0.0;
     for (var key in stats.keys) {
       if (double.parse(key) == 0) {
         continue;
@@ -184,9 +186,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
           numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
       );
-      td2 += stats[key]['distance_travelled'];
     }
-    logger.i("Distance Travelled(Velocity): $td2");
     return velStatsList;
   } catch (e, stackTrace) {
     logger.e('Error parsing labels: $e');
@@ -215,16 +215,20 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
     double distance = 0.0;
     double td = 0.0;
     int totalSegments = 0;
+    Map<String, dynamic> firstLabel = {};
+    Map<String, dynamic> secondLabel = {};
     for (int k = 0; k < labels.length - 1; k++) {
-      var firstLabel = labels[k];
-      var secondLabel = labels[k + 1];
+      firstLabel = labels[k];
+      secondLabel = labels[k + 1];
       LatLng firstPoint =
           LatLng(firstLabel['latitude'], firstLabel['longitude']);
       LatLng secondPoint =
           LatLng(secondLabel['latitude'], secondLabel['longitude']);
 
       firstPointPCI = secondPointPCI;
-      secondPointPCI = min(secondLabel['prediction'], firstLabel['prediction']);
+      double firstValue = (firstLabel['prediction'] as num).toDouble();
+      double secondValue = (secondLabel['prediction'] as num).toDouble();
+      secondPointPCI = min(firstValue, secondValue);
 
       // Calculate distance between points
       double d = Geolocator.distanceBetween(
@@ -255,7 +259,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
                 pci: firstPointPCI.toString(),
-                remarks: "Remarks"),
+                remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
         // reset the data
@@ -287,11 +291,11 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
               pci: secondPointPCI.toString(),
-              remarks: "Remarks"),
+              remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
     } else {
-      // the last segment has the same PCI as the previous one, 
+      // the last segment has the same PCI as the previous one,
       // but the loop has ended before adding it to the stats,
       // so we need to add it now
       velocities.add(labels.last['velocity']);
@@ -314,13 +318,12 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
               pci: secondPointPCI.toString(),
-              remarks: "Remarks"),
+              remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
     }
 
     List<RoadStatsData> predStatsList = [];
-    double td2 = 0.0;
     for (var key in stats.keys) {
       if (double.parse(key) == 0) {
         continue;
@@ -333,13 +336,29 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
           numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
       );
-      td2 += stats[key]['distance_travelled'];
     }
-    logger.i("Distance Travelled(Prediction): $td2");
     return predStatsList;
   } catch (e, stackTrace) {
     logger.e('Error parsing labels: $e');
     logger.e(stackTrace.toString());
     return [];
   }
+}
+
+String remarks(int roadType) {
+  String res;
+  switch (roadType) {
+    case 0:
+      res = "Paved";
+      break;
+    case 1:
+      res = "Un-Paved";
+      break;
+    case 2:
+      res = "Pedestrian";
+      break;
+    default:
+      res = "No Remarks";
+  }
+  return res;
 }

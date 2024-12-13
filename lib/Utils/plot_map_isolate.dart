@@ -32,7 +32,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
   LatLng maxLat = const LatLng(0, 0);
   LatLng minLat = const LatLng(0, 0);
-
+  logger.i(roadOutputData);
   try {
     /// Process each selected journey
     for (int i = 0; i < roadOutputData.length; i++) {
@@ -76,12 +76,15 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               LatLng(firstLabel['latitude'], firstLabel['longitude']);
           LatLng secondPoint =
               LatLng(secondLabel['latitude'], secondLabel['longitude']);
-
           firstPointPCI = secondPointPCI;
+          //
+          double firstValue = (firstLabel['prediction'] as num).toDouble();
+          double secondValue = (secondLabel['prediction'] as num).toDouble();
+          double velPredPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
+              velocityToPCI(3.6 * firstLabel['velocity']));
           secondPointPCI = showPCIlabel
-              ? min(secondLabel['prediction'], firstLabel['prediction'])
-              : min(velocityToPCI(3.6 * secondLabel['velocity']),
-                  velocityToPCI(3.6 * firstLabel['velocity']));
+              ? min(firstValue, secondValue)
+              : velPredPCI.toDouble();
 
           // Calculate distance between points
           double d = Geolocator.distanceBetween(
@@ -233,8 +236,9 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
       'maxLat': maxLat,
       'minLat': minLat,
     });
-  } catch (e) {
+  } catch (e, stackTrace) {
     logger.e(e.toString());
+    logger.d(stackTrace);
   }
   logger.d('Isolate ended');
 }

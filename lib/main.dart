@@ -40,8 +40,8 @@ Future<void> main() async {
   if (user != null) {
     isLoggedIn = user['isLoggedIn'] ?? false;
   }
-  logger.i('Is Logged In: $isLoggedIn');
 
+  logger.i('Is Logged In: $isLoggedIn');
   await localDatabase.dbSize();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,

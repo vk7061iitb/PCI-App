@@ -190,7 +190,7 @@ class ReadingWidget extends StatelessWidget {
                             accDataController.currRoadIndex.value =
                                 accDataController.roads.indexOf(
                                     accDataController.currRoadType.value);
-                            accDataController.isPedestrianFound = true;
+                            accDataController.isPedestrianFound.value = true;
                           },
                           radius: 25,
                           borderRadius: BorderRadius.circular(5),
