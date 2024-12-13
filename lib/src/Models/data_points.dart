@@ -38,7 +38,7 @@ class AccData {
       'Latitude': latitude,
       'Longitude': longitude,
       'Velocity': double.parse(speed.toStringAsFixed(4)),
-      'RoadType': roadType,
+      'roadType': roadType,
       'bnb': bnb,
       'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(accTime),
     };
