@@ -22,6 +22,7 @@ class MapPageController extends GetxController {
   LatLng _minLat = const LatLng(0, 0);
   LatLng _maxLat = const LatLng(0, 0);
   List<RoadStats> roadStats = <RoadStats>[];
+  List<SegStats> segStats = <SegStats>[];
   final Rx<MapType> _backgroundMapType = MapType.normal.obs;
   RxList<String> mapType =
       ['Normal', 'Satellite', 'Hybrid', 'Teraain', 'None'].obs;
@@ -37,7 +38,6 @@ class MapPageController extends GetxController {
   final RxBool _showCircularProgress = false.obs;
   final RxBool _showPCIlabel = true.obs;
   RxBool showIndicator = false.obs;
-
   Rx<Offset> legendPos = Offset(10, 10).obs;
 
   // Getters
@@ -73,6 +73,7 @@ class MapPageController extends GetxController {
   /// or remove any temporary data.
   void clearData() {
     roadStats.clear();
+    segStats.clear();
     _pciPolylines.clear();
     roadOutputData.clear();
     selectedRoads.clear();
@@ -96,6 +97,7 @@ class MapPageController extends GetxController {
   Future<void> plotRoadData() async {
     _pciPolylines.clear();
     roadStats.clear();
+    segStats.clear();
     logger.d("plotting road data...");
 
     try {
@@ -111,6 +113,7 @@ class MapPageController extends GetxController {
       await Isolate.spawn(plotMapIsolate, isoData);
       final res = await receivePort.first as Map<String, dynamic>;
       roadStats = res['roadStats'];
+      segStats = res['segStats'];
       _pciPolylines.addAll(res['pciPolylines']);
       _minLat = res['minLat'];
       _maxLat = res['maxLat'];
