@@ -6,8 +6,6 @@ import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/Login/roles_dropdown.dart';
 import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
-
 import '../../Controllers/signup_controller.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -177,63 +175,40 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const Gap(50),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // sign in logic
-                          if (loginController.loginFormKey.currentState!
-                              .validate()) {
-                            await loginController.loginUser().then((value) {
-                              logger.i(value);
-                              if (value['val'] == 0) {
-                                // successfully logged in
-                                Get.showSnackbar(
-                                  customGetSnackBar(
-                                    "Login Successful",
-                                    "You've been successfully logged in",
-                                    Icons.check_circle_outline,
+                Obx(() {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: loginController.isLoggingIn
+                            ? LinearProgressIndicator(
+                                value: loginController.isLoggingIn ? null : 0,
+                              )
+                            : ElevatedButton(
+                                onPressed: () {
+                                  try {
+                                    loginController.onLoginTapped();
+                                  } catch (e) {
+                                    logger.e(e);
+                                  } finally {}
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black87,
+                                  padding: const EdgeInsets.all(8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
-                                );
-                                Get.offNamed(myRoutes.homeRoute);
-                              } else {
-                                Get.showSnackbar(
-                                  customGetSnackBar(
-                                    "Login Failed",
-                                    value['Message'],
-                                    Icons.error_outline,
-                                  ),
-                                );
-                              }
-                            });
-                          } else {
-                            Get.showSnackbar(
-                              customGetSnackBar(
-                                "Invalid Details",
-                                "Please enter valid details",
-                                Icons.error_outline,
+                                ),
+                                child: Text("Sign In",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                    )),
                               ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black87,
-                          padding: const EdgeInsets.all(8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        child: Text("Sign In",
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            )),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
                 const Gap(10),
                 Align(
                   alignment: Alignment.center,
