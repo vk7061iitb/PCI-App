@@ -1,15 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
-import 'package:pci_app/src/service/method_channel_helper.dart';
-import '../../../../../Objects/data.dart';
 import '../../../../../Utils/get_icon.dart';
-import '../../../../Models/file_info.dart';
-import '../../../Controllers/response_controller.dart';
-import '../../../Widgets/snackbar.dart';
 
 class HistoryDataItem extends StatelessWidget {
   const HistoryDataItem({
@@ -19,36 +14,23 @@ class HistoryDataItem extends StatelessWidget {
     required this.deleteFile,
     required this.unsentData,
   });
-  final File file;
+  final Map<String, dynamic> file;
   final List<Map<String, dynamic>> unsentData;
   final VoidCallback shareFile;
   final VoidCallback deleteFile;
   @override
   Widget build(BuildContext context) {
-    ResponseController responseController = Get.find();
-    SavedFileController savedFileController = Get.put(SavedFileController());
+    logger.i(file);
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    late Map<String, dynamic> data; // Unsent data to be sent, if any
-    bool status(String filename, String vehicleType) {
-      data = unsentData.firstWhere(
-        (data) => (data['filename'] == filename &&
-            data['vehicleType'] == vehicleType),
-        orElse: () => {},
-      );
-      return (data.isEmpty) ? false : true;
-    }
     TextStyle pupUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
       fontSize: 16,
     );
-
-    FileInfo fileInfo =
-        savedFileController.getFileInfo(file.path.split('/').last);
-
+    SavedFileController savedFileController = Get.find<SavedFileController>();
     return InkWell(
       onTapDown: (TapDownDetails details) {
         left = details.globalPosition.dx;
@@ -86,58 +68,10 @@ class HistoryDataItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (status(fileInfo.fileName, fileInfo.vehicleType))
+            if ((file['status'] != 1))
               PopupMenuItem(
                 onTap: () async {
-                  // do something
-                  PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
-                  try {
-                    List<Map<String, dynamic>> dataToSend =
-                        await localDatabase.queryUnsentData(data['id']);
-                    DateTime unsentTime = dateTimeParser.parseDateTime(
-                        data['Time'], 'dd-MMM-yyyy HH:mm')!;
-                    await pciMethodsCalls.startSending();
-                    int res = await responseController.reSendData(
-                      unsentData: dataToSend,
-                      filename: data['filename'],
-                      time: unsentTime,
-                      roadType: data['roadType'],
-                      vehicleType: data['vehicleType'],
-                    );
-                    logger.i('Response Code: $res');
-                    if (res == 200) {
-                      Get.showSnackbar(
-                        customGetSnackBar(
-                          "Submission Successful",
-                          "Data sent successfully",
-                          Icons.check_circle_outline,
-                        ),
-                      );
-                      await Future.wait([
-                        localDatabase.deleteUnsentData(data['id']),
-                        localDatabase.deleteUnsentDataInfo(data['id']),
-                      ]);
-                    } else {
-                      Get.showSnackbar(
-                        customGetSnackBar(
-                          "Submission Failed",
-                          "Failed to send data",
-                          Icons.error_outline,
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    logger.e(e);
-                    Get.showSnackbar(
-                      customGetSnackBar(
-                        "Error",
-                        e.toString(),
-                        Icons.error_outline,
-                      ),
-                    );
-                  } finally {
-                    await pciMethodsCalls.stopSending();
-                  }
+                  await savedFileController.searchUnsentData(file);
                 },
                 child: Row(
                   children: [
@@ -197,7 +131,7 @@ class HistoryDataItem extends StatelessWidget {
                     ),
                     child: Center(
                       child: Icon(
-                        getIcon(fileInfo.vehicleType),
+                        getIcon(file['vehicleType']),
                         size: MediaQuery.sizeOf(context).width * 0.1,
                         color: Colors.black87,
                       ),
@@ -216,7 +150,7 @@ class HistoryDataItem extends StatelessWidget {
                           children: [
                             FittedBox(
                               child: Text(
-                                fileInfo.fileName,
+                                file['filename'],
                                 style: GoogleFonts.inter(
                                   color: Colors.black,
                                   fontWeight: FontWeight.normal,
@@ -231,26 +165,17 @@ class HistoryDataItem extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: status(
-                                    fileInfo.fileName,
-                                    fileInfo.vehicleType,
-                                  )
+                                  color: (file['status'] != 1)
                                       ? Colors.red.shade100
                                       : Colors.green.shade100,
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: Text(
-                                  status(
-                                    fileInfo.fileName,
-                                    fileInfo.vehicleType,
-                                  )
+                                  (file['status'] != 1)
                                       ? "Not Submitted"
                                       : "Submitted",
                                   style: GoogleFonts.inter(
-                                    color: status(
-                                      fileInfo.fileName,
-                                      fileInfo.vehicleType,
-                                    )
+                                    color: (file['status'] != 1)
                                         ? Colors.red.shade900
                                         : Colors.green.shade900,
                                     fontWeight: FontWeight.w500,
@@ -269,7 +194,7 @@ class HistoryDataItem extends StatelessWidget {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              fileInfo.time,
+                              file['time'],
                               style: GoogleFonts.inter(
                                 color: Colors.teal,
                                 fontWeight: FontWeight.normal,
