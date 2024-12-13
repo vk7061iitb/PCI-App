@@ -1,31 +1,27 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pci_app/src/Presentation/Controllers/unsent_data_controller.dart';
+import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pci_app/src/service/method_channel_helper.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../Objects/data.dart';
-import '../../Models/file_info.dart';
+import '../../service/send_data_api.dart';
 
 class SavedFileController extends GetxController {
   // Variables
   RxList<Map<String, dynamic>> unsentFiles = <Map<String, dynamic>>[].obs;
-  Rx<Future<List<File>>> savedFiles = Future.value(<File>[]).obs;
+  RxList<Map<String, dynamic>> savedFiles = <Map<String, dynamic>>[].obs;
   final GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
+  SendDataToServer sendDataToServer = SendDataToServer();
   var isLoading = true.obs;
-
-  final UnsentDataController _unsentDataController =
-      Get.put(UnsentDataController());
 
   // Methods
   Future<void> refreshData() async {
     isLoading.value = true;
-    savedFiles.value = loadSavedFiles();
+    savedFiles.value = await loadSavedFiles();
 
     try {
-      unsentFiles.value = await _unsentDataController.getUnsentData();
+      unsentFiles.value = await localDatabase.queryTable('unsendDataInfo');
     } finally {
       isLoading.value = false;
       // Refresh the refresh indicator
@@ -33,67 +29,97 @@ class SavedFileController extends GetxController {
     }
   }
 
-  Future<List<File>> loadSavedFiles() async {
-    try {
-      Directory? appExternalStorageDir = await getExternalStorageDirectory();
-      if (appExternalStorageDir == null) return [];
-
-      Directory accDataDirectory =
-          Directory(join(appExternalStorageDir.path, "Acceleration Data"));
-
-      if (await accDataDirectory.exists()) {
-        List<FileSystemEntity> files = await accDataDirectory.list().toList();
-        return files.whereType<File>().toList();
-      } else {
-        return [];
+  Future<void> searchUnsentData(Map<String, dynamic> data) async {
+    unsentFiles.value = await localDatabase.queryTable('unsendDataInfo');
+    for (var file in unsentFiles) {
+      if (file['Time'] == data['time']) {
+        int id = file['id'];
+        String planned = file['planned'];
+        var accData = await localDatabase.queryUnsentData(id);
+        final user = userDataController.storage.read('user');
+        PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
+        try {
+          await pciMethodsCalls.startSending();
+          var value = await sendDataToServer.sendData(
+            accData: accData,
+            userID: user['ID'],
+            filename: data['filename'],
+            vehicleType: data['vehicleType'],
+            time: dateTimeParser.parseDateTime(
+                data['time'], "dd-MMM-yyyy HH:mm")!,
+            planned: planned,
+          );
+          var m = "Data Submitted Successfully";
+          if (value == m) {
+            Get.showSnackbar(
+              customGetSnackBar(
+                "Server Message",
+                value,
+                Icons.message_outlined,
+              ),
+            );
+            Map<String, dynamic> newData = Map.from(data);
+            newData['status'] = 1;
+            logger.i("Updated saved data: $newData");
+            await Future.wait([
+              localDatabase.updateSavedStatus(newData),
+              localDatabase.deleteUnsentData(id),
+              localDatabase.deleteUnsentDataInfo(id),
+            ]);
+          } else {
+            Get.showSnackbar(
+              customGetSnackBar(
+                "Submission Failed",
+                "Failed to send data",
+                Icons.error_outline,
+              ),
+            );
+          }
+        } catch (e) {
+          logger.e(e.toString());
+          Get.showSnackbar(
+            customGetSnackBar(
+              "Error",
+              e.toString(),
+              Icons.error_outline,
+            ),
+          );
+        } finally {
+          await pciMethodsCalls.stopSending();
+          await refreshData();
+        }
+        return;
       }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> loadSavedFiles() async {
+    try {
+      List<Map<String, dynamic>> files = await localDatabase.querySavedFiles();
+      return files;
     } catch (e) {
       logger.e("Error loading saved files: $e");
       return [];
     }
   }
 
-  Future<void> deleteFile(File file) async {
+  Future<void> deleteFile(Map<String, dynamic> data) async {
     try {
-      await file.delete();
+      await localDatabase.deleteSavedFile(data);
       refreshData();
     } catch (e) {
       logger.e("Error deleting file: $e");
     }
   }
 
-  Future<void> shareFile(File file) async {
+  Future<void> shareFile(Map<String, dynamic> data) async {
     try {
-      XFile xFile = XFile(file.path);
-      await Share.shareXFiles([xFile]);
+      if (data['path'] != null) {
+        XFile xFile = XFile(data['path']);
+        await Share.shareXFiles([xFile]);
+      }
     } catch (e) {
       logger.e("Error sharing file: $e");
-    }
-  }
-
-  FileInfo getFileInfo(String input) {
-    try {
-      List<String> parts = input.split('#');
-      if (parts.length < 4) throw Exception("Invalid file format");
-
-      String fileName = parts[0];
-      String dataType = 'AccData';
-      String timeString = parts[2];
-      String vehicleType = parts[3].split('.csv').first;
-
-      return FileInfo(
-        fileName: fileName,
-        dataType: dataType,
-        time: timeString,
-        vehicleType: vehicleType,
-      );
-    } catch (e) {
-      logger.e("Error parsing file info: $e");
-      return FileInfo(
-          fileName: 'Unknown',
-          dataType: 'Unknown',
-          time: 'Unknown',
-          vehicleType: 'Unknown');
     }
   }
 
