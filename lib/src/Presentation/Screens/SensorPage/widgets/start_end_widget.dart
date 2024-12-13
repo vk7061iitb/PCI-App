@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
@@ -27,7 +28,7 @@ class StartButton extends StatelessWidget {
             width: totalH * 0.3,
             height: totalH * 0.3,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: backgroundColor,
               shape: BoxShape.circle,
               border: Border.all(
                 width: w * 0.065,

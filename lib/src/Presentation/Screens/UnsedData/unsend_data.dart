@@ -16,7 +16,7 @@ class UnsendData extends StatefulWidget {
 class _UnsendDataState extends State<UnsendData> {
   late Future<List<Map<String, dynamic>>> unsentDataFiles;
   ResponseController responseController = Get.find();
-  Future<List<Map<String, dynamic>>> getUnsentData() async {
+  Future<List<Map<String, dynamic>>> getUnsentDataInfo() async {
     List<Map<String, dynamic>> unsendDataFiles = [];
     unsendDataFiles = await localDatabase.queryTable('unsendDataInfo');
     return unsendDataFiles;
@@ -25,7 +25,7 @@ class _UnsendDataState extends State<UnsendData> {
   @override
   void initState() {
     super.initState();
-    unsentDataFiles = getUnsentData();
+    unsentDataFiles = getUnsentDataInfo();
   }
 
   @override
@@ -86,14 +86,14 @@ class _UnsendDataState extends State<UnsendData> {
                     filename: unsentData[index]['filename'],
                     vehicleType: unsentData[index]['vehicleType'],
                     time: unsentData[index]['Time'],
-                    roadType: unsentData[index]['roadType'],
                     id: unsentData[index]['id'],
+                    planned: unsentData[index]['planned'],
                     onDeleteTap: () {
                       localDatabase
                           .deleteUnsentDataInfo(unsentData[index]['id']);
                       localDatabase.deleteUnsentData(unsentData[index]['id']);
                       setState(() {
-                        unsentDataFiles = getUnsentData();
+                        unsentDataFiles = getUnsentDataInfo();
                       });
                     },
                   ),

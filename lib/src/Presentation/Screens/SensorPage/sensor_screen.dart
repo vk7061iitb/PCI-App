@@ -34,7 +34,7 @@ class SensorScreen extends StatelessWidget {
             delegate: SliverChildListDelegate([
               Gap(totalH * 0.015), // 1.5% of totalH
               const StartButton(), // 30% of totalH
-              Gap(totalH * 0.02), // 2% of totalH
+              Gap(totalH * 0.025), // 2% of totalH
               // Message Text
               SizedBox(
                 height: totalH * 0.05, // 5% of totalH
@@ -57,7 +57,7 @@ class SensorScreen extends StatelessWidget {
                   }),
                 ),
               ),
-              SizedBox(height: totalH * 0.02),
+              SizedBox(height: totalH * 0.04),
               // 1.5 + 30 + 2 + 5 + 2 = 40.5% of totalH
               const ReadingWidget(),
             ]),

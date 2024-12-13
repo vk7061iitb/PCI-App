@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/unsent_data_controller.dart';
 import '../../../../Utils/get_icon.dart';
 
 class UnsentFileTile extends StatelessWidget {
-  const UnsentFileTile(
-      {super.key,
-      required this.filename,
-      required this.vehicleType,
-      required this.time,
-      required this.id,
-      required this.onDeleteTap,
-      required this.roadType});
+  const UnsentFileTile({
+    super.key,
+    required this.filename,
+    required this.vehicleType,
+    required this.time,
+    required this.id,
+    required this.planned,
+    required this.onDeleteTap,
+  });
   final String filename;
   final String time;
   final String vehicleType;
-  final String roadType;
+  final String planned;
   final int id;
   final VoidCallback onDeleteTap;
 
   @override
   Widget build(BuildContext context) {
-    UnsentDataController unsentDataController = Get.find();
-
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -57,15 +53,6 @@ class UnsentFileTile extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 // Send the data to the server
-                DateTime unsentTime =
-                    dateTimeParser.parseDateTime(time, 'dd-MMM-yyyy HH:mm')!;
-                Map<String, dynamic> info = {
-                  'filename': filename,
-                  'vehicleType': vehicleType,
-                  'roadType': roadType,
-                  'Time': unsentTime,
-                };
-                await unsentDataController.resubmitData(id, info);
               },
               child: Row(
                 children: [

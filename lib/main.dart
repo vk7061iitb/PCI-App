@@ -13,7 +13,6 @@ import 'package:pci_app/firebase_options.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
 import 'src/Presentation/Controllers/response_controller.dart';
 import 'src/Presentation/Controllers/user_data_controller.dart';
-import 'src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
 import 'src/Presentation/Controllers/map_page_controller.dart';
 import 'src/Presentation/Controllers/output_data_controller.dart';
@@ -41,7 +40,6 @@ Future<void> main() async {
   if (user != null) {
     isLoggedIn = user['isLoggedIn'] ?? false;
   }
-
   logger.i('Is Logged In: $isLoggedIn');
 
   await localDatabase.dbSize();
@@ -55,6 +53,7 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+
   runApp(
     MainApp(
       isLoggedIn: isLoggedIn,
@@ -134,10 +133,6 @@ class _MainAppState extends State<MainApp> {
           name: myRoutes.signUpRoute,
           page: () => const SignupScreen(),
         ),
-        GetPage(
-          name: myRoutes.unsentDataRoute,
-          page: () => const UnsendData(),
-        )
       ],
     );
   }
