@@ -29,7 +29,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
       fontWeight: FontWeight.normal,
       fontSize: 16,
     );
-
+    double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: PreferredSize(
@@ -46,13 +46,13 @@ class _OutputDataPageState extends State<OutputDataPage> {
             },
             duration: const Duration(milliseconds: 300),
             child: outputDataController.slectedFiles.isNotEmpty
-                ? _buildSelectedBar(outputDataController, popUpMenuTextStyle)
+                ? _buildSelectedBar(outputDataController, popUpMenuTextStyle, w)
                 : AppBar(
                     key: const ValueKey("DefaultAppBar"),
                     title: Text(
                       'Journey History',
                       style: GoogleFonts.inter(
-                        fontSize: 24,
+                        fontSize: w * 0.05,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
                       ),
@@ -66,8 +66,9 @@ class _OutputDataPageState extends State<OutputDataPage> {
                         onPressed: () async {
                           //
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.search,
+                          size: w * 0.07,
                           color: Colors.black,
                         ),
                       ),
@@ -83,7 +84,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
           }
 
           if (outputDataController.outputDataFile.isEmpty) {
-            return _buildEmptyFileView();
+            return _buildEmptyFileView(w);
           }
 
           return RefreshIndicator(
@@ -97,7 +98,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
               itemBuilder: (BuildContext context, int index) {
                 final item = outputDataController.outputDataFile[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: EdgeInsets.symmetric(horizontal: w * 0.03),
                   child: OutputDataItem(
                     filename: item["filename"],
                     vehicleType: item["vehicleType"],
@@ -116,6 +117,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
   Widget _buildSelectedBar(
     OutputDataController outputDataController,
     TextStyle popUpMenuTextStyle,
+    double w,
   ) {
     return Container(
       key: const ValueKey("SelectedBar"),
@@ -135,11 +137,11 @@ class _OutputDataPageState extends State<OutputDataPage> {
               size: kToolbarHeight * 0.5,
             ),
           ),
-          const Gap(10),
+          Gap(w * 0.02),
           Text(
             '${outputDataController.slectedFiles.length} selected',
             style: GoogleFonts.inter(
-              fontSize: 24,
+              fontSize: w * 0.06,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),
@@ -151,16 +153,19 @@ class _OutputDataPageState extends State<OutputDataPage> {
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
+                      Padding(
+                        padding: EdgeInsets.only(right: w * 0.02),
                         child: Icon(
                           Icons.map_outlined,
                           color: Colors.black87,
+                          size: w * 0.06,
                         ),
                       ),
                       Text(
                         "Show on Map",
-                        style: popUpMenuTextStyle,
+                        style: popUpMenuTextStyle.copyWith(
+                          fontSize: w * 0.04,
+                        ),
                       ),
                     ],
                   ),
@@ -174,16 +179,19 @@ class _OutputDataPageState extends State<OutputDataPage> {
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(right: 5),
+                      Padding(
+                        padding: EdgeInsets.only(right: w * 0.02),
                         child: Icon(
                           Icons.file_download,
                           color: Colors.black87,
+                          size: w * 0.06,
                         ),
                       ),
                       Text(
                         "Export",
-                        style: popUpMenuTextStyle,
+                        style: popUpMenuTextStyle.copyWith(
+                          fontSize: w * 0.04,
+                        ),
                       ),
                     ],
                   ),
@@ -199,19 +207,19 @@ class _OutputDataPageState extends State<OutputDataPage> {
     );
   }
 
-  Widget _buildEmptyFileView() {
+  Widget _buildEmptyFileView(double w) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SvgPicture.asset(
             assetsPath.emptyFile,
-            width: 50,
+            width: w * 0.12,
           ),
           Text(
             'There are no files to display',
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: w * 0.04,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),

@@ -7,112 +7,92 @@ import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 
 class UserPage extends StatelessWidget {
-  const UserPage({
-    super.key,
-  });
+  const UserPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Controller
     UserDataController userDataController = UserDataController();
     userDataController.getUserData();
+    double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
+        backgroundColor: backgroundColor,
+        elevation: 0.5,
+        title: Text(
           'User Profile',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
+          style: GoogleFonts.inter(
+            color: textColor,
+            fontSize: w*0.05,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: backgroundColor,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black54,
-          ),
-          onPressed: () {
-            Get.back();
-          },
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+          onPressed: () => Get.back(),
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                assetsPath.profile,
-                height: 100,
-                width: 1,
+              // Profile Picture
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.grey[300],
+                child: SvgPicture.asset(
+                  assetsPath.profile,
+                  height: 60,
+                  width: 60,
+                ),
               ),
+              const Gap(12),
+              // User Name
               Text(
                 'User ${userDataController.user["ID"]}',
                 style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
-              Divider(
-                color: Colors.black12,
-                thickness: 1,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  FittedBox(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildRow(
-                          'Role',
-                          Icons.person_2_outlined,
-                        ),
-                        buildRow(
-                          'Phone',
-                          Icons.phone_outlined,
-                        ),
-                        buildRow(
-                          'Email',
-                          Icons.email_outlined,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Gap(20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              const Gap(8),
+              Divider(color: Colors.grey[300], thickness: 1),
+
+              const Gap(12),
+              // User Information Card
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0.5,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
                     children: [
-                      Text(
+                      buildInfoRow(
+                        'Role',
                         userDataController.user["role"],
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
+                        Icons.person_outline,
                       ),
-                      Text(
+                      buildInfoRow(
+                        'Phone',
                         userDataController.user["phone"],
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
+                        Icons.phone_outlined,
                       ),
-                      Text(
+                      buildInfoRow(
+                        'Email',
                         userDataController.user["email"],
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
+                        Icons.email_outlined,
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ],
           ),
@@ -121,20 +101,16 @@ class UserPage extends StatelessWidget {
     );
   }
 
-  Widget buildRow(String title, IconData iconData) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          iconData,
-          color: Colors.black54,
-          size: 24,
-        ),
-        const Gap(10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
+  /// Build information rows with icons
+  Widget buildInfoRow(String title, String value, IconData iconData) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(iconData, color: Colors.blueGrey, size: 24),
+          const Gap(12),
+          Expanded(
+            child: Text(
               title,
               style: GoogleFonts.inter(
                 fontSize: 16,
@@ -142,9 +118,17 @@ class UserPage extends StatelessWidget {
                 color: Colors.black54,
               ),
             ),
-          ],
-        ),
-      ],
+          ),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

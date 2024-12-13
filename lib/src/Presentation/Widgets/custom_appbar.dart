@@ -118,10 +118,9 @@ class CustomSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle titleTextStyle = GoogleFonts.inter(
+    TextStyle baseTitleTextStyle = GoogleFonts.inter(
       color: Colors.black,
-      fontWeight: FontWeight.w600,
-      fontSize: MediaQuery.textScalerOf(context).scale(34),
+      fontWeight: FontWeight.w700,
     );
 
     TextStyle actionTextStyle = GoogleFonts.inter(
@@ -145,6 +144,14 @@ class CustomSliverAppBar extends StatelessWidget {
       surfaceTintColor: backgroundColor,
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
+          // Calculate font size based on scroll offset
+          double maxHeight = totalH * 0.15;
+          double minHeight = 60.0; // Collapsed height
+          double currentHeight = constraints.maxHeight;
+          double shrinkRatio =
+              (currentHeight - minHeight) / (maxHeight - minHeight);
+          double fontSize = 34 *
+              shrinkRatio.clamp(0.8, 1.2); // Font size scales between 20-34
           // Use constraints to adjust behavior during scroll
           double shrinkOffset = constraints.maxHeight - kToolbarHeight;
           double scale = (1 - shrinkOffset / (totalH * 0.2)).clamp(0.7, 1.0);
@@ -152,14 +159,16 @@ class CustomSliverAppBar extends StatelessWidget {
           return FlexibleSpaceBar(
             titlePadding: EdgeInsetsDirectional.only(
               start: w * 0.05,
-              bottom: w * 0.05,
+              bottom: 16,
             ),
             title: Transform.scale(
               scale: scale,
               alignment: Alignment.centerLeft,
               child: Text(
                 'PCI App',
-                style: titleTextStyle,
+                style: baseTitleTextStyle.copyWith(
+                  fontSize: fontSize,
+                ),
               ),
             ),
             centerTitle: false,

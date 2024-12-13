@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/method_channel_helper.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,10 +18,12 @@ class SavedFileController extends GetxController {
 
   // Methods
   Future<void> refreshData() async {
+    OutputDataController outputDataController =
+        Get.find<OutputDataController>();
     isLoading.value = true;
-    savedFiles.value = await loadSavedFiles();
-
     try {
+      savedFiles.value = await loadSavedFiles();
+      outputDataController.refresh();
       unsentFiles.value = await localDatabase.queryTable('unsendDataInfo');
     } finally {
       isLoading.value = false;

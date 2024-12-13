@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
 import '../../../../../Utils/get_icon.dart';
 
@@ -20,7 +19,6 @@ class HistoryDataItem extends StatelessWidget {
   final VoidCallback deleteFile;
   @override
   Widget build(BuildContext context) {
-    logger.i(file);
     double left = 0, right = 0, top = 0, bottom = 0;
     RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;

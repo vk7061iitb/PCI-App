@@ -223,7 +223,6 @@ class ResponseController extends GetxController {
     } finally {
       _savingData.value = false; // Ensure savingData is reset
     }
-    logger.i("ResssssssssPonse Code : $responseCode");
     return responseCode;
   }
 
@@ -243,7 +242,6 @@ class ResponseController extends GetxController {
     String savedCSVdata = _convertToCsv(csvData);
     String filePath = await _getFilePath(fileName, vehicleType);
     await _saveFile(savedCSVdata, filePath);
-    // await _shareFile(filePath);
   }
 
   List<List<dynamic>> _prepareCsvData(

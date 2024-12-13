@@ -20,7 +20,6 @@ class SensorScreen extends StatelessWidget {
         kToolbarHeight -
         kBottomNavigationBarHeight -
         0.18 * w;
-    logger.d('Height: $h, Total Height: $totalH');
 
     AccDataController accDataController = Get.find();
     return Scaffold(

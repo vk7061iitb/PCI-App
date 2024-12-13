@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -17,13 +18,14 @@ class HistoryDataPageState extends State<HistoryDataPage> {
   @override
   Widget build(BuildContext context) {
     SavedFileController savedFileController = Get.put(SavedFileController());
+    double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text(
+        title: AutoSizeText(
           'Saved Files',
           style: GoogleFonts.inter(
-            fontSize: 24,
+            fontSize: w * 0.05,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
@@ -37,8 +39,9 @@ class HistoryDataPageState extends State<HistoryDataPage> {
             onPressed: () {
               //localDatabase.deleteTable('savedData');
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.search,
+              size: w * 0.07,
               color: Colors.black,
             ),
           ),
@@ -68,13 +71,13 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                   children: [
                     SvgPicture.asset(
                       assetsPath.emptyFile,
-                      width: 50,
+                      width: w * 0.12,
                     ),
                     Center(
                       child: Text(
                         'There are no files to display',
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: w * 0.04,
                           fontWeight: FontWeight.normal,
                           color: Colors.black,
                         ),
@@ -97,11 +100,11 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                     itemBuilder: (context, index) {
                       Map<String, dynamic> file = savedFiles[index];
                       return Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
+                        padding: EdgeInsets.symmetric(horizontal: w * 0.03),
                         child: HistoryDataItem(
                           file: file,
                           deleteFile: () {
-                            _showDeleteDialog(context).then((value) {
+                            _showDeleteDialog(context, w).then((value) {
                               if (value != null && value) {
                                 savedFileController.deleteFile(file);
                               }
@@ -126,7 +129,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
 }
 
 // Get alert dialog to confirm deletion of file
-Future<bool?> _showDeleteDialog(BuildContext context) async {
+Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
   return await showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
@@ -135,13 +138,13 @@ Future<bool?> _showDeleteDialog(BuildContext context) async {
         titleTextStyle: GoogleFonts.inter(
           color: Colors.black,
           fontWeight: FontWeight.w500,
-          fontSize: 24,
+          fontSize: w * 0.06,
         ),
         content: const Text('Are you sure you want to delete this file?'),
         contentTextStyle: GoogleFonts.inter(
           color: Colors.black,
           fontWeight: FontWeight.normal,
-          fontSize: 16,
+          fontSize: w * 0.04,
         ),
         actions: <Widget>[
           TextButton(
@@ -151,7 +154,7 @@ Future<bool?> _showDeleteDialog(BuildContext context) async {
             child: Text(
               'No',
               style: GoogleFonts.inter(
-                fontSize: 16,
+                fontSize: w * 0.04,
                 color: Colors.blue,
                 fontWeight: FontWeight.w400,
               ),
@@ -164,7 +167,7 @@ Future<bool?> _showDeleteDialog(BuildContext context) async {
             child: Text(
               'Yes',
               style: GoogleFonts.inter(
-                fontSize: 16,
+                fontSize: w * 0.04,
                 color: Colors.red,
                 fontWeight: FontWeight.w400,
               ),

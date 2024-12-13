@@ -31,7 +31,12 @@ class StartButton extends StatelessWidget {
               color: backgroundColor,
               shape: BoxShape.circle,
               border: Border.all(
-                width: w * 0.065,
+                width: (w > 500 && totalH > 300)
+                    ? totalH *
+                        0.04 // Use 2% of total height if height is sufficient
+                    : (totalH <= 300)
+                        ? totalH * 0.05 // Scale up for very small heights
+                        : w * 0.065, // Default behavior for smaller screens
               ),
               boxShadow: [
                 BoxShadow(
@@ -71,19 +76,28 @@ class StartButton extends StatelessWidget {
                       color: accDataController.showStartButton
                           ? accDataController.sensorScreencolor.startCircle
                           : accDataController.sensorScreencolor.endCircle,
-                      width: MediaQuery.of(context).size.width * 0.065,
+                      width: (w > 500 && totalH > 300)
+                          ? totalH *
+                              0.04 // Use 2% of total height if height is sufficient
+                          : (totalH <= 300)
+                              ? totalH * 0.05 // Scale up for very small heights
+                              : w *
+                                  0.065, // Default behavior for smaller screens
                       style: BorderStyle.solid,
                       strokeAlign: BorderSide.strokeAlignInside),
                 ),
                 child: Center(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text(
-                      accDataController.showStartButton ? "Start" : "End",
-                      style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        accDataController.showStartButton ? "Start" : "End",
+                        style: GoogleFonts.inter(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ),

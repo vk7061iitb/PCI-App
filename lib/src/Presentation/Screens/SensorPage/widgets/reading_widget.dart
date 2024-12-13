@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
@@ -32,6 +33,7 @@ class ReadingWidget extends StatelessWidget {
         kToolbarHeight -
         kBottomNavigationBarHeight -
         0.18 * w;
+    final AutoSizeGroup textGroup = AutoSizeGroup();
 
     return Column(
       children: [
@@ -45,13 +47,16 @@ class ReadingWidget extends StatelessWidget {
                   height: totalH * 0.06, // 5% of total height
                   child: FittedBox(
                     fit: BoxFit.contain,
-                    child: Text(
+                    child: AutoSizeText(
                       "Road Type",
                       style: GoogleFonts.inter(
-                        fontSize: 24,
                         fontWeight: FontWeight.w500,
+                        fontSize: (w > 600) ? 28 : 24,
                         color: textColor,
                       ),
+                      maxFontSize: (w > 600) ? 28 : 24,
+                      minFontSize: 16,
+                      maxLines: 1,
                     ),
                   ),
                 ),
@@ -60,7 +65,7 @@ class ReadingWidget extends StatelessWidget {
             Gap(totalH * 0.02), // 1.5% of total height
             SizedBox(
               width: w * 0.90,
-              height: h * 0.12, // 12% of total height
+              height: (h > 800) ? h * 0.10 : h * 0.12,
               child: LayoutBuilder(builder: (context, constraints) {
                 return FittedBox(
                   fit: BoxFit.contain,
@@ -81,8 +86,11 @@ class ReadingWidget extends StatelessWidget {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  width: w * 0.1,
-                                  height: w * 0.1,
+                                  width: (w > 600)
+                                      ? w * 0.12
+                                      : w *
+                                          0.1, // Larger icon size for wide screens
+                                  height: (w > 600) ? w * 0.12 : w * 0.1,
                                   child: SvgPicture.asset(
                                     colorFilter: ColorFilter.mode(
                                       (accDataController.currRoadType.value ==
@@ -94,12 +102,12 @@ class ReadingWidget extends StatelessWidget {
                                     assetsPath.pave,
                                   ),
                                 ),
-                                Gap(constraints.maxWidth * 0.05),
+                                Gap(constraints.maxHeight * 0.05),
                                 Center(
-                                  child: Text(
+                                  child: AutoSizeText(
                                     "Paved",
                                     style: GoogleFonts.inter(
-                                      fontSize: 18,
+                                      fontSize: (w > 600) ? 20 : 18,
                                       fontWeight: FontWeight.w400,
                                       color: (accDataController
                                                   .currRoadType.value ==
@@ -107,6 +115,10 @@ class ReadingWidget extends StatelessWidget {
                                           ? activeColor
                                           : Colors.black,
                                     ),
+                                    group: textGroup,
+                                    maxFontSize: (w > 600) ? 20 : 18,
+                                    minFontSize: 12,
+                                    maxLines: 1,
                                   ),
                                 ),
                               ],
@@ -114,7 +126,7 @@ class ReadingWidget extends StatelessWidget {
                           ),
                         );
                       }),
-                      Gap(w * 0.05),
+                      Gap((w > 600) ? w * 0.03 : w * 0.05),
                       Obx(() {
                         return InkWell(
                           onTap: () {
@@ -130,8 +142,11 @@ class ReadingWidget extends StatelessWidget {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  width: w * 0.1,
-                                  height: w * 0.1,
+                                  width: (w > 600)
+                                      ? w * 0.12
+                                      : w *
+                                          0.1, // Larger icon size for wide screens
+                                  height: (w > 600) ? w * 0.12 : w * 0.1,
                                   child: SvgPicture.asset(
                                     assetsPath.unPave,
                                     colorFilter: ColorFilter.mode(
@@ -143,12 +158,12 @@ class ReadingWidget extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                Gap(constraints.maxWidth * 0.05),
+                                Gap(constraints.maxHeight * 0.05),
                                 Center(
-                                  child: Text(
+                                  child: AutoSizeText(
                                     "Un-Paved",
                                     style: GoogleFonts.inter(
-                                      fontSize: 18,
+                                      fontSize: (w > 600) ? 20 : 18,
                                       fontWeight: FontWeight.w400,
                                       color: (accDataController
                                                   .currRoadType.value ==
@@ -156,6 +171,10 @@ class ReadingWidget extends StatelessWidget {
                                           ? activeColor
                                           : Colors.black,
                                     ),
+                                    group: textGroup,
+                                    maxFontSize: (w > 600) ? 20 : 18,
+                                    minFontSize: 12,
+                                    maxLines: 1,
                                   ),
                                 ),
                               ],
@@ -181,8 +200,11 @@ class ReadingWidget extends StatelessWidget {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                    width: w * 0.1,
-                                    height: w * 0.1,
+                                    width: (w > 600)
+                                        ? w * 0.12
+                                        : w *
+                                            0.1, // Larger icon size for wide screens
+                                    height: (w > 600) ? w * 0.12 : w * 0.1,
                                     child: SvgPicture.asset(
                                       assetsPath.pedestrian,
                                       colorFilter: ColorFilter.mode(
@@ -194,17 +216,23 @@ class ReadingWidget extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  Gap(constraints.maxWidth * 0.05),
-                                  Text(
-                                    "Pedestrian",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w400,
-                                      color: (accDataController
-                                                  .currRoadType.value ==
-                                              "Pedestrian")
-                                          ? Colors.blue
-                                          : Colors.black,
+                                  Gap(constraints.maxHeight * 0.05),
+                                  Center(
+                                    child: AutoSizeText(
+                                      "Pedestrian",
+                                      style: GoogleFonts.inter(
+                                        fontSize: (w > 600) ? 20 : 18,
+                                        fontWeight: FontWeight.w400,
+                                        color: (accDataController
+                                                    .currRoadType.value ==
+                                                "Pedestrian")
+                                            ? Colors.blue
+                                            : Colors.black,
+                                      ),
+                                      group: textGroup,
+                                      maxFontSize: (w > 600) ? 20 : 18,
+                                      minFontSize: 12,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -225,8 +253,8 @@ class ReadingWidget extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return FittedBox(
-                    fit: BoxFit.contain,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Obx(() {
                           return InkWell(
@@ -248,8 +276,11 @@ class ReadingWidget extends StatelessWidget {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                    width: w * 0.1,
-                                    height: w * 0.1,
+                                    width: (w > 600)
+                                        ? w * 0.12
+                                        : w *
+                                            0.1, // Larger icon size for wide screens
+                                    height: (w > 600) ? w * 0.12 : w * 0.1,
                                     child: SvgPicture.asset(
                                       colorFilter: ColorFilter.mode(
                                         (accDataController.bnb.value == 1)
@@ -260,18 +291,22 @@ class ReadingWidget extends StatelessWidget {
                                       assetsPath.breAk,
                                     ),
                                   ),
-                                  Gap(constraints.maxWidth * 0.05),
+                                  Gap(constraints.maxHeight * 0.1),
                                   Center(
-                                    child: Text(
+                                    child: AutoSizeText(
                                       "Break",
                                       style: GoogleFonts.inter(
-                                        fontSize: 18,
+                                        fontSize: (w > 600) ? 20 : 18,
                                         fontWeight: FontWeight.w400,
                                         color:
                                             (accDataController.bnb.value == 1)
                                                 ? activeColor
                                                 : Colors.black,
                                       ),
+                                      group: textGroup,
+                                      maxFontSize: (w > 600) ? 20 : 18,
+                                      minFontSize: 12,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -293,8 +328,11 @@ class ReadingWidget extends StatelessWidget {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                    width: w * 0.1,
-                                    height: w * 0.1,
+                                    width: (w > 600)
+                                        ? w * 0.12
+                                        : w *
+                                            0.1, // Larger icon size for wide screens
+                                    height: (w > 600) ? w * 0.12 : w * 0.1,
                                     child: SvgPicture.asset(
                                       colorFilter: ColorFilter.mode(
                                         (accDataController.bnb.value == 0)
@@ -305,18 +343,22 @@ class ReadingWidget extends StatelessWidget {
                                       assetsPath.noBreak,
                                     ),
                                   ),
-                                  Gap(constraints.maxWidth * 0.05),
+                                  Gap(constraints.maxHeight * 0.1),
                                   Center(
-                                    child: Text(
+                                    child: AutoSizeText(
                                       "No-Break",
                                       style: GoogleFonts.inter(
-                                        fontSize: 18,
+                                        fontSize: (w > 600) ? 20 : 18,
                                         fontWeight: FontWeight.w400,
                                         color:
                                             (accDataController.bnb.value == 0)
                                                 ? activeColor
                                                 : Colors.black,
                                       ),
+                                      group: textGroup,
+                                      maxFontSize: (w > 600) ? 20 : 18,
+                                      minFontSize: 12,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -341,13 +383,16 @@ class ReadingWidget extends StatelessWidget {
               height: totalH * 0.06, // 5% of total height
               child: FittedBox(
                 fit: BoxFit.contain,
-                child: Text(
+                child: AutoSizeText(
                   "Sensor Reading",
                   style: GoogleFonts.inter(
-                    fontSize: 24,
                     fontWeight: FontWeight.w500,
+                    fontSize: (w > 600) ? 28 : 24,
                     color: textColor,
                   ),
+                  maxFontSize: (w > 600) ? 28 : 24,
+                  minFontSize: 16,
+                  maxLines: 1,
                 ),
               ),
             ),
@@ -390,7 +435,9 @@ class ReadingWidget extends StatelessWidget {
                           Gap(constraints.maxWidth * 0.05),
                           Text(
                             "Acceleration",
-                            style: sensorNameStyle,
+                            style: sensorNameStyle.copyWith(
+                              fontSize: w * 0.045,
+                            ),
                           ),
                           Gap(constraints.maxWidth * 0.05),
                         ],
@@ -403,7 +450,9 @@ class ReadingWidget extends StatelessWidget {
                         children: [
                           Text(
                             "X",
-                            style: labelTextStyle,
+                            style: labelTextStyle.copyWith(
+                              fontSize: w * 0.04,
+                            ),
                           ),
                           Gap(constraints.maxWidth * 0.1),
                           Container(
@@ -441,7 +490,9 @@ class ReadingWidget extends StatelessWidget {
                         children: [
                           Text(
                             "Y",
-                            style: labelTextStyle,
+                            style: labelTextStyle.copyWith(
+                              fontSize: w * 0.04,
+                            ),
                           ),
                           Gap(constraints.maxWidth * 0.1),
                           Container(
@@ -479,7 +530,10 @@ class ReadingWidget extends StatelessWidget {
                         children: [
                           Text(
                             "Z",
-                            style: labelTextStyle,
+                            style: labelTextStyle
+                              ..copyWith(
+                                fontSize: w * 0.04,
+                              ),
                           ),
                           Gap(constraints.maxWidth * 0.1),
                           Container(
@@ -543,7 +597,10 @@ class ReadingWidget extends StatelessWidget {
                             Gap(constraints.maxWidth * 0.05),
                             Text(
                               "Location",
-                              style: sensorNameStyle,
+                              style: sensorNameStyle.copyWith(
+                                fontSize: w *
+                                    0.045, // Scales text size based on width
+                              ),
                             ),
                             Gap(constraints.maxWidth * 0.05),
                           ],
@@ -557,7 +614,10 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "Lat",
-                              style: labelTextStyle,
+                              style: labelTextStyle.copyWith(
+                                fontSize:
+                                    w * 0.04, // Scales text size based on width
+                              ),
                             ),
                             Gap(constraints.maxWidth * 0.1),
                             Container(
@@ -598,7 +658,10 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "Lon",
-                              style: labelTextStyle,
+                              style: labelTextStyle.copyWith(
+                                fontSize:
+                                    w * 0.04, // Scales text size based on width
+                              ),
                             ),
                             Gap(constraints.maxWidth * 0.1),
                             Container(
@@ -638,7 +701,10 @@ class ReadingWidget extends StatelessWidget {
                           children: [
                             Text(
                               "Acc",
-                              style: labelTextStyle,
+                              style: labelTextStyle.copyWith(
+                                fontSize:
+                                    w * 0.04, // Scales text size based on width
+                              ),
                             ),
                             Gap(constraints.maxWidth * 0.1),
                             Container(
