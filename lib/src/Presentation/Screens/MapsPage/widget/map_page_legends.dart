@@ -11,13 +11,7 @@ class Legends extends StatelessWidget {
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: backgroundColor,
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 5,
-            spreadRadius: 5,
-          ),
-        ],
+        boxShadow: const [],
       ),
       child: Column(
         children: [
