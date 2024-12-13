@@ -54,6 +54,9 @@ class AccDataController extends GetxController {
   final LocationController locationController = Get.find<LocationController>();
   List<String> roads = ["Paved", "Unpaved", "Pedestrian"];
   RxString currRoadType = "".obs;
+  RxInt bnb = (-1).obs;
+  RxInt currRoadIndex = (-1).obs;
+  bool isPedestrianFound = false;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
 
   // Getters
@@ -134,7 +137,7 @@ class AccDataController extends GetxController {
           'Please hit the start button again and give a try.');
       return;
     }
-    if (currRoadType.value.isEmpty) {
+    if (currRoadType.value.isEmpty || (bnb.value == -1)) {
       _showDialog('Road Type not selected',
           'Please select the road type and try again.');
       return;
@@ -144,6 +147,7 @@ class AccDataController extends GetxController {
     pciMethodsCalls.startNotification();
     _isRecordingData.value = true;
     _showStartButton.value = false;
+    isPedestrianFound = false;
     downSampledDatapoints.clear();
     dataPointsList.clear();
     logger.i('Recording Started');
@@ -155,7 +159,7 @@ class AccDataController extends GetxController {
       (AccelerometerEvent event) {
         accData.value = event;
         if (_count > 5) {
-          dataPointsList.add(
+          _dataPointsList.add(
             // Rounding is done to reduce the size of the data
             AccData(
               xAcc: double.parse(event.x.toStringAsFixed(4)),
@@ -164,7 +168,9 @@ class AccDataController extends GetxController {
               latitude: _devicePosition.value.latitude,
               longitude: _devicePosition.value.longitude,
               speed:
-                  double.parse(_devicePosition.value.speed.toStringAsFixed(3)),
+                  double.parse(_devicePosition.value.speed.toStringAsFixed(4)),
+              roadType: currRoadIndex.value,
+              bnb: bnb.value,
               accTime: DateTime.now(),
             ),
           );
@@ -183,7 +189,10 @@ class AccDataController extends GetxController {
     _positionStream?.cancel();
     accData.value = AccelerometerEvent(0, 0, 0, DateTime.now());
     _showResponseSheet.value = true;
-    _downSampledDatapoints.addAll(downsampleTo50Hz(dataPointsList));
+    List<AccData> downSampledDatapoints = downsampleTo50Hz(_dataPointsList);
+    for (AccData data in downSampledDatapoints) {
+      _downSampledDatapoints.add(data);
+    }
     await WakelockPlus.toggle(enable: false);
   }
 }
