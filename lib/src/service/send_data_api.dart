@@ -10,20 +10,20 @@ class SendDataToServer {
 
   final String sendBaseURL;
   int statusCode = 0;
-  Future<String> sendData(
-      {required List<Map<String, dynamic>> accData,
-      required String userID,
-      required String filename,
-      required String vehicleType,
-      required String roadType,
-      required DateTime time}) async {
+  Future<String> sendData({
+    required List<Map<String, dynamic>> accData,
+    required String userID,
+    required String filename,
+    required String vehicleType,
+    required DateTime time,
+    required String planned,
+  }) async {
     ///
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
-
     List<RoadOutputData> roadOutputData = [];
-
+    logger.i("Planned/Unplanned : $planned");
     try {
       final http.Response response = await http
           .post(
@@ -33,7 +33,7 @@ class SendDataToServer {
           'Userid': userID,
           'vehicle_type': vehicleType,
           'Roadname': filename,
-          'Roadtype': roadType
+          'Roadtype': ""
         },
         body: jsonEncode(accData),
       )
@@ -57,8 +57,8 @@ class SendDataToServer {
         int outuputDataID = await localDatabase.insertJourneyData(
           filename: filename,
           vehicleType: vehicleType,
-          roadType: roadType,
           time: time,
+          planned: planned,
         );
 
         // Extract the road data
