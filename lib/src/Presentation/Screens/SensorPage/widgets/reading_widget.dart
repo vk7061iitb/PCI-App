@@ -42,14 +42,14 @@ class ReadingWidget extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: w * 0.05),
                 child: SizedBox(
-                  height: totalH * 0.05, // 5% of total height
+                  height: totalH * 0.06, // 5% of total height
                   child: FittedBox(
                     fit: BoxFit.contain,
                     child: Text(
                       "Road Type",
                       style: GoogleFonts.inter(
                         fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: textColor,
                       ),
                     ),
@@ -57,7 +57,7 @@ class ReadingWidget extends StatelessWidget {
                 ),
               ),
             ),
-            Gap(totalH * 0.015), // 1.5% of total height
+            Gap(totalH * 0.02), // 1.5% of total height
             SizedBox(
               width: w * 0.90,
               height: h * 0.12, // 12% of total height
@@ -69,9 +69,10 @@ class ReadingWidget extends StatelessWidget {
                       Obx(() {
                         return InkWell(
                           onTap: () {
-                            if (accDataController.showStartButton) {
-                              accDataController.currRoadType.value = "Paved";
-                            }
+                            accDataController.currRoadType.value = "Paved";
+                            accDataController.currRoadIndex.value =
+                                accDataController.roads.indexOf(
+                                    accDataController.currRoadType.value);
                           },
                           radius: 25,
                           borderRadius: BorderRadius.circular(5),
@@ -117,9 +118,10 @@ class ReadingWidget extends StatelessWidget {
                       Obx(() {
                         return InkWell(
                           onTap: () {
-                            if (accDataController.showStartButton) {
-                              accDataController.currRoadType.value = "Unpaved";
-                            }
+                            accDataController.currRoadType.value = "Unpaved";
+                            accDataController.currRoadIndex.value =
+                                accDataController.roads.indexOf(
+                                    accDataController.currRoadType.value);
                           },
                           radius: 25,
                           borderRadius: BorderRadius.circular(5),
@@ -165,10 +167,11 @@ class ReadingWidget extends StatelessWidget {
                       Obx(() {
                         return InkWell(
                           onTap: () {
-                            if (accDataController.showStartButton) {
-                              accDataController.currRoadType.value =
-                                  "Pedestrian";
-                            }
+                            accDataController.currRoadType.value = "Pedestrian";
+                            accDataController.currRoadIndex.value =
+                                accDataController.roads.indexOf(
+                                    accDataController.currRoadType.value);
+                            accDataController.isPedestrianFound = true;
                           },
                           radius: 25,
                           borderRadius: BorderRadius.circular(5),
@@ -215,23 +218,134 @@ class ReadingWidget extends StatelessWidget {
                 );
               }),
             ),
+            Gap(w * 0.05),
+            SizedBox(
+              width: w * 0.90,
+              height: h * 0.12, // 12% of total height
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return FittedBox(
+                    fit: BoxFit.contain,
+                    child: Row(
+                      children: [
+                        Obx(() {
+                          return InkWell(
+                            onTap: () async {
+                              // break
+                              accDataController.bnb.value = 1;
+                              // after 2 sec
+                              if (!accDataController.showStartButton) {
+                                Future.delayed(const Duration(seconds: 2))
+                                    .then((_) {
+                                  accDataController.bnb.value = 0;
+                                });
+                              }
+                            },
+                            radius: 25,
+                            borderRadius: BorderRadius.circular(5),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: w * 0.1,
+                                    height: w * 0.1,
+                                    child: SvgPicture.asset(
+                                      colorFilter: ColorFilter.mode(
+                                        (accDataController.bnb.value == 1)
+                                            ? Colors.blue
+                                            : Colors.black,
+                                        BlendMode.srcIn,
+                                      ),
+                                      assetsPath.breAk,
+                                    ),
+                                  ),
+                                  Gap(constraints.maxWidth * 0.05),
+                                  Center(
+                                    child: Text(
+                                      "Break",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        color:
+                                            (accDataController.bnb.value == 1)
+                                                ? activeColor
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                        Gap(w * 0.05),
+                        Obx(() {
+                          return InkWell(
+                            onTap: () {
+                              // break
+                              accDataController.bnb.value = 0;
+                            },
+                            radius: 25,
+                            borderRadius: BorderRadius.circular(5),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: w * 0.1,
+                                    height: w * 0.1,
+                                    child: SvgPicture.asset(
+                                      colorFilter: ColorFilter.mode(
+                                        (accDataController.bnb.value == 0)
+                                            ? Colors.blue
+                                            : Colors.black,
+                                        BlendMode.srcIn,
+                                      ),
+                                      assetsPath.noBreak,
+                                    ),
+                                  ),
+                                  Gap(constraints.maxWidth * 0.05),
+                                  Center(
+                                    child: Text(
+                                      "No-Break",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        color:
+                                            (accDataController.bnb.value == 0)
+                                                ? activeColor
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        })
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
-
-        Gap(totalH * 0.025), // 2.5% of total height
+        Gap(totalH * 0.04), // 2.5% of total height
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: w * 0.05),
             child: SizedBox(
-              height: totalH * 0.05, // 5% of total height
+              height: totalH * 0.06, // 5% of total height
               child: FittedBox(
                 fit: BoxFit.contain,
                 child: Text(
                   "Sensor Reading",
                   style: GoogleFonts.inter(
                     fontSize: 24,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     color: textColor,
                   ),
                 ),
@@ -239,7 +353,7 @@ class ReadingWidget extends StatelessWidget {
             ),
           ),
         ),
-        Gap(totalH * 0.015), // 1.5% of total height
+        Gap(totalH * 0.02), // 1.5% of total height
 
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,

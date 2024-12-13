@@ -139,8 +139,8 @@ class SaveFile extends StatelessWidget {
                         ],
                       ),
                       const Gap(10),
-                      // Notes
-                      (accDataController.currRoadType.value == "Pedestrian")
+                      // Pedestrian reason
+                      (accDataController.isPedestrianFound)
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -171,7 +171,7 @@ class SaveFile extends StatelessWidget {
                                       prefixIcon: const Icon(Icons.notes),
                                       enabled: true,
                                       hintText:
-                                          'Describe why this is a Pedestrian area',
+                                          'Describe why there was a Pedestrian area',
                                       isDense: true,
                                       labelStyle: GoogleFonts.inter(
                                         color: Colors.black54,
@@ -196,46 +196,97 @@ class SaveFile extends StatelessWidget {
                               ],
                             )
                           : SizedBox(),
-                      Text(
-                        "Notes",
-                        style: GoogleFonts.inter(
-                          fontSize: MediaQuery.textScalerOf(context).scale(18),
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Gap(10),
-                      Form(
-                        child: TextFormField(
-                          expands: false,
-                          maxLines: 2,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.notes),
-                            enabled: false,
-                            hintText:
-                                'Add any additional notes about the recording',
-                            isDense: true,
-                            labelStyle: GoogleFonts.inter(
-                              color: Colors.black54,
-                            ),
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
+                      const Gap(5),
+                      Obx(() {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Reason for Pedestrian",
+                              style: GoogleFonts.inter(
+                                fontSize:
+                                    MediaQuery.textScalerOf(context).scale(18),
+                                fontWeight: FontWeight.w500,
                                 color: Colors.black,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(15),
                               ),
                             ),
-                            border: const OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(15),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Gap(15),
+                            const Gap(10),
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      responseController.isPlanned.value = true;
+                                    },
+                                    style: ButtonStyle(
+                                        backgroundColor:
+                                            WidgetStateProperty.all(
+                                      backgroundColor,
+                                    )),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          responseController.isPlanned.value
+                                              ? Icons.check
+                                              : Icons.cancel_outlined,
+                                        ),
+                                        const Gap(10),
+                                        Text(
+                                          "Planned",
+                                          style: GoogleFonts.inter(
+                                            fontSize:
+                                                MediaQuery.textScalerOf(context)
+                                                    .scale(18),
+                                            fontWeight: FontWeight.w500,
+                                            color: responseController
+                                                    .isPlanned.value
+                                                ? Colors.deepPurple
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      responseController.isPlanned.value =
+                                          false;
+                                    },
+                                    style: ButtonStyle(
+                                        backgroundColor:
+                                            WidgetStateProperty.all(
+                                      backgroundColor,
+                                    )),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          !responseController.isPlanned.value
+                                              ? Icons.check
+                                              : Icons.cancel_outlined,
+                                        ),
+                                        const Gap(10),
+                                        Text(
+                                          "Un-Planned",
+                                          style: GoogleFonts.inter(
+                                            fontSize:
+                                                MediaQuery.textScalerOf(context)
+                                                    .scale(18),
+                                            fontWeight: FontWeight.w500,
+                                            color: !responseController
+                                                    .isPlanned.value
+                                                ? Colors.deepPurple
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ]),
+                          ],
+                        );
+                      }),
+                      const Gap(10),
                       Obx(() {
                         return responseController.savingData
                             ? const SizedBox()
@@ -250,8 +301,7 @@ class SaveFile extends StatelessWidget {
                                           return;
                                         }
                                         if (accDataController
-                                                    .currRoadType.value ==
-                                                "pedestrian" &&
+                                                .isPedestrianFound &&
                                             !responseController
                                                 .pedestrianFormKey.currentState!
                                                 .validate()) {
@@ -262,8 +312,6 @@ class SaveFile extends StatelessWidget {
                                         await responseController.saveData(
                                           accData: accDataController
                                               .downSampledDatapoints,
-                                          roadType: accDataController
-                                              .currRoadType.value,
                                         );
                                       },
                                       style: OutlinedButton.styleFrom(
