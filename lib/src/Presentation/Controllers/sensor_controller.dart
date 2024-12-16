@@ -193,6 +193,9 @@ class AccDataController extends GetxController {
     for (AccData data in downSampledDatapoints) {
       _downSampledDatapoints.add(data);
     }
+    currRoadIndex.value = -1;
+    currRoadType.value = "";
+    bnb.value = -1;
     await WakelockPlus.toggle(enable: false);
   }
 }
