@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/Utils/font_size.dart';
 import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/vehicle_type_dropdown.dart';
@@ -14,6 +15,8 @@ class SaveFile extends StatelessWidget {
   Widget build(BuildContext context) {
     ResponseController responseController = Get.find();
     AccDataController accDataController = Get.find();
+    double w = MediaQuery.sizeOf(context).width;
+    FontSize fs = getFontSize(w);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -61,7 +64,7 @@ class SaveFile extends StatelessWidget {
                       Text(
                         "Save Recording",
                         style: GoogleFonts.inter(
-                          fontSize: MediaQuery.textScalerOf(context).scale(26),
+                          fontSize: fs.heading2FontSize,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
                         ),
@@ -69,16 +72,84 @@ class SaveFile extends StatelessWidget {
                       Text(
                         "Choose how'd you like to save the recording.",
                         style: GoogleFonts.inter(
-                          fontSize: MediaQuery.textScalerOf(context).scale(16),
+                          fontSize: fs.bodyTextFontSize,
                           fontWeight: FontWeight.w400,
                           color: Colors.black54,
                         ),
                       ),
                       const Gap(20),
+                      Obx(() {
+                        return Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  responseController.isPlanned.value = true;
+                                },
+                                style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                  backgroundColor,
+                                )),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      responseController.isPlanned.value
+                                          ? Icons.check
+                                          : Icons.cancel_outlined,
+                                    ),
+                                    const Gap(10),
+                                    Text(
+                                      "Planned",
+                                      style: GoogleFonts.inter(
+                                        fontSize: fs.appBarFontSize,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            responseController.isPlanned.value
+                                                ? Colors.deepPurple
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(20),
+                              TextButton(
+                                onPressed: () {
+                                  responseController.isPlanned.value = false;
+                                },
+                                style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                  backgroundColor,
+                                )),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      !responseController.isPlanned.value
+                                          ? Icons.check
+                                          : Icons.cancel_outlined,
+                                    ),
+                                    const Gap(10),
+                                    Text(
+                                      "Un-Planned",
+                                      style: GoogleFonts.inter(
+                                        fontSize: fs.appBarFontSize,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            !responseController.isPlanned.value
+                                                ? Colors.deepPurple
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ]);
+                      }),
+                      const Gap(20),
                       Text(
                         "Vehicle Type",
                         style: GoogleFonts.inter(
-                          fontSize: MediaQuery.textScalerOf(context).scale(18),
+                          fontSize: fs.appBarFontSize,
                           fontWeight: FontWeight.w500,
                           color: Colors.black,
                         ),
@@ -87,15 +158,14 @@ class SaveFile extends StatelessWidget {
                       VehicleType(
                         width: MediaQuery.of(context).size.width * 0.9,
                       ),
-                      const Gap(10),
+                      const Gap(20),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             "Recording Name",
                             style: GoogleFonts.inter(
-                              fontSize:
-                                  MediaQuery.textScalerOf(context).scale(18),
+                              fontSize: fs.appBarFontSize,
                               fontWeight: FontWeight.w500,
                               color: Colors.black,
                             ),
@@ -113,10 +183,15 @@ class SaveFile extends StatelessWidget {
                                   }
                                   return null;
                                 },
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   prefixIcon:
                                       Icon(Icons.drive_file_rename_outline),
                                   labelText: 'Enter the file name',
+                                  labelStyle: GoogleFonts.inter(
+                                    fontSize: fs.bodyTextFontSize,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black,
+                                  ),
                                   isDense: true,
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -138,7 +213,7 @@ class SaveFile extends StatelessWidget {
                           })
                         ],
                       ),
-                      const Gap(10),
+                      const Gap(20),
                       Obx(() {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +227,7 @@ class SaveFile extends StatelessWidget {
                                       Text(
                                         "Reason for Pedestrian",
                                         style: GoogleFonts.inter(
-                                          fontSize:
-                                              MediaQuery.textScalerOf(context)
-                                                  .scale(18),
+                                          fontSize: fs.appBarFontSize,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
@@ -175,13 +248,15 @@ class SaveFile extends StatelessWidget {
                                           expands: false,
                                           maxLines: 2,
                                           decoration: InputDecoration(
-                                            prefixIcon: const Icon(Icons.notes),
+                                            prefixIcon: Icon(Icons.notes),
                                             enabled: true,
                                             hintText:
                                                 'Describe why there was a Pedestrian area',
                                             isDense: true,
                                             labelStyle: GoogleFonts.inter(
                                               color: Colors.black54,
+                                              fontSize: fs.bodyTextFontSize,
+                                              fontWeight: FontWeight.w400,
                                             ),
                                             focusedBorder:
                                                 const OutlineInputBorder(
@@ -204,84 +279,10 @@ class SaveFile extends StatelessWidget {
                                     ],
                                   )
                                 : SizedBox(),
-
-                            const Gap(10),
-                            Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      responseController.isPlanned.value = true;
-                                    },
-                                    style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all(
-                                      backgroundColor,
-                                    )),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          responseController.isPlanned.value
-                                              ? Icons.check
-                                              : Icons.cancel_outlined,
-                                        ),
-                                        const Gap(10),
-                                        Text(
-                                          "Planned",
-                                          style: GoogleFonts.inter(
-                                            fontSize:
-                                                MediaQuery.textScalerOf(context)
-                                                    .scale(18),
-                                            fontWeight: FontWeight.w500,
-                                            color: responseController
-                                                    .isPlanned.value
-                                                ? Colors.deepPurple
-                                                : Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      responseController.isPlanned.value =
-                                          false;
-                                    },
-                                    style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all(
-                                      backgroundColor,
-                                    )),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          !responseController.isPlanned.value
-                                              ? Icons.check
-                                              : Icons.cancel_outlined,
-                                        ),
-                                        const Gap(10),
-                                        Text(
-                                          "Un-Planned",
-                                          style: GoogleFonts.inter(
-                                            fontSize:
-                                                MediaQuery.textScalerOf(context)
-                                                    .scale(18),
-                                            fontWeight: FontWeight.w500,
-                                            color: !responseController
-                                                    .isPlanned.value
-                                                ? Colors.deepPurple
-                                                : Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ]),
                           ],
                         );
                       }),
-                      const Gap(10),
+                      const Gap(20),
                       Obx(() {
                         return responseController.savingData
                             ? const SizedBox()
@@ -318,9 +319,7 @@ class SaveFile extends StatelessWidget {
                                       child: Text(
                                         "Submit and Save",
                                         style: GoogleFonts.inter(
-                                          fontSize:
-                                              MediaQuery.textScalerOf(context)
-                                                  .scale(18),
+                                          fontSize: fs.appBarFontSize,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),

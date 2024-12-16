@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
+import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/message_widget.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/reading_widget.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/start_end_widget.dart';
 import 'package:pci_app/src/Presentation/Widgets/custom_appbar.dart';
@@ -21,7 +19,6 @@ class SensorScreen extends StatelessWidget {
         kBottomNavigationBarHeight -
         0.18 * w;
 
-    AccDataController accDataController = Get.find();
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
@@ -32,28 +29,13 @@ class SensorScreen extends StatelessWidget {
           SliverList(
             delegate: SliverChildListDelegate([
               Gap(totalH * 0.015), // 1.5% of totalH
-              const StartButton(), // 30% of totalH
+              Center(child: const StartButton()), // 30% of totalH
               Gap(totalH * 0.025), // 2% of totalH
               // Message Text
               SizedBox(
                 height: totalH * 0.05, // 5% of totalH
                 child: Center(
-                  child: Obx(() {
-                    return FittedBox(
-                      fit: BoxFit.contain,
-                      child: Text(
-                        accDataController.showStartButton
-                            ? accDataController.startMessage
-                            : accDataController.progressMessage,
-                        style: GoogleFonts.inter(
-                          color:
-                              accDataController.sensorScreencolor.updateMessage,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                        ),
-                      ),
-                    );
-                  }),
+                  child: MessageWidget(),
                 ),
               ),
               SizedBox(height: totalH * 0.04),

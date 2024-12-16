@@ -5,6 +5,7 @@ import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
+import '../../../../../Utils/font_size.dart';
 
 class StartButton extends StatelessWidget {
   const StartButton({super.key});
@@ -21,6 +22,12 @@ class StartButton extends StatelessWidget {
         kToolbarHeight -
         kBottomNavigationBarHeight -
         0.18 * w;
+    double buttonWidth = (w > 500 && totalH > 300)
+        ? totalH * 0.04 // Use 2% of total height if height is sufficient
+        : (totalH <= 300)
+            ? totalH * 0.05 // Scale up for very small heights
+            : w * 0.062; // Default behavior for smaller screens
+    FontSize fs = getFontSize(w);
     return Stack(
       children: [
         Center(
@@ -31,19 +38,16 @@ class StartButton extends StatelessWidget {
               color: backgroundColor,
               shape: BoxShape.circle,
               border: Border.all(
-                width: (w > 500 && totalH > 300)
-                    ? totalH *
-                        0.04 // Use 2% of total height if height is sufficient
-                    : (totalH <= 300)
-                        ? totalH * 0.05 // Scale up for very small heights
-                        : w * 0.065, // Default behavior for smaller screens
+                width: buttonWidth,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: accDataController.sensorScreencolor.shadowColor,
-                  blurRadius: 2,
-                  spreadRadius: 0,
-                  blurStyle: BlurStyle.outer,
+                  color: Colors.black
+                      .withOpacity(0.1), // Light black shadow for soft look
+                  blurRadius: 12, // Larger blur for soft shadow effect
+                  spreadRadius: 0, // Minimal spread to keep shadow clean
+                  offset: Offset(
+                      0, 4), // Slight downward offset for floating effect
                 ),
               ],
             ),
@@ -65,7 +69,7 @@ class StartButton extends StatelessWidget {
                 );
               }
             },
-            borderRadius: BorderRadius.circular(100),
+            borderRadius: BorderRadius.circular(totalH * 0.3 - buttonWidth),
             child: Obx(() {
               return Container(
                 width: totalH * 0.3,
@@ -76,13 +80,7 @@ class StartButton extends StatelessWidget {
                       color: accDataController.showStartButton
                           ? accDataController.sensorScreencolor.startCircle
                           : accDataController.sensorScreencolor.endCircle,
-                      width: (w > 500 && totalH > 300)
-                          ? totalH *
-                              0.04 // Use 2% of total height if height is sufficient
-                          : (totalH <= 300)
-                              ? totalH * 0.05 // Scale up for very small heights
-                              : w *
-                                  0.065, // Default behavior for smaller screens
+                      width: buttonWidth,
                       style: BorderStyle.solid,
                       strokeAlign: BorderSide.strokeAlignInside),
                 ),
@@ -94,7 +92,7 @@ class StartButton extends StatelessWidget {
                       child: Text(
                         accDataController.showStartButton ? "Start" : "End",
                         style: GoogleFonts.inter(
-                          fontSize: 32,
+                          fontSize: fs.heading1FontSize,
                           fontWeight: FontWeight.w500,
                           color: Colors.black,
                         ),
