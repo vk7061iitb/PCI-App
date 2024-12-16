@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/Utils/font_size.dart';
 import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/SavedFile/widget/history_data_tile.dart';
 
@@ -19,13 +20,15 @@ class HistoryDataPageState extends State<HistoryDataPage> {
   Widget build(BuildContext context) {
     SavedFileController savedFileController = Get.put(SavedFileController());
     double w = MediaQuery.sizeOf(context).width;
+    FontSize fs = getFontSize(w);
+    IconsSize iS = getIconSize(w);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: AutoSizeText(
           'Saved Files',
           style: GoogleFonts.inter(
-            fontSize: w * 0.05,
+            fontSize: fs.appBarFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
@@ -41,7 +44,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
             },
             icon: Icon(
               Icons.search,
-              size: w * 0.07,
+              size: iS.appBarIconSize,
               color: Colors.black,
             ),
           ),
@@ -71,13 +74,13 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                   children: [
                     SvgPicture.asset(
                       assetsPath.emptyFile,
-                      width: w * 0.12,
+                      width: iS.buttonIconSize,
                     ),
                     Center(
                       child: Text(
                         'There are no files to display',
                         style: GoogleFonts.inter(
-                          fontSize: w * 0.04,
+                          fontSize: fs.bodyTextFontSize,
                           fontWeight: FontWeight.normal,
                           color: Colors.black,
                         ),
@@ -89,34 +92,47 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                 List<Map<String, dynamic>> savedFiles = snapshot.data ?? [];
                 return RefreshIndicator(
                   key: savedFileController.refreshKey,
+                  color: activeColor,
+                  backgroundColor: backgroundColor,
                   onRefresh: () async {
                     savedFileController.refreshData();
                     savedFileController.loadSavedFiles();
                   },
-                  child: ListView.builder(
-                    itemCount: savedFiles.length,
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    itemBuilder: (context, index) {
-                      Map<String, dynamic> file = savedFiles[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: w * 0.03),
-                        child: HistoryDataItem(
-                          file: file,
-                          deleteFile: () {
-                            _showDeleteDialog(context, w).then((value) {
-                              if (value != null && value) {
-                                savedFileController.deleteFile(file);
-                              }
-                            });
-                          },
-                          shareFile: () {
-                            savedFileController.shareFile(file);
-                          },
-                          unsentData: savedFileController.unsentFiles,
-                        ),
-                      );
-                    },
+                  child: ScrollbarTheme(
+                    data: ScrollbarThemeData(
+                      thumbColor: WidgetStateProperty.all(
+                        Color(0xFFc0c0c0),
+                      ),
+                      thickness: WidgetStateProperty.all(8.0),
+                      radius: Radius.circular(10),
+                      interactive: true,
+                    ),
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      trackVisibility: false,
+                      child: ListView.builder(
+                        itemCount: savedFiles.length,
+                        physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics()),
+                        itemBuilder: (context, index) {
+                          Map<String, dynamic> file = savedFiles[index];
+                          return HistoryDataItem(
+                            file: file,
+                            deleteFile: () {
+                              _showDeleteDialog(context, w).then((value) {
+                                if (value != null && value) {
+                                  savedFileController.deleteFile(file);
+                                }
+                              });
+                            },
+                            shareFile: () {
+                              savedFileController.shareFile(file);
+                            },
+                            unsentData: savedFileController.unsentFiles,
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 );
               }
