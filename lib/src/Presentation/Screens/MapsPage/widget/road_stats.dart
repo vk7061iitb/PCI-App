@@ -72,7 +72,7 @@ class _MapPageRoadStatisticsState extends State<MapPageRoadStatistics>
           ),
           const Gap(12),
           Text(
-            'Road Statistics',
+            'Overall Statistics',
             style: GoogleFonts.inter(
               color: Colors.black,
               fontWeight: FontWeight.w600,
