@@ -257,8 +257,8 @@ class ResponseController extends GetxController {
       'FileName',
       'VehicleType',
       'UserNo',
-      'Planned/Unplanned'
-          'Date',
+      'Planned/Unplanned',
+      'Date',
       'Time',
     ]);
     csvData.add([
