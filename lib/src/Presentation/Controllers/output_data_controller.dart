@@ -10,7 +10,7 @@ import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/report_pdf_api.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../Functions/vel_to_pci.dart';
+import '../../../Utils/vel_to_pci.dart';
 import '../../../Objects/data.dart';
 
 /// Controller for managing output data(Jorney Data) in the PCI App.
@@ -44,7 +44,7 @@ class OutputDataController extends GetxController {
     try {
       isLoading.value = true;
       await localDatabase.queryTable(tableToFetch).then((value) {
-        outputDataFile.value = value;
+        outputDataFile.value = value.reversed.toList();
         isLoading.value = false;
       });
     } catch (e) {
@@ -86,10 +86,31 @@ class OutputDataController extends GetxController {
   Future<void> exportData({
     required String filename,
     required String vehicle,
+    required String planned,
     required String time,
     required List<Map<String, dynamic>> jouneyData,
   }) async {
     List<List<dynamic>> csvData = [];
+    // Add metadata
+    csvData.add([
+      'FileName',
+      'VehicleType',
+      'UserNo',
+      'Planned/Unplanned',
+      'Date',
+      'Time',
+    ]);
+    csvData.add(
+      [
+        filename,
+        vehicle,
+        userDataController.storage.read('user')['phone'],
+        planned,
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        DateFormat('HH:mm:ss').format(DateTime.now()),
+      ],
+    );
+    // Add data
     csvData.add([
       'Road Name',
       'Latitude',
@@ -145,7 +166,6 @@ class OutputDataController extends GetxController {
       file.delete();
     });
   }
-
 
   /// Creates a ZIP file asynchronously.
   ///

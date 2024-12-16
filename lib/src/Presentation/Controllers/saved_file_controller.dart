@@ -99,7 +99,7 @@ class SavedFileController extends GetxController {
   Future<List<Map<String, dynamic>>> loadSavedFiles() async {
     try {
       List<Map<String, dynamic>> files = await localDatabase.querySavedFiles();
-      return files;
+      return files.reversed.toList();
     } catch (e) {
       logger.e("Error loading saved files: $e");
       return [];
