@@ -55,60 +55,72 @@ class HomeScreen extends StatelessWidget {
           }),
         ),
         bottomNavigationBar: Obx(() {
-          return NavigationBar(
+          return BottomNavigationBar(
+            onTap: (index) {
+              bottomNavController.selectedIndex.value = index;
+            },
+            currentIndex: bottomNavController.selectedIndex.value,
+            selectedItemColor: iconActive,
+            unselectedItemColor: iconInactive,
+            selectedLabelStyle: TextStyle(
+              color: activeColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            unselectedLabelStyle: TextStyle(
+              color: inactiveColor,
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
+            type: BottomNavigationBarType.fixed,
             backgroundColor: backgroundColor,
-            animationDuration: const Duration(milliseconds: 500),
-            height: 0.18 * MediaQuery.of(context).size.width,
-            onDestinationSelected: bottomNavController.onTapped,
-            indicatorColor: Colors.blue.shade100,
-            selectedIndex: bottomNavController.selectedIndex.value,
-            destinations: <Widget>[
-              NavigationDestination(
-                selectedIcon: Icon(
-                  Icons.home,
-                  color: iconActive,
-                  size: iconWidth,
-                ),
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
                 icon: Icon(
                   Icons.home_outlined,
                   size: iconWidth,
                   color: iconInactive,
                 ),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                selectedIcon: Icon(
-                  Icons.file_present_rounded,
-                  color: iconActive,
+                activeIcon: Icon(
+                  Icons.home,
                   size: iconWidth,
+                  color: iconActive,
                 ),
+                label: "Home",
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(
                   Icons.file_present_outlined,
                   size: iconWidth,
                   color: iconInactive,
                 ),
-                label: 'Saved Files',
+                activeIcon: Icon(
+                  Icons.file_present_rounded,
+                  size: iconWidth,
+                  color: iconActive,
+                ),
+                label: "Saved Files",
               ),
-              NavigationDestination(
-                selectedIcon: SvgPicture.asset(
+              BottomNavigationBarItem(
+                icon: SvgPicture.asset(
+                  assetsPath.journeyHistory,
+                  width: iconWidth,
+                  height: iconWidth,
+                  colorFilter: ColorFilter.mode(
+                    inactiveColor,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                activeIcon: SvgPicture.asset(
                   assetsPath.journeyHistorySelected,
-                  width: 25,
-                  height: 25,
+                  width: iconWidth,
+                  height: iconWidth,
                   colorFilter: ColorFilter.mode(
                     iconActive,
                     BlendMode.srcIn,
                   ),
                 ),
-                icon: SvgPicture.asset(
-                  assetsPath.journeyHistory,
-                  width: 25,
-                  height: 25,
-                  colorFilter: ColorFilter.mode(
-                    iconInactive,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                label: 'Past Trips',
+                label: "Past Trips",
               ),
             ],
           );
