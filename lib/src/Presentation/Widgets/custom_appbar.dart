@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/Utils/font_size.dart';
 import 'package:pci_app/src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'package:pci_app/src/Presentation/Screens/UserProfile/user_page.dart';
 
@@ -120,7 +121,7 @@ class CustomSliverAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle baseTitleTextStyle = GoogleFonts.inter(
       color: Colors.black,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w600,
     );
 
     TextStyle actionTextStyle = GoogleFonts.inter(
@@ -128,52 +129,25 @@ class CustomSliverAppBar extends StatelessWidget {
       fontWeight: FontWeight.normal,
       fontSize: MediaQuery.textScalerOf(context).scale(16),
     );
-    double h = MediaQuery.sizeOf(context).height;
     double w = MediaQuery.sizeOf(context).width;
-    double totalH = h -
-        MediaQuery.of(context).padding.top -
-        kToolbarHeight -
-        kBottomNavigationBarHeight -
-        0.18 * w;
+    FontSize fs = getFontSize(w);
     return SliverAppBar(
       pinned: true,
-      floating: true, // Disables floating behavior
-      expandedHeight: totalH * 0.15, // Height when fully expanded
-      collapsedHeight: 60.0, // App bar height when collapsed
+      floating: false,
       backgroundColor: backgroundColor,
       surfaceTintColor: backgroundColor,
-      flexibleSpace: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate font size based on scroll offset
-          double maxHeight = totalH * 0.15;
-          double minHeight = 60.0; // Collapsed height
-          double currentHeight = constraints.maxHeight;
-          double shrinkRatio =
-              (currentHeight - minHeight) / (maxHeight - minHeight);
-          double fontSize = 34 *
-              shrinkRatio.clamp(0.8, 1.2); // Font size scales between 20-34
-          // Use constraints to adjust behavior during scroll
-          double shrinkOffset = constraints.maxHeight - kToolbarHeight;
-          double scale = (1 - shrinkOffset / (totalH * 0.2)).clamp(0.7, 1.0);
-
-          return FlexibleSpaceBar(
-            titlePadding: EdgeInsetsDirectional.only(
-              start: w * 0.05,
-              bottom: 16,
-            ),
-            title: Transform.scale(
-              scale: scale,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'PCI App',
-                style: baseTitleTextStyle.copyWith(
-                  fontSize: fontSize,
-                ),
-              ),
-            ),
-            centerTitle: false,
-          );
-        },
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: EdgeInsetsDirectional.only(
+          start: w * 0.05,
+          bottom: 16,
+        ),
+        title: Text(
+          'PCI App',
+          style: baseTitleTextStyle.copyWith(
+            fontSize: fs.heading1FontSize,
+          ),
+        ),
+        centerTitle: false,
       ),
       actions: [
         PopupMenuButton(

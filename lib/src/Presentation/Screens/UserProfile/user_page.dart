@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 
+import '../../../../Utils/font_size.dart';
+
 class UserPage extends StatelessWidget {
   const UserPage({super.key});
 
@@ -15,6 +17,7 @@ class UserPage extends StatelessWidget {
     UserDataController userDataController = UserDataController();
     userDataController.getUserData();
     double w = MediaQuery.sizeOf(context).width;
+    FontSize fs = getFontSize(w);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -24,7 +27,7 @@ class UserPage extends StatelessWidget {
           'User Profile',
           style: GoogleFonts.inter(
             color: textColor,
-            fontSize: w*0.05,
+            fontSize: fs.appBarFontSize,
             fontWeight: FontWeight.w600,
           ),
         ),
