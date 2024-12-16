@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/Utils/font_size.dart';
 import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
@@ -16,22 +17,33 @@ import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Utils/get_icon.dart';
 import '../MapsPage/maps_page.dart';
 
-class OutputDataItem extends StatelessWidget {
+class OutputDataItem extends StatefulWidget {
   const OutputDataItem({
     super.key,
     required this.filename,
     required this.vehicleType,
     required this.time,
+    required this.planned,
     required this.id,
   });
 
   final String filename;
   final int id;
   final String time;
+  final String planned;
   final String vehicleType;
 
   @override
+  State<OutputDataItem> createState() => _OutputDataItemState();
+}
+
+class _OutputDataItemState extends State<OutputDataItem> {
+  @override
   Widget build(BuildContext context) {
+    UserDataController userDataController = UserDataController();
+    final user = userDataController.storage.read('user');
+    final w = MediaQuery.sizeOf(context).width;
+    FontSize fs = getFontSize(w);
     OutputDataController outputDataController =
         Get.find<OutputDataController>();
     double left = 0, right = 0, top = 0, bottom = 0;
@@ -40,10 +52,8 @@ class OutputDataItem extends StatelessWidget {
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
-      fontSize: 16,
+      fontSize: fs.bodyTextFontSize,
     );
-    UserDataController userDataController = UserDataController();
-    final user = userDataController.storage.read('user');
 
     return InkWell(
       onTapDown: (TapDownDetails tapdownDetails) {
@@ -56,21 +66,21 @@ class OutputDataItem extends StatelessWidget {
       },
       onLongPress: () {
         // multi-select
-        if (outputDataController.slectedFiles.contains(id)) {
-          outputDataController.slectedFiles.remove(id);
+        if (outputDataController.slectedFiles.contains(widget.id)) {
+          outputDataController.slectedFiles.remove(widget.id);
         } else {
-          outputDataController.slectedFiles.add(id);
+          outputDataController.slectedFiles.add(widget.id);
         }
       },
       onTap: () {
         // already selected
-        if (outputDataController.slectedFiles.contains(id)) {
-          outputDataController.slectedFiles.remove(id);
+        if (outputDataController.slectedFiles.contains(widget.id)) {
+          outputDataController.slectedFiles.remove(widget.id);
           return;
         }
         // multi-selct enabled
         if (outputDataController.slectedFiles.isNotEmpty) {
-          outputDataController.slectedFiles.add(id);
+          outputDataController.slectedFiles.add(widget.id);
           return;
         }
         showMenu(
@@ -85,7 +95,7 @@ class OutputDataItem extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 outputDataController.slectedFiles.clear();
-                outputDataController.slectedFiles.add(id);
+                outputDataController.slectedFiles.add(widget.id);
                 try {
                   outputDataController.plotRoads().then((_) {
                     Get.to(
@@ -121,8 +131,8 @@ class OutputDataItem extends StatelessWidget {
                 if (context.mounted) {
                   Get.to(
                     () => RoadStatistics(
-                      id: id,
-                      filename: filename,
+                      id: widget.id,
+                      filename: widget.filename,
                     ),
                     transition: Transition.cupertino,
                   );
@@ -147,12 +157,13 @@ class OutputDataItem extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 // Function to export the data
-                List<Map<String, dynamic>> query =
-                    await localDatabase.queryRoadOutputData(jouneyID: id);
+                List<Map<String, dynamic>> query = await localDatabase
+                    .queryRoadOutputData(jouneyID: widget.id);
                 outputDataController.exportData(
-                  filename: filename,
-                  vehicle: vehicleType,
-                  time: time,
+                  filename: widget.filename,
+                  vehicle: widget.vehicleType,
+                  time: widget.time,
+                  planned: widget.planned,
                   jouneyData: query,
                 );
               },
@@ -175,12 +186,12 @@ class OutputDataItem extends StatelessWidget {
             PopupMenuItem(
               onTap: () async {
                 // Function to export the data
-                List<Map<String, dynamic>> query =
-                    await localDatabase.queryRoadOutputData(jouneyID: id);
+                List<Map<String, dynamic>> query = await localDatabase
+                    .queryRoadOutputData(jouneyID: widget.id);
                 Map<String, dynamic> metaData = {
-                  'filename': filename,
-                  'vehicleType': vehicleType,
-                  'time': time,
+                  'filename': widget.filename,
+                  'vehicleType': widget.vehicleType,
+                  'time': widget.time,
                   'user': user,
                 };
                 outputDataController.exportJSON(query, metaData);
@@ -205,10 +216,10 @@ class OutputDataItem extends StatelessWidget {
               onTap: () async {
                 // Function to export the data
                 final data = {
-                  'filename': filename,
-                  'vehicle': vehicleType,
-                  'time': time,
-                  'id': id,
+                  'filename': widget.filename,
+                  'vehicle': widget.vehicleType,
+                  'time': widget.time,
+                  'id': widget.id,
                 };
                 try {
                   await outputDataController.dowloadReport(data);
@@ -234,9 +245,9 @@ class OutputDataItem extends StatelessWidget {
             ),
             PopupMenuItem(
               onTap: () {
-                _showDeleteDialog(context, id).then((value) {
+                _showDeleteDialog(context, widget.id).then((value) {
                   if (value != null && value) {
-                    outputDataController.deleteData(id);
+                    outputDataController.deleteData(widget.id);
                   }
                 });
               },
@@ -260,16 +271,47 @@ class OutputDataItem extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.only(
-          right: 10,
-          left: 10,
-          top: 2,
-          bottom: 2,
+        padding: EdgeInsets.symmetric(
+          horizontal: w * 0.05,
+          vertical: 4,
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Obx(() {
+                  return AnimatedSwitcher(
+                    duration: Duration(
+                        milliseconds: 300), // Smooth animation duration
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: outputDataController.slectedFiles.contains(widget.id)
+                        ? Row(
+                            key: ValueKey(
+                                'check_${widget.id}'), // Unique key for animation
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: activeColor,
+                                size: 24,
+                              ),
+                              const Gap(8),
+                            ],
+                          )
+                        : SizedBox(
+                            key: ValueKey('empty_${widget.id}'),
+                          ),
+                  );
+                }),
                 Container(
                   width: MediaQuery.sizeOf(context).width * 0.15,
                   height: MediaQuery.sizeOf(context).width * 0.15,
@@ -281,7 +323,7 @@ class OutputDataItem extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Icon(
-                        getIcon(vehicleType),
+                        getIcon(widget.vehicleType),
                         size: MediaQuery.sizeOf(context).width * 0.1,
                         color: Colors.black87,
                       ),
@@ -289,29 +331,43 @@ class OutputDataItem extends StatelessWidget {
                   ),
                 ),
                 Gap(MediaQuery.sizeOf(context).width * 0.05),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: FittedBox(
-                        alignment: Alignment.centerLeft,
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          filename,
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 18,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            widget.filename,
+                            style: GoogleFonts.inter(
+                              color: Colors.black,
+                              fontWeight: FontWeight.normal,
+                              fontSize: fs.bodyTextFontSize,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.clip,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.clip,
-                        ),
+                          FittedBox(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Text(
+                                widget.planned,
+                                style: GoogleFonts.inter(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
+                      Row(
                         children: [
                           const Icon(
                             Icons.calendar_month_outlined,
@@ -320,7 +376,7 @@ class OutputDataItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            time,
+                            widget.time,
                             style: GoogleFonts.inter(
                               color: Colors.teal,
                               fontWeight: FontWeight.normal,
@@ -329,18 +385,9 @@ class OutputDataItem extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const Spacer(),
-                Obx(() {
-                  return outputDataController.slectedFiles.contains(id)
-                      ? Icon(
-                          Icons.check_circle,
-                          color: Colors.blue.shade800,
-                        )
-                      : SizedBox();
-                }),
               ],
             ),
             Divider(
