@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Utils/get_road_color.dart';
 import 'package:pci_app/Utils/set_road_stats.dart';
-import 'package:pci_app/Functions/vel_to_pci.dart';
+import 'package:pci_app/Utils/vel_to_pci.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Models/stats_data.dart';
 import '../src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';

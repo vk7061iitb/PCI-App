@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Functions/vel_to_pci.dart';
+import 'package:pci_app/Utils/vel_to_pci.dart';
 import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
 import '../Functions/avg.dart';
