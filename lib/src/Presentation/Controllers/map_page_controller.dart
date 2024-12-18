@@ -11,13 +11,13 @@ import '../../../Utils/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
-  final RxBool _isDrrpLayerVisible = false.obs;
-  final RxSet<Polyline> _pciPolylines = <Polyline>{}.obs;
+  final RxBool _isDrrpLayerVisible = false.obs; // used to toggle DRRP Layers
+  final RxSet<Polyline> _pciPolylines = <Polyline>{}.obs; // polylines shown on the map page
   final Set<Polyline> _drrpPolylines = <Polyline>{};
   GoogleMapController? _googleMapController;
   List<List<Map<String, dynamic>>> roadOutputData =
-      <List<Map<String, dynamic>>>[];
-  List<Map<String, dynamic>> selectedRoads = [];
+      <List<Map<String, dynamic>>>[]; // contains the data of all selected journies in a list
+  List<Map<String, dynamic>> selectedRoads = []; // used for multipe selection of jouurney data
 
   LatLng _minLat = const LatLng(0, 0);
   LatLng _maxLat = const LatLng(0, 0);
