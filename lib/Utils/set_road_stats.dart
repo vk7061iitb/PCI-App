@@ -108,7 +108,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
                 from: formatChainage(td - distance),
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
-                pci: firstPointPCI.toString(),
+                pci: firstPointPCI.toStringAsFixed(0),
                 remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
@@ -140,7 +140,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toString(),
+              pci: secondPointPCI.toStringAsFixed(0),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -166,7 +166,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toString(),
+              pci: secondPointPCI.toStringAsFixed(0),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -258,7 +258,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
                 from: formatChainage(td - distance),
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
-                pci: firstPointPCI.toString(),
+                pci: firstPointPCI.toStringAsFixed(0),
                 remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
@@ -290,7 +290,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toString(),
+              pci: secondPointPCI.toStringAsFixed(0),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -317,7 +317,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toString(),
+              pci: secondPointPCI.toStringAsFixed(0),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }

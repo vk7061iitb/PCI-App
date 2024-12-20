@@ -169,11 +169,15 @@ class RoadStatistics extends StatefulWidget {
   const RoadStatistics({
     required this.id,
     required this.filename,
+    required this.planned,
+    required this.vehicleType,
     super.key,
   });
 
   final int id;
   final String filename;
+  final String planned;
+  final String vehicleType;
 
   @override
   State<RoadStatistics> createState() => _RoadStatisticsState();
@@ -239,6 +243,8 @@ class _RoadStatisticsState extends State<RoadStatistics>
             () => RoadStatisticsPdfPage(
               id: widget.id,
               filename: widget.filename,
+              planned : widget.planned,
+              vehicleType : widget.vehicleType
             ),
             transition: Transition.cupertino,
           );
@@ -344,7 +350,6 @@ class _RoadStatisticsState extends State<RoadStatistics>
                                             fontSize: 16,
                                           ),
                                         ),
-                                        const Gap(10),
                                         // Content for the selected tab
                                         SizedBox(
                                           height: context.height * 0.5,
@@ -412,7 +417,6 @@ class _RoadStatisticsState extends State<RoadStatistics>
                                               fontSize: 16,
                                             ),
                                           ),
-                                          const Gap(10),
                                           // Content for the selected tab
                                           SizedBox(
                                             height: context.height * 0.4,

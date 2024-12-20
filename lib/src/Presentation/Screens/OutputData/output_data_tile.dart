@@ -133,6 +133,8 @@ class _OutputDataItemState extends State<OutputDataItem> {
                     () => RoadStatistics(
                       id: widget.id,
                       filename: widget.filename,
+                      planned: widget.planned,
+                      vehicleType: widget.vehicleType,
                     ),
                     transition: Transition.cupertino,
                   );
