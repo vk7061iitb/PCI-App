@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
@@ -22,6 +23,11 @@ class HistoryDataPageState extends State<HistoryDataPage> {
     double w = MediaQuery.sizeOf(context).width;
     FontSize fs = getFontSize(w);
     IconsSize iS = getIconSize(w);
+    TextStyle popUpMenuTextStyle = GoogleFonts.inter(
+      color: textColor,
+      fontWeight: FontWeight.normal,
+      fontSize: fs.bodyTextFontSize,
+    );
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -38,9 +44,110 @@ class HistoryDataPageState extends State<HistoryDataPage> {
         shadowColor: Colors.transparent,
         scrolledUnderElevation: 0,
         actions: [
+          PopupMenuButton<int>(
+            icon: Icon(
+              Icons.filter_list,
+              size: iS.appBarIconSize,
+              color: textColor,
+            ),
+            onSelected: (val) {
+              savedFileController.selectedFilter.value = val;
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+              PopupMenuItem(
+                value: 0,
+                onTap: () async {
+                  savedFileController.showSubmitted.value = true;
+                  savedFileController.showNotSubmitted.value = false;
+                  savedFileController.showAll.value = false;
+                  await savedFileController.refreshData();
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      savedFileController.selectedFilter.value == 0
+                          ? Icons.check_circle
+                          : Icons.circle_outlined,
+                      color: savedFileController.selectedFilter.value == 0
+                          ? Colors.blue
+                          : textColor,
+                    ),
+                    const Gap(4),
+                    Text(
+                      "Submitted",
+                      style: popUpMenuTextStyle.copyWith(
+                        color: savedFileController.selectedFilter.value == 0
+                            ? Colors.blue
+                            : textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 1,
+                onTap: () async {
+                  savedFileController.showSubmitted.value = false;
+                  savedFileController.showNotSubmitted.value = true;
+                  savedFileController.showAll.value = false;
+                  await savedFileController.refreshData();
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                        savedFileController.selectedFilter.value == 1
+                            ? Icons.check_circle
+                            : Icons.circle_outlined,
+                        color: savedFileController.selectedFilter.value == 1
+                            ? Colors.blue
+                            : textColor),
+                    const Gap(4),
+                    Text(
+                      "Not Submitted",
+                      style: popUpMenuTextStyle.copyWith(
+                        color: savedFileController.selectedFilter.value == 1
+                            ? Colors.blue
+                            : textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 2,
+                onTap: () async {
+                  savedFileController.showSubmitted.value = false;
+                  savedFileController.showNotSubmitted.value = false;
+                  savedFileController.showAll.value = true;
+                  await savedFileController.refreshData();
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      savedFileController.selectedFilter.value == 2
+                          ? Icons.check_circle
+                          : Icons.circle_outlined,
+                      color: savedFileController.selectedFilter.value == 2
+                          ? Colors.blue
+                          : textColor,
+                    ),
+                    const Gap(4),
+                    Text(
+                      "All Files",
+                      style: popUpMenuTextStyle.copyWith(
+                        color: savedFileController.selectedFilter.value == 2
+                            ? Colors.blue
+                            : textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             onPressed: () {
-              //localDatabase.deleteTable('savedData');
+              // To do
             },
             icon: Icon(
               Icons.search,

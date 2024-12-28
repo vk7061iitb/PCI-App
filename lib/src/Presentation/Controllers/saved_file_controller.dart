@@ -10,7 +10,12 @@ import '../../service/send_data_api.dart';
 class SavedFileController extends GetxController {
   // Variables
   RxList<Map<String, dynamic>> unsentFiles = <Map<String, dynamic>>[].obs;
-  RxList<Map<String, dynamic>> savedFiles = <Map<String, dynamic>>[].obs;
+  List<Map<String, dynamic>> submittedFiles = [];
+  List<Map<String, dynamic>> notSubmittedFiles = [];
+  RxBool showSubmitted = false.obs;
+  RxBool showNotSubmitted = false.obs;
+  RxBool showAll = true.obs;
+  RxInt selectedFilter = 2.obs;
   final GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
   SendDataToServer sendDataToServer = SendDataToServer();
@@ -22,7 +27,6 @@ class SavedFileController extends GetxController {
         Get.find<OutputDataController>();
     isLoading.value = true;
     try {
-      savedFiles.value = await loadSavedFiles();
       await outputDataController.fetchData();
       unsentFiles.value = await localDatabase.queryTable('unsendDataInfo');
     } finally {
@@ -98,7 +102,18 @@ class SavedFileController extends GetxController {
 
   Future<List<Map<String, dynamic>>> loadSavedFiles() async {
     try {
+      submittedFiles.clear();
+      notSubmittedFiles.clear();
       List<Map<String, dynamic>> files = await localDatabase.querySavedFiles();
+      for (var file in files) {
+        if (file['status'] == 1) {
+          submittedFiles.add(file);
+        } else {
+          notSubmittedFiles.add(file);
+        }
+      }
+      if (showSubmitted.value) return submittedFiles;
+      if (showNotSubmitted.value) return notSubmittedFiles;
       return files.reversed.toList();
     } catch (e) {
       logger.e("Error loading saved files: $e");
