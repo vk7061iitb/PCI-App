@@ -1,14 +1,15 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
+import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pci_app/src/Presentation/Screens/OutputData/map_screenshot.dart';
 import '../../../../../Utils/set_road_stats.dart';
 import '../../../../../Objects/data.dart';
 import '../../../../Models/stats_data.dart';
-import '../../OutputData/pdf_preview.dart';
+import '../../../Widgets/snackbar.dart';
 
 class MapPageRoadStatistics extends StatefulWidget {
   const MapPageRoadStatistics(
@@ -170,6 +171,7 @@ class RoadStatistics extends StatefulWidget {
     required this.id,
     required this.filename,
     required this.planned,
+    required this.time,
     required this.vehicleType,
     super.key,
   });
@@ -177,6 +179,7 @@ class RoadStatistics extends StatefulWidget {
   final int id;
   final String filename;
   final String planned;
+  final String time;
   final String vehicleType;
 
   @override
@@ -202,7 +205,8 @@ class _RoadStatisticsState extends State<RoadStatistics>
   @override
   Widget build(BuildContext context) {
     MapPageController mapPageController = Get.find<MapPageController>();
-
+    OutputDataController outputDataController =
+        Get.find<OutputDataController>();
     Future<List<Map<String, dynamic>>> getRoadStats(
         int id, String filename) async {
       mapPageController.roadOutputData = [];
@@ -239,15 +243,26 @@ class _RoadStatisticsState extends State<RoadStatistics>
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
         onPressed: () {
-          Get.to(
-            () => RoadStatisticsPdfPage(
-              id: widget.id,
-              filename: widget.filename,
-              planned : widget.planned,
-              vehicleType : widget.vehicleType
-            ),
-            transition: Transition.cupertino,
-          );
+          outputDataController.slectedFiles.clear();
+          outputDataController.slectedFiles.add(widget.id);
+          try {
+            outputDataController.plotRoads().then((_) {
+              Get.to(() => MapScreenshot(),
+                  transition: Transition.cupertino,
+                  arguments: {
+                    "id": widget.id,
+                    "filename": widget.filename,
+                    "planned": widget.planned,
+                    "time": widget.time,
+                    "vehicleType": widget.vehicleType,
+                  });
+              outputDataController.slectedFiles.clear();
+            });
+          } catch (e) {
+            customGetSnackBar("Plotting Error",
+                "Error in plotting the road data", Icons.error_outline);
+            logger.e(e.toString());
+          }
         },
         child: Icon(Icons.download),
       ),
