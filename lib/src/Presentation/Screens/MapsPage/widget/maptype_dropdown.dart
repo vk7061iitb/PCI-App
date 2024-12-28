@@ -1,11 +1,9 @@
 // This widget is used to display the map type dropdown. It is used to select the type of map to be displayed on the Map Screen.
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
-import '../../../../../Objects/data.dart';
 
 class SelectMapType extends StatelessWidget {
   const SelectMapType({super.key});
@@ -14,41 +12,19 @@ class SelectMapType extends StatelessWidget {
   Widget build(BuildContext context) {
     MapPageController mapPageController = Get.find<MapPageController>();
 
-    return PopupMenuButton<String>(
+    return PopupMenuButton<MapType>(
         tooltip: 'Select Map Type',
         padding: const EdgeInsets.all(14),
         icon: const Icon(
-          Icons.map,
+          Icons.layers_outlined,
           color: Colors.black,
         ),
-        onSelected: (String value) {
-          switch (value) {
-            case 'Normal':
-              mapPageController.backgroundMapType = googlemapType[0];
-              break;
-            case 'Satellite':
-              mapPageController.backgroundMapType = googlemapType[1];
-              break;
-            case 'Hybrid':
-              mapPageController.backgroundMapType = googlemapType[2];
-              break;
-            case 'Terrain':
-              mapPageController.backgroundMapType = googlemapType[3];
-              break;
-            case 'None':
-              mapPageController.backgroundMapType = googlemapType[4];
-              break;
-            default:
-              mapPageController.backgroundMapType = googlemapType[1];
-          }
-          mapPageController.dropdownvalue = value;
-          if (kDebugMode) {
-            print('Map Type: ${mapPageController.dropdownvalue}');
-          }
+        onSelected: (MapType value) {
+          mapPageController.backgroundMapType = value;
         },
         itemBuilder: (BuildContext context) {
-          return <PopupMenuEntry<String>>[
-            PopupMenuItem<String>(
+          return <PopupMenuEntry<MapType>>[
+            PopupMenuItem<MapType>(
               enabled: false,
               child: Text(
                 'Map Type',
@@ -60,14 +36,14 @@ class SelectMapType extends StatelessWidget {
               ),
             ),
             const PopupMenuDivider(),
-            ...mapPageController.mapType
-                .map<PopupMenuItem<String>>((String value) {
-              return PopupMenuItem<String>(
+            ...mapPageController.googlemapType
+                .map<PopupMenuItem<MapType>>((MapType value) {
+              return PopupMenuItem<MapType>(
                 value: value,
                 child: Text(
-                  value,
+                  value.name.capitalize!,
                   style: GoogleFonts.inter(
-                    color: value == mapPageController.dropdownvalue
+                    color: value == mapPageController.backgroundMapType
                         ? Colors.blue
                         : Colors.black,
                     fontWeight: FontWeight.w400,
