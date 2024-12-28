@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +14,7 @@ import 'package:pci_app/src/service/report_pdf_api.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../Utils/vel_to_pci.dart';
 import '../../../Objects/data.dart';
+import 'dart:ui' as ui;
 
 /// Controller for managing output data(Jorney Data) in the PCI App.
 ///
@@ -31,6 +34,8 @@ class OutputDataController extends GetxController {
   var outputDataFile = <Map<String, dynamic>>[].obs;
   RxSet<int> slectedFiles = <int>{}.obs;
   var isLoading = true.obs;
+  GlobalKey repaintKey = GlobalKey();
+  Uint8List screenShotBytes = Uint8List.fromList([]);
   final MapPageController _mapPageController = Get.find<MapPageController>();
 
   /// This method retrieves the data related to the user's journey
@@ -53,6 +58,18 @@ class OutputDataController extends GetxController {
       logger.e(e.toString());
     }
     return outputDataFile;
+  }
+
+  Future<Uint8List> takeSS() async {
+    final boundary =
+        repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+
+    final img = await boundary.toImage(pixelRatio: 1);
+    final bytedata = await img.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    screenShotBytes = bytedata!.buffer.asUint8List();
+    return screenShotBytes;
   }
 
   /// Deletes the data associated with the given [id].
