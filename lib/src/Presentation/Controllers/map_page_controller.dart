@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
@@ -5,27 +6,30 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pci_app/Objects/data.dart';
+import 'package:pci_app/Utils/cal_map_bounds.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
-import '../../../Utils/cal_map_bounds.dart';
 import '../../../Utils/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
   final RxBool _isDrrpLayerVisible = false.obs; // used to toggle DRRP Layers
-  final RxSet<Polyline> _pciPolylines = <Polyline>{}.obs; // polylines shown on the map page
+  final RxSet<Polyline> _pciPolylines =
+      <Polyline>{}.obs; // polylines shown on the map page
   final Set<Polyline> _drrpPolylines = <Polyline>{};
   GoogleMapController? _googleMapController;
-  List<List<Map<String, dynamic>>> roadOutputData =
-      <List<Map<String, dynamic>>>[]; // contains the data of all selected journies in a list
-  List<Map<String, dynamic>> selectedRoads = []; // used for multipe selection of jouurney data
+  List<List<Map<String, dynamic>>> roadOutputData = <List<
+      Map<String,
+          dynamic>>>[]; // contains the data of all selected journies in a list
+  List<Map<String, dynamic>> selectedRoads =
+      []; // used for multipe selection of jouurney data
 
-  LatLng _minLat = const LatLng(0, 0);
-  LatLng _maxLat = const LatLng(0, 0);
+  LatLng _southwest = const LatLng(0, 0);
+  LatLng _northeast = const LatLng(0, 0);
+  RxBool isPredPCICaptured = false.obs;
+  RxBool isVelPCICaptured = false.obs;
   List<RoadStats> roadStats = <RoadStats>[];
   List<SegStats> segStats = <SegStats>[];
   final Rx<MapType> _backgroundMapType = MapType.normal.obs;
-  RxList<String> mapType =
-      ['Normal', 'Satellite', 'Hybrid', 'Teraain', 'None'].obs;
   final RxList<MapType> _googlemapType = [
     MapType.normal,
     MapType.satellite,
@@ -34,23 +38,22 @@ class MapPageController extends GetxController {
     MapType.none
   ].obs;
 
-  RxString dropdownValue = 'Normal'.obs;
   final RxBool _showCircularProgress = false.obs;
   final RxBool _showPCIlabel = true.obs;
   RxBool showIndicator = false.obs;
   Rx<Offset> legendPos = Offset(10, 10).obs;
+  Rx<bool> isMapCreated = false.obs;
 
   // Getters
   bool get isDrrpLayerVisible => _isDrrpLayerVisible.value;
   RxSet<Polyline> get pciPolylines => _pciPolylines.toSet().obs;
-  LatLng get getMinLat => _minLat;
-  LatLng get getMaxLat => _maxLat;
+  LatLng get getMinLat => _southwest;
+  LatLng get getMaxLat => _northeast;
   List<RoadStats> get getRoadStats => roadStats;
   GoogleMapController? get getGoogleMapController => _googleMapController;
   List<MapType> get googlemapType => _googlemapType.toList();
   List<String> get getMapType => mapType;
   MapType get backgroundMapType => _backgroundMapType.value;
-  String get dropdownvalue => dropdownValue.value;
   bool get showProgress => _showCircularProgress.value;
   bool get showPCIlabel => _showPCIlabel.value;
 
@@ -62,7 +65,6 @@ class MapPageController extends GetxController {
   set setMapType(List<String> value) => mapType.addAll(value);
   set googlemapType(List<MapType> value) => _googlemapType.addAll(value);
   set backgroundMapType(MapType value) => _backgroundMapType.value = value;
-  set dropdownvalue(String value) => dropdownValue.value = value;
   set showProgress(bool value) => _showCircularProgress.value = value;
   set showPCIlabel(bool value) => _showPCIlabel.value = value;
 
@@ -72,14 +74,15 @@ class MapPageController extends GetxController {
   /// might be holding. It can be useful when you need to refresh the state
   /// or remove any temporary data.
   void clearData() {
+    isMapCreated.value = false;
     roadStats.clear();
     segStats.clear();
     _pciPolylines.clear();
     roadOutputData.clear();
     selectedRoads.clear();
 
-    _minLat = const LatLng(0, 0);
-    _maxLat = const LatLng(0, 0);
+    _southwest = const LatLng(0, 0);
+    _northeast = const LatLng(0, 0);
   }
 
   /// Plots road data on the map.
@@ -94,10 +97,13 @@ class MapPageController extends GetxController {
   /// ```dart
   /// await plotRoadData();
   /// ```
+  void takeSS() async {}
+
   Future<void> plotRoadData() async {
     _pciPolylines.clear();
     roadStats.clear();
     segStats.clear();
+    isMapCreated.value = false;
     logger.d("plotting road data...");
 
     try {
@@ -115,8 +121,8 @@ class MapPageController extends GetxController {
       roadStats = res['roadStats'];
       segStats = res['segStats'];
       _pciPolylines.addAll(res['pciPolylines']);
-      _minLat = res['minLat'];
-      _maxLat = res['maxLat'];
+      _southwest = res['southwest'];
+      _northeast = res['northeast'];
     } catch (e) {
       customGetSnackBar(
           "Plotting Error",
@@ -144,7 +150,7 @@ class MapPageController extends GetxController {
   Future<void> animateToLocation(LatLng min, LatLng max) async {
     LatLngBounds bounds = calculateBounds(min, max);
     _googleMapController
-        ?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 11));
+        ?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 20));
   }
 
   // This function is used to plot the DRRP layer on the map.
