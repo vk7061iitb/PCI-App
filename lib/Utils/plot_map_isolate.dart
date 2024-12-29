@@ -5,19 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Utils/get_road_color.dart';
-import 'package:pci_app/Utils/set_road_stats.dart';
-import 'package:pci_app/Utils/vel_to_pci.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Models/stats_data.dart';
+import 'get_road_color.dart';
+import 'set_road_stats.dart';
+import 'vel_to_pci.dart';
+import '../Objects/data.dart';
+import '../src/Models/stats_data.dart';
 import '../src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
 import '../Functions/avg.dart';
 
 /// Plots a map in an isolate with the given data.
-///
-/// This function runs asynchronously and performs the map plotting
-/// operation in a separate isolate to avoid blocking the main thread.
-///
 Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   logger.d('Isolate started');
   final SendPort sendPort = isolateData['sendPort'];
@@ -30,9 +26,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   final Set<Polyline> drrpPolylines =
       isolateData['drrpPolylines'] as Set<Polyline>;
   final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
-  LatLng maxLat = const LatLng(0, 0);
-  LatLng minLat = const LatLng(0, 0);
-  logger.i(roadOutputData);
+  double minimumLat = 0, minimumLon = 0, maximumLat = 0, maximumLon = 0;
+
   try {
     /// Process each selected journey
     for (int i = 0; i < roadOutputData.length; i++) {
@@ -52,40 +47,40 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           logger.e('Error parsing labels: $e');
           continue;
         }
-        minLat = (minLat.latitude == 0)
-            ? LatLng(labels[0]['latitude'], labels[0]['longitude'])
-            : minLat;
-
         List<LatLng> points = [];
         List<double> velocities = [];
         double firstPointPCI = 0.0;
         double secondPointPCI = 0.0;
         double distance = 0.0;
-        // Initialize first point and prediction
+        double time = 0.0;
         double totalD = 0.0;
         double disP = 0.0;
+        // points to map the end of a segment
         LatLng point2 = LatLng(labels[0]['latitude'], labels[0]['longitude']);
         LatLng point1 = LatLng(0, 0);
         // Process road segments
         for (int k = 0; k < labels.length - 1; k++) {
-          maxLat =
-              LatLng(labels[k + 1]['latitude'], labels[k + 1]['longitude']);
+          if (k == 0) {
+            minimumLat = labels[0]['latitude'];
+            minimumLon = labels[0]['longitude'];
+            maximumLat = labels[0]['latitude'];
+            maximumLon = labels[0]['longitude'];
+          }
+          minimumLat = min(minimumLat, labels[k]['latitude']);
+          minimumLon = min(minimumLon, labels[k]['longitude']);
+          maximumLat = max(maximumLat, labels[k]['latitude']);
+          maximumLon = max(maximumLon, labels[k]['longitude']);
+
           var firstLabel = labels[k];
           var secondLabel = labels[k + 1];
           LatLng firstPoint =
               LatLng(firstLabel['latitude'], firstLabel['longitude']);
           LatLng secondPoint =
               LatLng(secondLabel['latitude'], secondLabel['longitude']);
-          firstPointPCI = secondPointPCI;
-          //
           double firstValue = (firstLabel['prediction'] as num).toDouble();
           double secondValue = (secondLabel['prediction'] as num).toDouble();
           double velPredPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
               velocityToPCI(3.6 * firstLabel['velocity']));
-          secondPointPCI = showPCIlabel
-              ? min(firstValue, secondValue)
-              : velPredPCI.toDouble();
-
           // Calculate distance between points
           double d = Geolocator.distanceBetween(
             firstPoint.latitude,
@@ -93,11 +88,16 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             secondPoint.latitude,
             secondPoint.longitude,
           ); // in meters
-
+          // calculate the time
+          double t =
+              (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
+          firstPointPCI = secondPointPCI;
+          secondPointPCI = showPCIlabel
+              ? min(firstValue, secondValue)
+              : velPredPCI.toDouble();
           velocities.add(firstLabel['velocity']);
           points.add(firstPoint);
           totalD += d;
-
           // Create polyline when prediction changes
           if (firstPointPCI != secondPointPCI) {
             point1 = point2;
@@ -108,37 +108,27 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               'filename': currJourney['filename'],
               'time': currJourney['time'],
               'pci': firstPointPCI,
-              'avg_vel': 3.6 * avg(velocities),
+              'avg_vel': 3.6 * (distance / time),
               'distance': distance / 1000,
               'start': (totalD - distance) / 1000,
               'end': totalD / 1000,
               'latlngs': [point1, point2]
             };
-
-            Polyline polyline = Polyline(
-              consumeTapEvents: true,
-              polylineId: PolylineId("Polyline$i$j$k"),
-              color: getRoadColor(firstPointPCI),
-              width: 5,
-              endCap: Cap.roundCap,
-              startCap: Cap.roundCap,
-              jointType: JointType.round,
-              points: List.from(points),
-              onTap: () {
-                Get.bottomSheet(
-                  clipBehavior: Clip.antiAlias,
-                  backgroundColor: Colors.white,
-                  PolylineBottomSheet(data: polylineOnTapData),
-                );
-              },
+            pciPolylines.add(
+              createPolyline(
+                  pci: firstPointPCI,
+                  points: points,
+                  polylineID: "Polyline$i$j$k",
+                  polylineOnTapData: polylineOnTapData),
             );
-            pciPolylines.add(polyline);
             // Reset for next segment
             points = [firstPoint];
             velocities = [firstLabel['velocity']];
             distance = 0;
+            time = 0;
           }
           distance += d;
+          time += t;
         }
 
         if (points.length == 1) {
@@ -151,30 +141,19 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             'filename': currJourney['filename'],
             'time': currJourney['time'],
             'pci': secondPointPCI,
-            'avg_vel': 3.6 * avg(velocities),
+            'avg_vel': 3.6 * (distance / time),
             'distance': distance / 1000,
             'start': (totalD - distance) / 1000,
             'end': totalD / 1000,
             'latlngs': [point1, point2]
           };
-          Polyline polyline = Polyline(
-            consumeTapEvents: true,
-            polylineId: PolylineId("Polyline$i$j${labels.length - 1}"),
-            color: getRoadColor(secondPointPCI),
-            width: 5,
-            endCap: Cap.roundCap,
-            startCap: Cap.roundCap,
-            jointType: JointType.round,
-            points: List.from(points),
-            onTap: () {
-              Get.bottomSheet(
-                clipBehavior: Clip.antiAlias,
-                backgroundColor: Colors.white,
-                PolylineBottomSheet(data: polylineOnTapData),
-              );
-            },
+          pciPolylines.add(
+            createPolyline(
+                pci: secondPointPCI,
+                points: points,
+                polylineID: "Polyline$i$j${labels.length - 1}",
+                polylineOnTapData: polylineOnTapData),
           );
-          pciPolylines.add(polyline);
         } else {
           disP += distance;
           point1 = point2;
@@ -182,36 +161,24 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           // add the last point in the points and create a new polyline
           points.add(LatLng(labels.last['latitude'], labels.last['longitude']));
           velocities.add(labels.last['velocity']);
-
           Map<String, dynamic> polylineOnTapData = {
             'roadName': roadName,
             'filename': currJourney['filename'],
             'time': currJourney['time'],
             'pci': secondPointPCI,
-            'avg_vel': 3.6 * avg(velocities),
+            'avg_vel': 3.6 * (distance / time),
             'distance': distance / 1000,
             'start': (totalD - distance) / 1000,
             'end': totalD / 1000,
             'latlngs': [point1, point2]
           };
-          Polyline polyline = Polyline(
-            consumeTapEvents: true,
-            polylineId: PolylineId("Polyline$i$j${labels.length - 1}"),
-            color: getRoadColor(secondPointPCI),
-            width: 5,
-            endCap: Cap.roundCap,
-            startCap: Cap.roundCap,
-            jointType: JointType.round,
-            points: List.from(points),
-            onTap: () {
-              Get.bottomSheet(
-                clipBehavior: Clip.antiAlias,
-                backgroundColor: Colors.white,
-                PolylineBottomSheet(data: polylineOnTapData),
-              );
-            },
+          pciPolylines.add(
+            createPolyline(
+                pci: secondPointPCI,
+                points: points,
+                polylineID: "Polyline$i$j${labels.length - 1}",
+                polylineOnTapData: polylineOnTapData),
           );
-          pciPolylines.add(polyline);
         }
         logger.i("Distance(Polylines): $disP");
       }
@@ -228,17 +195,43 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
         segStats.add(stats);
       }
     }
+    LatLng southwest = LatLng(minimumLat, minimumLon);
+    LatLng northeast = LatLng(maximumLat, maximumLon);
     pciPolylines.addAll(drrpPolylines);
     sendPort.send({
       'roadStats': roadStats,
       'segStats': segStats,
       'pciPolylines': pciPolylines,
-      'maxLat': maxLat,
-      'minLat': minLat,
+      'southwest': southwest,
+      'northeast': northeast,
     });
   } catch (e, stackTrace) {
     logger.e(e.toString());
     logger.d(stackTrace);
   }
   logger.d('Isolate ended');
+}
+
+Polyline createPolyline(
+    {required double pci,
+    required List<LatLng> points,
+    required String polylineID,
+    required Map<String, dynamic> polylineOnTapData}) {
+  return Polyline(
+    consumeTapEvents: true,
+    polylineId: PolylineId(polylineID),
+    color: getRoadColor(pci),
+    width: 5,
+    endCap: Cap.roundCap,
+    startCap: Cap.roundCap,
+    jointType: JointType.round,
+    points: List.from(points),
+    onTap: () {
+      Get.bottomSheet(
+        clipBehavior: Clip.antiAlias,
+        backgroundColor: Colors.white,
+        PolylineBottomSheet(data: polylineOnTapData),
+      );
+    },
+  );
 }

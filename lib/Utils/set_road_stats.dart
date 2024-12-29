@@ -24,24 +24,12 @@ List<dynamic> setRoadStatistics({
       roadName: roadName,
       predStats: _predStats(road, predSegStats, filename, roadName),
       velStats: _velStats(road, velSegStats, filename, roadName),
-    ));
+    ),);
   }
-  logger.i(predSegStats.length);
-  logger.i(velSegStats.length);
+
   segStats
       .add(SegStats(predictedStats: predSegStats, velocityStats: velSegStats));
   return [roadStatistics, segStats];
-}
-
-String formatChainage(double distanceInMeters) {
-  // Round to nearest integer to avoid floating-point issues
-  int totalMeters = (distanceInMeters).round();
-
-  // Calculate kilometers and remaining meters
-  int kilometers = totalMeters ~/ 1000; // Integer division for kilometers
-  int meters = totalMeters % 1000; // Remainder for meters
-  String chainageTo = '$kilometers/${meters.toString().padLeft(3, '0')}';
-  return chainageTo;
 }
 
 List<RoadStatsData> _velStats(Map<String, dynamic> road,
@@ -49,13 +37,14 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
-    Map<String, dynamic> stats = {};
+    Map<int, dynamic> stats = {};
     // initialize the stats
-    for (double i = 0; i <= 5; i++) {
-      stats[i.toString()] = {
+    for (int i = 0; i <= 5; i++) {
+      stats[i] = {
         'avg_velocity': 0.0,
         'distance_travelled': 0.0,
         'number_of_segments': 0.0,
+        'total_time': 0.0,
       };
     }
     List<double> velocities = [];
@@ -63,6 +52,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
     double secondPointPCI = 0.0;
     double distance = 0.0;
     double td = 0.0;
+    double time = 0.0;
     int totalSegments = 0;
     Map<String, dynamic> firstLabel = {};
     Map<String, dynamic> secondLabel = {};
@@ -86,19 +76,16 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
         secondPoint.latitude,
         secondPoint.longitude,
       ); // in meters
-
+      double t = (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
       velocities.add(firstLabel['velocity']);
-
       if (secondPointPCI != firstPointPCI) {
-        stats[firstPointPCI.toString()]['number_of_segments'] += 1;
-        double n = stats[firstPointPCI.toString()]['number_of_segments'];
-        stats[firstPointPCI.toString()]['avg_velocity'] =
-            (stats[firstPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                    avg(velocities)) /
-                n;
-        stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+        /// add overall stats
+        stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+        stats[firstPointPCI.toInt()]['total_time'] += time;
+        stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
+
+        /// add the segment to the list
         if (firstPointPCI != 0) {
-          // add the segment to the list
           totalSegments += 1;
           velSegStats.add(
             SegmentStats(
@@ -115,20 +102,18 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
         // reset the data
         velocities = [firstLabel['velocity']];
         distance = 0.0;
+        time = 0.0;
       }
       td += d;
       distance += d;
+      time += t;
     }
     if (velocities.length == 1) {
       // there is last segment which has different PCI than the previous one,
       // so we need to add it to the stats
-      stats[secondPointPCI.toString()]['number_of_segments'] += 1;
-      double n = stats[secondPointPCI.toString()]['number_of_segments'];
-      stats[secondPointPCI.toString()]['avg_velocity'] =
-          (stats[secondPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                  avg(velocities)) /
-              n;
-      stats[secondPointPCI.toString()]['distance_travelled'] += distance;
+      stats[secondPointPCI.toInt()]['number_of_segments'] += 1;
+      stats[secondPointPCI.toInt()]['total_time'] += time;
+      stats[secondPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         // add the segment to the list
         totalSegments += 1;
@@ -148,13 +133,9 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
       // the last segment has the same PCI as the previous one, but the loop has ended before adding it to the stats,
       // so we need to add it now
       velocities.add(labels.last['velocity']);
-      stats[firstPointPCI.toString()]['number_of_segments'] += 1;
-      double n = stats[firstPointPCI.toString()]['number_of_segments'];
-      stats[firstPointPCI.toString()]['avg_velocity'] =
-          (stats[firstPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                  avg(velocities)) /
-              n;
-      stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+      stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+      stats[firstPointPCI.toInt()]['total_time'] += time;
+      stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         // add the segment to the list
         totalSegments += 1;
@@ -173,15 +154,17 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
     }
 
     List<RoadStatsData> velStatsList = [];
-    logger.i("Distance Travelled(Actual): $td");
     for (var key in stats.keys) {
-      if (double.parse(key) == 0) {
+      if (key == 0) {
         continue;
       }
       velStatsList.add(
         RoadStatsData(
-          pci: double.parse(key).toStringAsFixed(0),
-          avgVelocity: stats[key]['avg_velocity'].toString(),
+          pci: key.toString(),
+          avgVelocity: stats[key]['number_of_segments'] == 0
+              ? '0'
+              : (stats[key]['distance_travelled'] / stats[key]['total_time'])
+                  .toString(),
           distanceTravelled: stats[key]['distance_travelled'].toString(),
           numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
@@ -195,18 +178,18 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
   }
 }
 
-///
 List<RoadStatsData> _predStats(Map<String, dynamic> road,
     List<SegmentStats> predSegStats, String filename, String roadName) {
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
-    Map<String, dynamic> stats = {};
-    for (double i = 0; i <= 5; i++) {
-      stats[i.toString()] = {
+    Map<int, dynamic> stats = {};
+    for (int i = 0; i <= 5; i++) {
+      stats[i] = {
         'avg_velocity': 0.0,
         'distance_travelled': 0.0,
         'number_of_segments': 0.0,
+        'total_time': 0.0,
       };
     }
     List<double> velocities = [];
@@ -214,6 +197,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
     double secondPointPCI = 0.0;
     double distance = 0.0;
     double td = 0.0;
+    double time = 0.0;
     int totalSegments = 0;
     Map<String, dynamic> firstLabel = {};
     Map<String, dynamic> secondLabel = {};
@@ -237,16 +221,12 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
         secondPoint.latitude,
         secondPoint.longitude,
       ); // in meters
+      double t = (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
       velocities.add(firstLabel['velocity']);
-
       if (secondPointPCI != firstPointPCI) {
-        stats[firstPointPCI.toString()]['number_of_segments'] += 1;
-        double n = stats[firstPointPCI.toString()]['number_of_segments'];
-        stats[firstPointPCI.toString()]['avg_velocity'] =
-            (stats[firstPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                    avg(velocities)) /
-                n;
-        stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+        stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+        stats[firstPointPCI.toInt()]['total_time'] += time;
+        stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
         // add the segment to the list
         if (firstPointPCI != 0) {
           totalSegments += 1;
@@ -265,20 +245,18 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
         // reset the data
         velocities = [firstLabel['velocity']];
         distance = 0.0;
+        time = 0.0;
       }
       td += d;
       distance += d;
+      time += t;
     }
     if (velocities.length == 1) {
       // there is last segment which has different PCI than the previous one,
       // so we need to add it to the stats
-      stats[secondPointPCI.toString()]['number_of_segments'] += 1;
-      double n = stats[secondPointPCI.toString()]['number_of_segments'];
-      stats[secondPointPCI.toString()]['avg_velocity'] =
-          (stats[secondPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                  avg(velocities)) /
-              n;
-      stats[secondPointPCI.toString()]['distance_travelled'] += distance;
+      stats[secondPointPCI.toInt()]['number_of_segments'] += 1;
+      stats[secondPointPCI.toInt()]['total_time'] += time;
+      stats[secondPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         // add the segment to the list
         totalSegments += 1;
@@ -299,13 +277,9 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       // but the loop has ended before adding it to the stats,
       // so we need to add it now
       velocities.add(labels.last['velocity']);
-      stats[firstPointPCI.toString()]['number_of_segments'] += 1;
-      double n = stats[firstPointPCI.toString()]['number_of_segments'];
-      stats[firstPointPCI.toString()]['avg_velocity'] =
-          (stats[firstPointPCI.toString()]['avg_velocity'] * (n - 1) +
-                  avg(velocities)) /
-              n;
-      stats[firstPointPCI.toString()]['distance_travelled'] += distance;
+      stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+      stats[firstPointPCI.toInt()]['total_time'] += time;
+      stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         // add the segment to the list
         totalSegments += 1;
@@ -325,13 +299,16 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
 
     List<RoadStatsData> predStatsList = [];
     for (var key in stats.keys) {
-      if (double.parse(key) == 0) {
+      if (key == 0) {
         continue;
       }
       predStatsList.add(
         RoadStatsData(
-          pci: double.parse(key).toStringAsFixed(0),
-          avgVelocity: stats[key]['avg_velocity'].toString(),
+          pci: key.toString(),
+          avgVelocity: stats[key]['number_of_segments'] == 0
+              ? '0'
+              : (stats[key]['distance_travelled'] / stats[key]['total_time'])
+                  .toString(),
           distanceTravelled: stats[key]['distance_travelled'].toString(),
           numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
         ),
@@ -361,4 +338,15 @@ String remarks(int roadType) {
       res = "No Remarks";
   }
   return res;
+}
+
+String formatChainage(double distanceInMeters) {
+  // Round to nearest integer to avoid floating-point issues
+  int totalMeters = (distanceInMeters).round();
+
+  // Calculate kilometers and remaining meters
+  int kilometers = totalMeters ~/ 1000; // Integer division for kilometers
+  int meters = totalMeters % 1000; // Remainder for meters
+  String chainageTo = '$kilometers/${meters.toString().padLeft(3, '0')}';
+  return chainageTo;
 }
