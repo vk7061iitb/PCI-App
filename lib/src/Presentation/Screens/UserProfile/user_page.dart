@@ -22,7 +22,7 @@ class UserPage extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        elevation: 0.5,
+        elevation: 0,
         title: Text(
           'User Profile',
           style: GoogleFonts.inter(
@@ -32,13 +32,19 @@ class UserPage extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black54,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -64,7 +70,6 @@ class UserPage extends StatelessWidget {
               ),
               const Gap(8),
               Divider(color: Colors.grey[300], thickness: 1),
-
               const Gap(12),
               // User Information Card
               Card(
@@ -74,8 +79,10 @@ class UserPage extends StatelessWidget {
                 ),
                 elevation: 0.5,
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Column(
                     children: [
                       buildInfoRow(
