@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -17,9 +18,9 @@ import 'package:google_fonts/google_fonts.dart';
 /// - `GetSnackBar`: A configured GetSnackBar widget.
 GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
   return GetSnackBar(
-    snackPosition: SnackPosition.BOTTOM, // Position at the bottom
-    backgroundColor: Colors.white, // Light background similar to Google's UI
-    borderRadius: 12, // Slightly rounded corners
+    snackPosition: SnackPosition.BOTTOM,
+    backgroundColor: Colors.white,
+    borderRadius: 15,
     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Padding
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     duration: const Duration(seconds: 4), // Dismiss after 4 seconds
@@ -32,20 +33,26 @@ GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
         offset: const Offset(0, 2),
       ),
     ],
-    icon: Icon(
-      icon,
-      color: Colors.black87,
-      size: 28, // Slightly larger icon
-    ),
+
     titleText: Padding(
       padding: const EdgeInsets.only(bottom: 4), // Add some spacing
-      child: Text(
-        title,
-        style: GoogleFonts.inter(
-          color: Colors.black87,
-          fontWeight: FontWeight.w600,
-          fontSize: 17,
-        ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: Colors.black87,
+            size: 28, // Slightly larger icon
+          ),
+          const Gap(10),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+              fontSize: 17,
+            ),
+          ),
+        ],
       ),
     ),
     messageText: Row(
@@ -73,7 +80,7 @@ GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
               "Copied",
               "Message copied to clipboard!",
               snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.black45,
               colorText: Colors.white,
               duration: const Duration(seconds: 2),
             );
