@@ -138,8 +138,10 @@ class AccDataController extends GetxController {
       return;
     }
     if (currRoadType.value.isEmpty || (bnb.value == -1)) {
-      _showDialog('Road Type not selected',
+      _roadSelectDialogue();
+/*       _showDialog('Road Type not selected',
           'Please select the road type and try again.');
+ */
       return;
     }
 
@@ -227,6 +229,82 @@ void _showDialog(String title, String content) {
       ],
     ),
   );
+}
+
+void _roadSelectDialogue() {
+  Get.dialog(AlertDialog(
+    title: Text("Road Type not selected"),
+    titleTextStyle: GoogleFonts.inter(
+      color: textColor,
+      fontWeight: FontWeight.w500,
+      fontSize: 24,
+    ),
+    content: RichText(
+      text: TextSpan(
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          color: textColor,
+        ),
+        children: [
+          const TextSpan(
+            text: 'Please select the ',
+          ),
+          TextSpan(
+            text: 'road type',
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.normal,
+              color: Colors.blue[600],
+            ),
+          ),
+          const TextSpan(
+            text: ' (',
+          ),
+          TextSpan(
+            text: 'paved/unpaved/pedestrian',
+            style: GoogleFonts.inter(
+              fontStyle: FontStyle.italic,
+              color: Colors.grey[700],
+            ),
+          ),
+          const TextSpan(
+            text: ') and ',
+          ),
+          TextSpan(
+            text: 'speed breaker status',
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.normal,
+              color: Colors.blue[600],
+            ),
+          ),
+          const TextSpan(
+            text: ' (',
+          ),
+          TextSpan(
+            text: 'break/no break',
+            style: GoogleFonts.inter(
+              fontStyle: FontStyle.normal,
+              color: Colors.red[700],
+            ),
+          ),
+          const TextSpan(
+            text: ').',
+          ),
+        ],
+      ),
+    ),
+    contentTextStyle: GoogleFonts.inter(
+      fontWeight: FontWeight.normal,
+      fontSize: 16,
+    ),
+    actions: [
+      TextButton(
+        onPressed: () {
+          Get.back();
+        },
+        child: const Text('OK'),
+      ),
+    ],
+  ));
 }
 
 void _showPermissionDialog() {

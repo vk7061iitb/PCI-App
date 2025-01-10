@@ -58,8 +58,8 @@ class ResponseController extends GetxController {
     for (int i = 1; i < accData.length; i++) {
       AccData prevPoint = accData[i - 1];
       AccData currentPoint = accData[i];
-      bool isSame = currentPoint.latitude == prevPoint.latitude &&
-          currentPoint.longitude == prevPoint.longitude;
+      bool isSame = (currentPoint.latitude == prevPoint.latitude) ||
+          (currentPoint.longitude == prevPoint.longitude);
       if (!isSame) {
         diffPoints++;
         if (diffPoints > 1) {

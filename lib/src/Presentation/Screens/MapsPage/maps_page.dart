@@ -16,15 +16,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../../Controllers/map_page_controller.dart';
-import '../../Controllers/sensor_controller.dart';
 import 'widget/map_page_legends.dart';
 import 'widget/maptype_dropdown.dart';
 import 'widget/road_stats.dart';
 
 class MapPage extends StatelessWidget {
-  MapPage({super.key});
-
-  final AccDataController _accDataController = Get.find();
+  const MapPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,37 +29,40 @@ class MapPage extends StatelessWidget {
     double h = MediaQuery.sizeOf(context).height;
     double w = MediaQuery.sizeOf(context).width;
 
+    final GlobalKey gKey = GlobalKey();
     return Scaffold(
       body: SafeArea(
         top: true,
         child: Stack(
           children: [
             Positioned.fill(
-              child: SizedBox(
-                child: SizedBox(
-                  child: Obx(
-                    () {
-                      return GoogleMap(
-                        mapType: mapPageController.backgroundMapType,
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(
-                              _accDataController.devicePosition.latitude,
-                              _accDataController.devicePosition.longitude),
-                          zoom: 15,
+              child: Obx(
+                () {
+                  return RepaintBoundary(
+                    key: gKey,
+                    child: GoogleMap(
+                      buildingsEnabled: false,
+                      mapType: mapPageController.backgroundMapType,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(
+                          0,
+                          0,
                         ),
-                        onMapCreated: (GoogleMapController controller) {
-                          mapPageController.setGoogleMapController = controller;
-
-                          mapPageController.animateToLocation(
-                              mapPageController.getMinLat,
-                              mapPageController.getMaxLat);
-                        },
-                        polylines: mapPageController.pciPolylines,
-                        zoomControlsEnabled: false,
-                      );
-                    },
-                  ),
-                ),
+                        zoom: 15,
+                      ),
+                      onMapCreated: (GoogleMapController controller) async {
+                        mapPageController.setGoogleMapController = controller;
+                        await mapPageController.animateToLocation(
+                          mapPageController.getMinLat,
+                          mapPageController.getMaxLat,
+                        );
+                        mapPageController.isMapCreated.value = true;
+                      },
+                      polylines: mapPageController.pciPolylines,
+                      zoomControlsEnabled: false,
+                    ),
+                  );
+                },
               ),
             ),
             Positioned(

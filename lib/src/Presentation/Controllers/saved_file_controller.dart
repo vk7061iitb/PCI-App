@@ -77,7 +77,7 @@ class SavedFileController extends GetxController {
             Get.showSnackbar(
               customGetSnackBar(
                 "Submission Failed",
-                "Failed to send data",
+                value,
                 Icons.error_outline,
               ),
             );
