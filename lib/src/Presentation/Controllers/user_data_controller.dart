@@ -14,4 +14,8 @@ class UserDataController {
     user = storage.read("user") ?? {};
     return user;
   }
+
+  Future<void> deleteUser() async {
+    await storage.erase();
+  }
 }

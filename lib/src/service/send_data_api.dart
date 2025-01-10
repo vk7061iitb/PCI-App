@@ -89,12 +89,13 @@ class SendDataToServer {
         return message;
       } else {
         logger.f('Failed to send data. Status code: ${response.statusCode}');
-        message = 'Failed to send data. Status code: ${response.statusCode}';
+        message = 'Failed to send data. ${response.body}';
         logger.d('Response body: ${response.body}');
         return message;
       }
-    } catch (e) {
+    } catch (e, stacktrace) {
       logger.f('Error: $e');
+      logger.f('stack trace : $stacktrace');
       return e.toString();
     }
   }

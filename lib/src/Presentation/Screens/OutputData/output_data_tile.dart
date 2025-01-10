@@ -134,6 +134,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
                       id: widget.id,
                       filename: widget.filename,
                       planned: widget.planned,
+                      time: widget.time,
                       vehicleType: widget.vehicleType,
                     ),
                     transition: Transition.cupertino,
@@ -296,22 +297,32 @@ class _OutputDataItemState extends State<OutputDataItem> {
                         ),
                       );
                     },
-                    child: outputDataController.slectedFiles.contains(widget.id)
-                        ? Row(
-                            key: ValueKey(
-                                'check_${widget.id}'), // Unique key for animation
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: activeColor,
-                                size: 24,
-                              ),
-                              const Gap(8),
-                            ],
-                          )
-                        : SizedBox(
-                            key: ValueKey('empty_${widget.id}'),
-                          ),
+                    child: outputDataController.slectedFiles.isNotEmpty
+                        ? outputDataController.slectedFiles.contains(widget.id)
+                            ? Row(
+                                key: ValueKey(
+                                    'check_${widget.id}'), // Unique key for animation
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: activeColor,
+                                    size: 24,
+                                  ),
+                                  const Gap(8),
+                                ],
+                              )
+                            : Row(
+                                key: ValueKey('empty_${widget.id}'),
+                                children: [
+                                  Icon(
+                                    Icons.circle_outlined,
+                                    color: textColor,
+                                    size: 24,
+                                  ),
+                                  const Gap(8),
+                                ],
+                              )
+                        : SizedBox(),
                   );
                 }),
                 Container(

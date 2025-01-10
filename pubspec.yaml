@@ -1,7 +1,7 @@
 name: pci_app
 description: "PCI App"
 publish_to: "none"
-version: 2.3.2
+version: 2.3.4
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
@@ -40,6 +40,7 @@ dependencies:
   printing: ^5.13.4
   flutter_markdown: ^0.7.4+3
   auto_size_text: ^3.0.0
+  widgets_to_image: ^1.0.0
 
 dev_dependencies:
   flutter_test:

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:pci_app/src/Presentation/Screens/Login/login_screen.dart';
 
 import '../../../../Utils/font_size.dart';
 
@@ -65,7 +66,7 @@ class UserPage extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: textColor,
                 ),
               ),
               const Gap(8),
@@ -104,6 +105,29 @@ class UserPage extends StatelessWidget {
                   ),
                 ),
               ),
+              const Gap(10),
+              OutlinedButton(
+                onPressed: () async {
+                  await _showconfirmDialog(context).then((value) async {
+                    if (value == true) {
+                      // logout the user
+                      await userDataController.deleteUser();
+                      Get.offAll(
+                        () => LoginScreen(),
+                        transition: Transition.cupertino,
+                      );
+                    }
+                  });
+                },
+                child: Text(
+                  "Log Out",
+                  style: GoogleFonts.inter(
+                    fontSize: fs.bodyTextFontSize,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -134,11 +158,62 @@ class UserPage extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Colors.black87,
+              color: textColor,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+// Get alert dialog for the user to confirm the deletion of the data
+Future<bool?> _showconfirmDialog(BuildContext context) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm Logout'),
+        titleTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+          fontSize: 24,
+        ),
+        content: const Text('Are you sure you want to logout?'),
+        contentTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+          fontSize: 16,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(result: true);
+            },
+            child: Text(
+              'Log Out',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.red,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
