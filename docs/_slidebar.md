@@ -1,3 +1,0 @@
-- [Home](/)
-- [Features](/features)
-- [Installation](/installation)
