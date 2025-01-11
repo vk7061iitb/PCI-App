@@ -1,3 +1,3 @@
 - [Home](/)
-- [Features](/features)
-- [Installation](/installation)
+- [Manual](/guides/manual)
+- [FAQ](/faq)
