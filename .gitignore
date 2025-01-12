@@ -53,7 +53,7 @@ android/app/src/main/AndroidManifest.xml
 # Configuration files
 lib/src/config/config.dart
 # credentials
-lib/src/config/credentials.dart
+lib/src/service/credentials.dart
 
 # Gradle files : Contains the API keys
 android/gradle.properties
