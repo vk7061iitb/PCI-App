@@ -50,23 +50,15 @@ class HistoryDataItem extends StatelessWidget {
             right,
             bottom,
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           items: [
             PopupMenuItem(
               onTap: shareFile,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: Icon(
-                      Icons.share,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Share",
-                    style: pupUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Share",
+                style: pupUpMenuTextStyle,
               ),
             ),
             if ((file['status'] != 1))
@@ -74,38 +66,16 @@ class HistoryDataItem extends StatelessWidget {
                 onTap: () async {
                   await savedFileController.searchUnsentData(file);
                 },
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Icon(
-                        Icons.replay_outlined,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      "Re-Submit",
-                      style: pupUpMenuTextStyle,
-                    ),
-                  ],
+                child: Text(
+                  "Re-Submit",
+                  style: pupUpMenuTextStyle,
                 ),
               ),
             PopupMenuItem(
               onTap: deleteFile,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.delete_outline,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Delete",
-                    style: pupUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Delete",
+                style: pupUpMenuTextStyle,
               ),
             ),
           ],
@@ -123,32 +93,38 @@ class HistoryDataItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: MediaQuery.sizeOf(context).width * 0.15,
-                  height: MediaQuery.sizeOf(context).width * 0.15,
+                  width: (MediaQuery.sizeOf(context).width * 0.15 < 80)
+                      ? MediaQuery.sizeOf(context).width * 0.15
+                      : 80,
+                  height: (MediaQuery.sizeOf(context).width * 0.15 < 80)
+                      ? MediaQuery.sizeOf(context).width * 0.15
+                      : 80,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(15),
                     color: Colors.white,
                   ),
                   child: Center(
-                    child: Icon(
-                      getIcon(file['vehicleType']),
-                      size: MediaQuery.sizeOf(context).width * 0.1,
-                      color: Colors.black87,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Icon(
+                        getIcon(file['vehicleType']),
+                        size: (MediaQuery.sizeOf(context).width * 0.1 < 50)
+                            ? MediaQuery.sizeOf(context).width * 0.1
+                            : 50,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ),
                 Gap(MediaQuery.sizeOf(context).width * 0.05),
                 Expanded(
-                  // Ensures the second column takes available space
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start, // Align children to the left
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment
-                            .spaceBetween, // Space between file name and status
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          FittedBox(
+                          Expanded(
                             child: Text(
                               file['filename'],
                               style: GoogleFonts.inter(
@@ -156,52 +132,45 @@ class HistoryDataItem extends StatelessWidget {
                                 fontWeight: FontWeight.normal,
                                 fontSize: fs.bodyTextFontSize,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.clip,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                           ),
-                          FittedBox(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: (file['status'] != 1)
+                                  ? Colors.red.shade100
+                                  : Colors.green.shade100,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Text(
+                              (file['status'] != 1)
+                                  ? "Not Submitted"
+                                  : "Submitted",
+                              style: GoogleFonts.inter(
                                 color: (file['status'] != 1)
-                                    ? Colors.red.shade100
-                                    : Colors.green.shade100,
-                                borderRadius: BorderRadius.circular(15),
+                                    ? Colors.red.shade900
+                                    : Colors.green.shade900,
+                                fontWeight: FontWeight.w500,
                               ),
-                              child: Text(
-                                (file['status'] != 1)
-                                    ? "Not Submitted"
-                                    : "Submitted",
-                                style: GoogleFonts.inter(
-                                  color: (file['status'] != 1)
-                                      ? Colors.red.shade900
-                                      : Colors.green.shade900,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_month_outlined,
-                            size: 16,
-                            color: Colors.teal,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            file['time'],
-                            style: GoogleFonts.inter(
-                              color: Colors.teal,
-                              fontWeight: FontWeight.normal,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        file['time'],
+                        style: GoogleFonts.inter(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
