@@ -82,65 +82,80 @@ class SaveFile extends StatelessWidget {
                         return Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              TextButton(
-                                onPressed: () {
-                                  responseController.isPlanned.value = true;
-                                },
-                                style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all(
-                                  backgroundColor,
-                                )),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      responseController.isPlanned.value
-                                          ? Icons.check
-                                          : Icons.cancel_outlined,
-                                    ),
-                                    const Gap(10),
-                                    Text(
-                                      "Planned",
-                                      style: GoogleFonts.inter(
-                                        fontSize: fs.appBarFontSize,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            responseController.isPlanned.value
+                              Flexible(
+                                child: TextButton(
+                                  onPressed: () {
+                                    responseController.isPlanned.value = true;
+                                  },
+                                  style: ButtonStyle(
+                                      backgroundColor:
+                                          WidgetStateProperty.all(
+                                    backgroundColor,
+                                  )),
+                                  child: FittedBox(
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          responseController.isPlanned.value
+                                              ? Icons.check
+                                              : Icons.cancel_outlined,
+                                        ),
+                                        const Gap(10),
+                                        Text(
+                                          "Planned",
+                                          style: GoogleFonts.inter(
+                                            fontSize: fs.bodyTextFontSize,
+                                            fontWeight: FontWeight.w500,
+                                            color: responseController
+                                                    .isPlanned.value
                                                 ? Colors.deepPurple
                                                 : Colors.black,
-                                      ),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                               const Gap(20),
-                              TextButton(
-                                onPressed: () {
-                                  responseController.isPlanned.value = false;
-                                },
-                                style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all(
-                                  backgroundColor,
-                                )),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      !responseController.isPlanned.value
-                                          ? Icons.check
-                                          : Icons.cancel_outlined,
-                                    ),
-                                    const Gap(10),
-                                    Text(
-                                      "Un-Planned",
-                                      style: GoogleFonts.inter(
-                                        fontSize: fs.appBarFontSize,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            !responseController.isPlanned.value
+                              Flexible(
+                                child: TextButton(
+                                  onPressed: () {
+                                    responseController.isPlanned.value =
+                                        false;
+                                  },
+                                  style: ButtonStyle(
+                                      backgroundColor:
+                                          WidgetStateProperty.all(
+                                    backgroundColor,
+                                  )),
+                                  child: FittedBox(
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          !responseController.isPlanned.value
+                                              ? Icons.check
+                                              : Icons.cancel_outlined,
+                                        ),
+                                        const Gap(10),
+                                        Text(
+                                          "Un-Planned",
+                                          style: GoogleFonts.inter(
+                                            fontSize: fs.bodyTextFontSize,
+                                            fontWeight: FontWeight.w500,
+                                            color: !responseController
+                                                    .isPlanned.value
                                                 ? Colors.deepPurple
                                                 : Colors.black,
-                                      ),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               )
                             ]);
@@ -299,7 +314,8 @@ class SaveFile extends StatelessWidget {
                                         if (accDataController
                                                 .isPedestrianFound.value &&
                                             !responseController
-                                                .pedestrianFormKey.currentState!
+                                                .pedestrianFormKey
+                                                .currentState!
                                                 .validate()) {
                                           return;
                                         }

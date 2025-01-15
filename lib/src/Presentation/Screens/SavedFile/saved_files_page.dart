@@ -53,6 +53,9 @@ class HistoryDataPageState extends State<HistoryDataPage> {
             onSelected: (val) {
               savedFileController.selectedFilter.value = val;
             },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               PopupMenuItem(
                 value: 0,
@@ -144,16 +147,6 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                 ),
               ),
             ],
-          ),
-          IconButton(
-            onPressed: () {
-              // To do
-            },
-            icon: Icon(
-              Icons.search,
-              size: iS.appBarIconSize,
-              color: Colors.black,
-            ),
           ),
         ],
       ),
@@ -259,15 +252,14 @@ Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
       return AlertDialog(
         title: const Text('Delete File?'),
         titleTextStyle: GoogleFonts.inter(
-          color: Colors.black,
+          color: textColor,
           fontWeight: FontWeight.w500,
-          fontSize: w * 0.06,
+          fontSize: 24,
         ),
         content: const Text('Are you sure you want to delete this file?'),
         contentTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          fontSize: w * 0.04,
+          fontSize: 16,
+          color: textColor,
         ),
         actions: <Widget>[
           TextButton(
@@ -277,7 +269,7 @@ Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
             child: Text(
               'No',
               style: GoogleFonts.inter(
-                fontSize: w * 0.04,
+                fontSize: 18,
                 color: Colors.blue,
                 fontWeight: FontWeight.w400,
               ),
@@ -290,7 +282,7 @@ Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
             child: Text(
               'Yes',
               style: GoogleFonts.inter(
-                fontSize: w * 0.04,
+                fontSize: 18,
                 color: Colors.red,
                 fontWeight: FontWeight.w400,
               ),
