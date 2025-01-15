@@ -82,7 +82,8 @@ class SegmentStats {
   final String from;
   final String to;
   final String distance;
-  final String pci;
+  final int pci;
+  final int velocityPCI;
   final String remarks;
 
   SegmentStats({
@@ -93,6 +94,7 @@ class SegmentStats {
     required this.to,
     required this.distance,
     required this.pci,
+    required this.velocityPCI,
     required this.remarks,
   });
 }
