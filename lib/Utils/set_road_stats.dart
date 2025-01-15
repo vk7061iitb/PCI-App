@@ -6,9 +6,10 @@ import 'package:pci_app/Utils/vel_to_pci.dart';
 import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
 import '../Functions/avg.dart';
+import 'format_chainage.dart';
 
 List<dynamic> setRoadStatistics({
-  required List<Map<String, dynamic>> journeyData,
+  required Map<String, dynamic> journeyData,
   required String filename,
 }) {
   if (journeyData.isEmpty) {
@@ -18,14 +19,15 @@ List<dynamic> setRoadStatistics({
   List<SegStats> segStats = [];
   List<SegmentStats> predSegStats = [];
   List<SegmentStats> velSegStats = [];
-  for (var road in journeyData) {
-    String roadName = road["roadName"];
-    roadStatistics.add(RoadStats(
+
+  String roadName = journeyData["roadName"];
+  roadStatistics.add(
+    RoadStats(
       roadName: roadName,
-      predStats: _predStats(road, predSegStats, filename, roadName),
-      velStats: _velStats(road, velSegStats, filename, roadName),
-    ),);
-  }
+      predStats: _predStats(journeyData, predSegStats, filename, roadName),
+      velStats: _velStats(journeyData, velSegStats, filename, roadName),
+    ),
+  );
 
   segStats
       .add(SegStats(predictedStats: predSegStats, velocityStats: velSegStats));
@@ -65,8 +67,9 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
           LatLng(secondLabel['latitude'], secondLabel['longitude']);
 
       firstPointPCI = secondPointPCI;
-      double velPredPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
-          velocityToPCI(3.6 * firstLabel['velocity']));
+      double velPredPCI = min(
+          velocityToPCI(velocityKmph: 3.6 * secondLabel['velocity']),
+          velocityToPCI(velocityKmph: 3.6 * firstLabel['velocity']));
       secondPointPCI = velPredPCI.toDouble();
 
       // Calculate distance between points
@@ -95,7 +98,10 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
                 from: formatChainage(td - distance),
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
-                pci: firstPointPCI.toStringAsFixed(0),
+                pci: firstPointPCI.toInt(),
+                velocityPCI:
+                    velocityToPCI(velocityKmph: 3.6 * (distance / time))
+                        .toInt(),
                 remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
@@ -125,7 +131,9 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toStringAsFixed(0),
+              pci: secondPointPCI.toInt(),
+              velocityPCI:
+                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -147,7 +155,9 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toStringAsFixed(0),
+              pci: secondPointPCI.toInt(),
+              velocityPCI:
+                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -238,7 +248,10 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
                 from: formatChainage(td - distance),
                 to: formatChainage(td),
                 distance: (distance.round() / 1000).toStringAsFixed(4),
-                pci: firstPointPCI.toStringAsFixed(0),
+                pci: firstPointPCI.toInt(),
+                velocityPCI:
+                    velocityToPCI(velocityKmph: 3.6 * (distance / time))
+                        .toInt(),
                 remarks: remarks(firstLabel['road_type'] ?? -1)),
           );
         }
@@ -268,7 +281,9 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toStringAsFixed(0),
+              pci: secondPointPCI.toInt(),
+              velocityPCI:
+                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -291,7 +306,9 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
               from: formatChainage(td - distance),
               to: formatChainage(td),
               distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toStringAsFixed(0),
+              pci: secondPointPCI.toInt(),
+              velocityPCI:
+                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
               remarks: remarks(secondLabel['road_type'] ?? -1)),
         );
       }
@@ -338,15 +355,4 @@ String remarks(int roadType) {
       res = "No Remarks";
   }
   return res;
-}
-
-String formatChainage(double distanceInMeters) {
-  // Round to nearest integer to avoid floating-point issues
-  int totalMeters = (distanceInMeters).round();
-
-  // Calculate kilometers and remaining meters
-  int kilometers = totalMeters ~/ 1000; // Integer division for kilometers
-  int meters = totalMeters % 1000; // Remainder for meters
-  String chainageTo = '$kilometers/${meters.toString().padLeft(3, '0')}';
-  return chainageTo;
 }
