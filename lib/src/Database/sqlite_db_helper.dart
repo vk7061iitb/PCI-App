@@ -20,21 +20,7 @@ class SQLDatabaseHelper {
       _localDbInstance = await openDatabase(
         localDatabasePath,
         onCreate: (db, version) {
-          db.execute(
-            '''CREATE TABLE IF NOT EXISTS unsendData(
-                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  unsendDataID INTEGER, 
-                  x_acc REAL, 
-                  y_acc REAL, 
-                  z_acc REAL, 
-                  Latitude REAL, 
-                  Longitude REAL, 
-                  Speed REAL,
-                  roadType INTEGER, 
-                  bnb INTEGER,
-                  Time TIMESTAMP
-            )''',
-          );
+          db.execute('PRAGMA foreign_keys = ON');
           db.execute(
             '''CREATE TABLE IF NOT EXISTS unsendDataInfo(
                   id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -44,6 +30,22 @@ class SQLDatabaseHelper {
                   planned TEXT
             )''',
           );
+          db.execute(
+            '''CREATE TABLE IF NOT EXISTS unsendData(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  x_acc REAL, 
+                  y_acc REAL, 
+                  z_acc REAL, 
+                  Latitude REAL, 
+                  Longitude REAL, 
+                  Speed REAL,
+                  roadType INTEGER, 
+                  bnb INTEGER,
+                  Time TIMESTAMP,
+                  FOREIGN KEY (unsendDataID) REFERENCES unsendDataInfo(id) ON DELETE CASCADE
+            )''',
+          );
+
           db.execute(
             '''CREATE TABLE IF NOT EXISTS outputData(
                   id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -55,11 +57,11 @@ class SQLDatabaseHelper {
           );
           db.execute(
             '''CREATE TABLE IF NOT EXISTS roadOutputData(
-                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  journeyID INTEGER, 
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,  
                   roadName TEXT, 
                   labels TEXT, 
                   stats TEXT
+                  FOREIGN KEY (journeyID) REFERENCES outputData(id) ON DELETE CASCADE
             )''',
           );
 
@@ -71,12 +73,12 @@ class SQLDatabaseHelper {
               time TEXT,
               vehicleType TEXT,
               path TEXT,
-              status INTEGER
+              status INTEGER,
           )''',
           );
         },
         onUpgrade: onUpgrade,
-        version: 3,
+        version: 4,
       );
     } catch (error) {
       if (kDebugMode) {
@@ -87,7 +89,8 @@ class SQLDatabaseHelper {
 
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      ///
+      db.execute(
+          '''ALTER TABLE outputData ADD COLUMN driveFileID TEXT DEFAULT ""''');
     }
   }
 
@@ -209,6 +212,22 @@ class SQLDatabaseHelper {
     } catch (e) {
       logger.e(e.toString());
       return id;
+    }
+  }
+
+  Future<void> updateJourneyData(String driveFileID, int id) async {
+    logger.d("id: $id");
+    logger.d("driveFileID: $driveFileID");
+    try {
+      _localDbInstance.update(
+          'outputData',
+          {
+            'driveFileID': driveFileID,
+          },
+          where: 'id = ?',
+          whereArgs: [id]);
+    } catch (e) {
+      logger.f(e);
     }
   }
 
