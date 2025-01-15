@@ -18,20 +18,21 @@ import '../../../../Utils/get_icon.dart';
 import '../MapsPage/maps_page.dart';
 
 class OutputDataItem extends StatefulWidget {
-  const OutputDataItem({
-    super.key,
-    required this.filename,
-    required this.vehicleType,
-    required this.time,
-    required this.planned,
-    required this.id,
-  });
+  const OutputDataItem(
+      {super.key,
+      required this.filename,
+      required this.vehicleType,
+      required this.time,
+      required this.planned,
+      required this.id,
+      required this.driveFileID});
 
   final String filename;
   final int id;
   final String time;
   final String planned;
   final String vehicleType;
+  final String driveFileID;
 
   @override
   State<OutputDataItem> createState() => _OutputDataItemState();
@@ -54,7 +55,6 @@ class _OutputDataItemState extends State<OutputDataItem> {
       fontWeight: FontWeight.normal,
       fontSize: fs.bodyTextFontSize,
     );
-
     return InkWell(
       onTapDown: (TapDownDetails tapdownDetails) {
         // do something
@@ -91,7 +91,32 @@ class _OutputDataItemState extends State<OutputDataItem> {
             right,
             bottom,
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           items: [
+            if (widget.driveFileID.isEmpty)
+              PopupMenuItem(
+                onTap: () async {
+                  // Function to export the data
+                  List<Map<String, dynamic>> query = await localDatabase
+                      .queryRoadOutputData(jouneyID: widget.id);
+                  Map<String, dynamic> metaData = {
+                    'filename': widget.filename,
+                    'vehicleType': widget.vehicleType,
+                    'time': widget.time,
+                    'user': user,
+                  };
+                  outputDataController.uploadToDrive(
+                      query, metaData, widget.id);
+                },
+                child: Text(
+                  "Sync to drive",
+                  style: popUpMenuTextStyle.copyWith(
+                    color: activeColor,
+                  ),
+                ),
+              ),
             PopupMenuItem(
               onTap: () async {
                 outputDataController.slectedFiles.clear();
@@ -110,20 +135,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   logger.e(e.toString());
                 }
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.map_outlined,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Show on Map",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Show on Map",
+                style: popUpMenuTextStyle,
               ),
             ),
             PopupMenuItem(
@@ -141,20 +155,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   );
                 }
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.bar_chart_outlined,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Statistics",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Statistics",
+                style: popUpMenuTextStyle,
               ),
             ),
             PopupMenuItem(
@@ -170,20 +173,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   jouneyData: query,
                 );
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.file_download,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Export CSV",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Export CSV",
+                style: popUpMenuTextStyle,
               ),
             ),
             PopupMenuItem(
@@ -199,20 +191,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                 };
                 outputDataController.exportJSON(query, metaData);
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.file_download,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Export JSON",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Export JSON",
+                style: popUpMenuTextStyle,
               ),
             ),
             PopupMenuItem(
@@ -230,20 +211,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   logger.f(e.toString());
                 }
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.file_download,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Report",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Report",
+                style: popUpMenuTextStyle,
               ),
             ),
             PopupMenuItem(
@@ -254,20 +224,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   }
                 });
               },
-              child: Row(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(
-                      Icons.delete_outline,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    "Delete",
-                    style: popUpMenuTextStyle,
-                  ),
-                ],
+              child: Text(
+                "Delete",
+                style: popUpMenuTextStyle,
               ),
             ),
           ],
@@ -286,8 +245,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
               children: [
                 Obx(() {
                   return AnimatedSwitcher(
-                    duration: Duration(
-                        milliseconds: 300), // Smooth animation duration
+                    duration: Duration(milliseconds: 300),
                     transitionBuilder: (child, animation) {
                       return FadeTransition(
                         opacity: animation,
@@ -326,10 +284,14 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   );
                 }),
                 Container(
-                  width: MediaQuery.sizeOf(context).width * 0.15,
-                  height: MediaQuery.sizeOf(context).width * 0.15,
+                  width: (MediaQuery.sizeOf(context).width * 0.15 < 80)
+                      ? MediaQuery.sizeOf(context).width * 0.15
+                      : 80,
+                  height: (MediaQuery.sizeOf(context).width * 0.15 < 80)
+                      ? MediaQuery.sizeOf(context).width * 0.15
+                      : 80,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(15),
                     color: Colors.white,
                   ),
                   child: Center(
@@ -337,7 +299,9 @@ class _OutputDataItemState extends State<OutputDataItem> {
                       fit: BoxFit.scaleDown,
                       child: Icon(
                         getIcon(widget.vehicleType),
-                        size: MediaQuery.sizeOf(context).width * 0.1,
+                        size: (MediaQuery.sizeOf(context).width * 0.1 < 50)
+                            ? MediaQuery.sizeOf(context).width * 0.1
+                            : 50,
                         color: Colors.black87,
                       ),
                     ),
@@ -351,52 +315,45 @@ class _OutputDataItemState extends State<OutputDataItem> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            widget.filename,
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontWeight: FontWeight.normal,
-                              fontSize: fs.bodyTextFontSize,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.clip,
-                          ),
-                          FittedBox(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(15),
+                          Expanded(
+                            child: Text(
+                              widget.filename,
+                              style: GoogleFonts.inter(
+                                color: Colors.black,
+                                fontWeight: FontWeight.normal,
+                                fontSize: fs.bodyTextFontSize,
                               ),
-                              child: Text(
-                                widget.planned,
-                                style: GoogleFonts.inter(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Text(
+                              widget.planned,
+                              style: GoogleFonts.inter(
+                                color: textColor,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_month_outlined,
-                            size: 16,
-                            color: Colors.teal,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            widget.time,
-                            style: GoogleFonts.inter(
-                              color: Colors.teal,
-                              fontWeight: FontWeight.normal,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        widget.time,
+                        style: GoogleFonts.inter(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

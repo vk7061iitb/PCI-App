@@ -3,11 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pci_app/src/Models/stats_data.dart';
 import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
 import 'package:pci_app/src/service/report_pdf_api.dart';
@@ -15,6 +17,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../../Utils/vel_to_pci.dart';
 import '../../../Objects/data.dart';
 import 'dart:ui' as ui;
+
+import '../../service/drive_helper.dart';
 
 /// Controller for managing output data(Jorney Data) in the PCI App.
 ///
@@ -82,7 +86,6 @@ class OutputDataController extends GetxController {
   Future<void> deleteData(int id) async {
     try {
       await localDatabase.deleteOutputData(id);
-      await localDatabase.deleteRoadOutputData(id);
       fetchData(); // refresh the data
     } catch (e) {
       customGetSnackBar(
@@ -142,8 +145,8 @@ class OutputDataController extends GetxController {
 
       // add the velocity_prediction in the labels
       for (int i = 0; i < labels.length; i++) {
-        labels[i]['vel_prediction'] =
-            velocityToPCI(labels[i]['velocity'] * 3.6); // convert to km/hr
+        labels[i]['vel_prediction'] = velocityToPCI(
+            velocityKmph: labels[i]['velocity'] * 3.6); // convert to km/hr
       }
 
       for (int i = 0; i < labels.length; i++) {
@@ -219,8 +222,8 @@ class OutputDataController extends GetxController {
 
         // add the velocity_prediction in the labels
         for (int i = 0; i < labels.length; i++) {
-          labels[i]['vel_prediction'] =
-              velocityToPCI(labels[i]['velocity'] * 3.6); // convert to km/hr
+          labels[i]['vel_prediction'] = velocityToPCI(
+              velocityKmph: labels[i]['velocity'] * 3.6); // convert to km/hr
         }
 
         for (int i = 0; i < labels.length; i++) {
@@ -324,6 +327,94 @@ class OutputDataController extends GetxController {
       });
     } catch (e) {
       logger.e(e.toString());
+    }
+  }
+
+  // upload the JSON formatted journey data and inset to the database
+  Future<void> insertJourneyDataviaUpload() async {
+    File? file;
+    FilePickerResult? res = await FilePicker.platform.pickFiles();
+    if (res != null) {
+      file = File(res.files.single.path!);
+    }
+    if (file == null) {
+      return;
+    }
+    String jsonData = await file.readAsString();
+    // decode the JSON string
+    final decodeJSONdata = jsonDecode(jsonData);
+    // extract the metadata
+    final metaData = decodeJSONdata['info'];
+    // extract the output data
+    final outputData = decodeJSONdata['data']; // may contains multiple road
+    // insert to database
+    int outputDataID = await localDatabase.insertJourneyData(
+      filename: metaData['filename'],
+      vehicleType: metaData['vehicleType'],
+      time:
+          dateTimeParser.parseDateTime(metaData['time'], "dd-MMM-yyyy HH:mm")!,
+      planned: metaData['planned'] ?? "Planned",
+    );
+    try {
+      List<RoadOutputData> roadOutputData = [];
+      // extract each road and insert to db
+      for (var road in outputData) {
+        RoadData roadData = RoadData(
+          roadName: road['roadName'],
+          labels: (jsonDecode(road['labels']) as List<dynamic>)
+              .map((label) => label as Map<String, dynamic>)
+              .toList(),
+          stats: jsonDecode(road['stats']) as Map<String, dynamic>,
+        );
+        roadOutputData.add(
+          RoadOutputData(
+            outputDataID: outputDataID,
+            roadData: roadData,
+          ),
+        );
+      }
+      // finally inert to database after verification
+      localDatabase.insertToRoadOutputData(roadOutputData: roadOutputData);
+    } catch (error, stackTrace) {
+      await localDatabase.deleteOutputData(outputDataID);
+      logger.d(error);
+      logger.d(stackTrace);
+    } finally {
+      await fetchData();
+    }
+  }
+
+  Future<void> uploadToDrive(List<Map<String, dynamic>> query,
+      Map<String, dynamic> metaData, int id) async {
+    try {
+      DriveHelper driveHelper = DriveHelper();
+      String? appFolderID = await driveHelper.createAppFolder();
+      if (appFolderID == null) {
+        return;
+      }
+      String? journeyfolderID =
+          await driveHelper.createFolder("journeys", appFolderID);
+      final data = {"data": query, "info": metaData};
+      final tempDir = await getTemporaryDirectory();
+      String path = '${tempDir.path}/${metaData['filename']}.json';
+      File file = File(path);
+      file.writeAsString(jsonEncode(data));
+      String? fileID = await driveHelper.uploadJourneyData(
+          file, journeyfolderID ?? "", metaData['filename']);
+      logger.i("file idddddd : $fileID");
+      if (fileID == null) {
+        return;
+      }
+      logger.i("file idddddd : $fileID");
+      await localDatabase.updateJourneyData(fileID, id);
+      Get.showSnackbar(
+        customGetSnackBar(
+            "Uploaded", "Data succesfully uploaded to drive", Icons.check),
+      );
+      await fetchData();
+    } catch (error, stackTrace) {
+      logger.f(error);
+      logger.d(stackTrace);
     }
   }
 

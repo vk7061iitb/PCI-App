@@ -24,6 +24,8 @@ class _OutputDataPageState extends State<OutputDataPage> {
     TextStyle popUpMenuTextStyle,
     double w,
   ) {
+    FontSize fs = getFontSize(w);
+    IconsSize iS = getIconSize(w);
     return Container(
       key: const ValueKey("SelectedBar"),
       color: backgroundColor,
@@ -46,7 +48,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
           Text(
             '${outputDataController.slectedFiles.length} selected',
             style: GoogleFonts.inter(
-              fontSize: w * 0.06,
+              fontSize: fs.appBarFontSize,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),
@@ -63,13 +65,13 @@ class _OutputDataPageState extends State<OutputDataPage> {
                         child: Icon(
                           Icons.map_outlined,
                           color: Colors.black87,
-                          size: w * 0.06,
+                          size: iS.generalIconSize,
                         ),
                       ),
                       Text(
                         "Show on Map",
                         style: popUpMenuTextStyle.copyWith(
-                          fontSize: w * 0.04,
+                          fontSize: fs.bodyTextFontSize,
                         ),
                       ),
                     ],
@@ -89,13 +91,13 @@ class _OutputDataPageState extends State<OutputDataPage> {
                         child: Icon(
                           Icons.file_download,
                           color: Colors.black87,
-                          size: w * 0.06,
+                          size: iS.generalIconSize,
                         ),
                       ),
                       Text(
                         "Export",
                         style: popUpMenuTextStyle.copyWith(
-                          fontSize: w * 0.04,
+                          fontSize: fs.bodyTextFontSize,
                         ),
                       ),
                     ],
@@ -126,6 +128,9 @@ class _OutputDataPageState extends State<OutputDataPage> {
     double w = MediaQuery.sizeOf(context).width;
     FontSize fs = getFontSize(w);
     IconsSize iS = getIconSize(w);
+    double left = 0, right = 0, top = 0, bottom = 0;
+    RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: PreferredSize(
@@ -158,14 +163,67 @@ class _OutputDataPageState extends State<OutputDataPage> {
                     shadowColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     actions: [
-                      IconButton(
-                        onPressed: () async {
-                          //
+                      InkWell(
+                        radius: 25,
+                        borderRadius: BorderRadius.circular(30),
+                        onTapDown: (TapDownDetails tapdownDetails) {
+                          left = tapdownDetails.globalPosition.dx;
+                          top = tapdownDetails.globalPosition.dy;
+                          overlay = Overlay.of(context)
+                              .context
+                              .findRenderObject() as RenderBox;
+                          right = overlay.size.width - left;
+                          bottom = overlay.size.height - top;
+                          showMenu(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              left,
+                              top,
+                              right,
+                              bottom,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            items: [
+                              PopupMenuItem(
+                                onTap: () async {
+                                  await outputDataController
+                                      .insertJourneyDataviaUpload();
+                                },
+                                child: Text(
+                                  "Import File",
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: MediaQuery.textScalerOf(context)
+                                        .scale(16),
+                                  ),
+                                ),
+                              ),
+                              PopupMenuItem(
+                                onTap: () async {
+                                  await outputDataController
+                                      .insertJourneyDataviaUpload();
+                                },
+                                child: Text(
+                                  "Sync with drive",
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: MediaQuery.textScalerOf(context)
+                                        .scale(16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
                         },
-                        icon: Icon(
-                          Icons.search,
-                          size: iS.appBarIconSize,
-                          color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.more_vert,
+                          ),
                         ),
                       ),
                     ],
@@ -225,12 +283,14 @@ class _OutputDataPageState extends State<OutputDataPage> {
                   itemCount: outputDataController.outputDataFile.length,
                   itemBuilder: (BuildContext context, int index) {
                     final item = outputDataController.outputDataFile[index];
+
                     return OutputDataItem(
                       filename: item["filename"],
                       vehicleType: item["vehicleType"],
                       time: item["Time"],
                       planned: item["planned"],
                       id: item["id"],
+                      driveFileID: item["driveFileID"] ?? "",
                     );
                   },
                 ),
