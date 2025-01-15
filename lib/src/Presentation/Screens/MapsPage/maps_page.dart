@@ -7,7 +7,6 @@
   select the map type (satellite, terrain, etc.).
  */
 
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +17,6 @@ import '../../../../Objects/data.dart';
 import '../../Controllers/map_page_controller.dart';
 import 'widget/map_page_legends.dart';
 import 'widget/maptype_dropdown.dart';
-import 'widget/road_stats.dart';
 
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
@@ -224,7 +222,7 @@ class MapPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // Road Statistics Button //
-                  Container(
+                  /*  Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -247,8 +245,11 @@ class MapPage extends StatelessWidget {
                               isDismissible: true,
                               backgroundColor: Colors.white,
                               MapPageRoadStatistics(
-                                roadStats: mapPageController.getRoadStats,
-                                roadOutputData: mapPageController.selectedRoads,
+                                roadStats: mapPageController.roadStats,
+                                selectedJourney:
+                                    mapPageController.selectedRoads,
+                                roadOutputData:
+                                    mapPageController.roadOutputData,
                               ),
                             );
                           },
@@ -262,6 +263,7 @@ class MapPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  */
                   const Gap(20),
                   // Zoom to Fit Button //
                   Container(
