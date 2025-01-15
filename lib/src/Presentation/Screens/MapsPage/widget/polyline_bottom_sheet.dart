@@ -20,16 +20,18 @@ class PolylineBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Gap(5),
           Text(
             "Features",
             style: GoogleFonts.inter(
               color: textColor,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               fontSize: 24,
             ),
           ),
-          const Gap(10),
+          const Gap(5),
           Row(
             children: [
               Text(
@@ -37,8 +39,10 @@ class PolylineBottomSheet extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w500,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
               IconButton(
@@ -54,7 +58,7 @@ class PolylineBottomSheet extends StatelessWidget {
                     Icon(
                       Icons.zoom_in_outlined,
                       color: Colors.blue,
-                      size: MediaQuery.sizeOf(context).width * 0.08,
+                      size: 30,
                     ),
                     const Gap(5),
                     Text(
@@ -72,38 +76,31 @@ class PolylineBottomSheet extends StatelessWidget {
             ],
           ),
           const Gap(10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${data['filename']}',
-                style: GoogleFonts.inter(
-                  color: Colors.black54,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+          Text(
+            '${data['filename']}',
+            style: GoogleFonts.inter(
+              color: Colors.black54,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Flexible(
+            child: Text(
+              '${data['time']}',
+              style: GoogleFonts.inter(
+                color: Colors.black54,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
               ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.calendar_month_outlined,
-                    color: Colors.black54,
-                  ),
-                  const Gap(5),
-                  Text(
-                    '${data['time']}',
-                    style: GoogleFonts.inter(
-                      color: Colors.black54,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              )
-            ],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const Divider(),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 "PCI",
@@ -138,13 +135,18 @@ class PolylineBottomSheet extends StatelessWidget {
           ),
           const Gap(10),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Avg Speed",
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  "Avg Speed",
+                  style: GoogleFonts.inter(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Spacer(),
@@ -160,13 +162,18 @@ class PolylineBottomSheet extends StatelessWidget {
           ),
           const Gap(10),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Length",
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  "Length",
+                  style: GoogleFonts.inter(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Spacer(),
