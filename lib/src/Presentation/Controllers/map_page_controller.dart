@@ -27,8 +27,8 @@ class MapPageController extends GetxController {
   LatLng _northeast = const LatLng(0, 0);
   RxBool isPredPCICaptured = false.obs;
   RxBool isVelPCICaptured = false.obs;
-  List<RoadStats> roadStats = <RoadStats>[];
-  List<SegStats> segStats = <SegStats>[];
+  List<List<RoadStats>> roadStats = [];
+  List<List<SegStats>> segStats = [];
   final Rx<MapType> _backgroundMapType = MapType.normal.obs;
   final RxList<MapType> _googlemapType = [
     MapType.normal,
@@ -49,7 +49,7 @@ class MapPageController extends GetxController {
   RxSet<Polyline> get pciPolylines => _pciPolylines.toSet().obs;
   LatLng get getMinLat => _southwest;
   LatLng get getMaxLat => _northeast;
-  List<RoadStats> get getRoadStats => roadStats;
+  List<List<RoadStats>> get getRoadStats => roadStats;
   GoogleMapController? get getGoogleMapController => _googleMapController;
   List<MapType> get googlemapType => _googlemapType.toList();
   List<String> get getMapType => mapType;
