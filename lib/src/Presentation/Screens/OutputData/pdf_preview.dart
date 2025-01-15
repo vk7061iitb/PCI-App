@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../../../../Objects/data.dart';
+import '../../../../Utils/format_chainage.dart';
 import '../../../../Utils/set_road_stats.dart';
 import '../../../Models/stats_data.dart';
 import '../../Controllers/map_page_controller.dart';
@@ -69,11 +71,12 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
       mapPageController.roadStats.clear();
       mapPageController.segStats.clear();
     }
-
-    final completeStats =
-        setRoadStatistics(journeyData: res, filename: widget.filename);
-    mapPageController.roadStats = completeStats[0] as List<RoadStats>;
-    mapPageController.segStats = completeStats[1] as List<SegStats>;
+    for (var journey in res) {
+      final completeStats =
+          setRoadStatistics(journeyData: journey, filename: widget.filename);
+      mapPageController.roadStats.add(completeStats[0] as List<RoadStats>);
+      mapPageController.segStats.add(completeStats[1] as List<SegStats>);
+    }
 
     // Create PDF document
     final pdf = pw.Document();
@@ -93,7 +96,13 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
 
   List<pw.Widget> _buildPdfContent(MapPageController mapPageController) {
     final List<pw.Widget> content = [];
-
+    // calculate total legth
+    double totalLegth = 0;
+    for (int i = 0; i < mapPageController.segStats.length; i++) {
+      String chainage =
+          mapPageController.segStats[i].last.predictedStats.last.to;
+      totalLegth += chainageToLegth(chainage);
+    }
     // Title
     content.add(
       pw.Align(
@@ -112,8 +121,8 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     content.add(
       pw.Table(
         columnWidths: {
-          0: pw.FlexColumnWidth(), // Label Column Width
-          1: pw.FlexColumnWidth(), // Value Column Flexible Width
+          0: pw.FlexColumnWidth(),
+          1: pw.FlexColumnWidth(),
         },
         defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
         border: pw.TableBorder.all(color: PdfColors.grey900),
@@ -194,8 +203,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
                     const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: pw.RichText(
                   text: pw.TextSpan(
-                    text:
-                        '${mapPageController.segStats.last.predictedStats.last.to} km',
+                    text: '${formatChainage(totalLegth * 1000)} km',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 14,
@@ -238,7 +246,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
           pw.TableRow(
             children: [
               pw.Padding(
-               padding:
+                padding:
                     const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: pw.Text(
                   'Type of Vehicle Used',
@@ -278,7 +286,8 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
                 ),
               ),
               pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                padding:
+                    const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: pw.RichText(
                   text: pw.TextSpan(
                     text: widget.planned,
@@ -298,197 +307,176 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
 
     content.add(pw.SizedBox(height: 20));
     // Iterate through road stats
-    for (int roadIndex = 0;
-        roadIndex < mapPageController.roadStats.length;
-        roadIndex++) {
-      final roadStats = mapPageController.roadStats[roadIndex];
-      final segStats = mapPageController.segStats[roadIndex];
-
-      // Road Name Section
-      content.add(
-        pw.Text(
-          roadStats.roadName,
-          style: pw.TextStyle(
-            fontSize: 20,
-            fontWeight: pw.FontWeight.bold,
-          ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 10));
-
-      // Overall Summary
-      content.add(
-        pw.Text(
-          'Overall Summary',
-          style: pw.TextStyle(
-            fontSize: 18,
-            fontWeight: pw.FontWeight.bold,
-          ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      // Prediction Based
-      content.add(
-        pw.Container(
-          padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.grey200,
-            borderRadius: pw.BorderRadius.circular(10),
-          ),
-          child: pw.Text(
-            'Prediction Based',
+    for (int i = 0; i < mapPageController.roadStats.length; i++) {
+      final journeyStats = mapPageController.roadStats[i];
+      final segmentsStatsList = mapPageController.segStats[i];
+      int noOfRoads = journeyStats.length;
+      for (int j = 0; j < noOfRoads; j++) {
+        final rs = journeyStats[j].predStats;
+        final vs = journeyStats[j].velStats;
+        final ss = segmentsStatsList[j];
+        // Road Name Section
+        content.add(
+          pw.Text(
+            journeyStats[j].roadName,
             style: pw.TextStyle(
-              fontSize: 14,
-              color: PdfColors.blue,
-              fontWeight: pw.FontWeight.normal,
+              fontSize: 20,
+              fontWeight: pw.FontWeight.bold,
             ),
           ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      content.add(_buildStatTable(roadStats.predStats));
-      content.add(pw.SizedBox(height: 20));
-      // Velocity Based
-      content.add(
-        pw.Container(
-          padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.grey200,
-            borderRadius: pw.BorderRadius.circular(10),
-          ),
-          child: pw.Text(
-            'Velocity Based',
+        );
+        content.add(pw.SizedBox(height: 10));
+
+        // Overall Summary
+        content.add(
+          pw.Text(
+            'Overall Summary',
             style: pw.TextStyle(
-              fontSize: 14,
-              color: PdfColors.blue,
-              fontWeight: pw.FontWeight.normal,
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
             ),
           ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      content.add(_buildStatTable(roadStats.velStats));
-      // Page break between overall and chainage stats
-      content.add(pw.NewPage());
-      content.add(
-        pw.Align(
-          alignment: pw.Alignment.center,
-          child: pw.Row(
-            children: [
-              pw.Column(
-                children: [
-                  pw.Container(
-                    padding:
-                        pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColors.grey200,
-                      borderRadius: pw.BorderRadius.circular(10),
-                    ),
-                    child: pw.Text(
-                      'Prediction Based',
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        color: PdfColors.blue,
-                        fontWeight: pw.FontWeight.normal,
+        );
+        content.add(pw.SizedBox(height: 5));
+        // Prediction based
+        content.add(
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey200,
+              borderRadius: pw.BorderRadius.circular(10),
+            ),
+            child: pw.Text(
+              'Prediction Based',
+              style: pw.TextStyle(
+                fontSize: 14,
+                color: PdfColors.blue,
+                fontWeight: pw.FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+        content.add(pw.SizedBox(height: 5));
+        content.add(_buildStatTable(rs));
+        content.add(pw.SizedBox(height: 20));
+        // Velocity Based
+        content.add(
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey200,
+              borderRadius: pw.BorderRadius.circular(10),
+            ),
+            child: pw.Text(
+              'Velocity Based',
+              style: pw.TextStyle(
+                fontSize: 14,
+                color: PdfColors.blue,
+                fontWeight: pw.FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+        content.add(pw.SizedBox(height: 5));
+        content.add(_buildStatTable(vs));
+        // Page break between overall and chainage stats
+        content.add(pw.NewPage());
+        content.add(
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Row(
+              children: [
+                pw.Column(
+                  children: [
+                    pw.Container(
+                      padding:
+                          pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.grey200,
+                        borderRadius: pw.BorderRadius.circular(10),
+                      ),
+                      child: pw.Text(
+                        'Prediction Based',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.blue,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
                       ),
                     ),
-                  ),
-                  pw.SizedBox(height: 5),
-                  pw.Image(
-                    image1,
-                    height: 800,
-                    width: 250,
-                  ),
-                ],
-              ),
-              pw.SizedBox(width: 5),
-              pw.Column(
-                children: [
-                  pw.Container(
-                    padding:
-                        pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColors.grey200,
-                      borderRadius: pw.BorderRadius.circular(10),
+                    pw.SizedBox(height: 5),
+                    pw.Image(
+                      image1,
+                      height: 800,
+                      width: 250,
                     ),
-                    child: pw.Text(
-                      'Velocity Based',
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        color: PdfColors.blue,
-                        fontWeight: pw.FontWeight.normal,
+                  ],
+                ),
+                pw.SizedBox(width: 5),
+                pw.Column(
+                  children: [
+                    pw.Container(
+                      padding:
+                          pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.grey200,
+                        borderRadius: pw.BorderRadius.circular(10),
+                      ),
+                      child: pw.Text(
+                        'Velocity Based',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.blue,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
                       ),
                     ),
-                  ),
-                  pw.SizedBox(height: 5),
-                  pw.Image(
-                    image2,
-                    height: 800,
-                    width: 250,
-                  ),
-                ],
+                    pw.SizedBox(height: 5),
+                    pw.Image(
+                      image2,
+                      height: 800,
+                      width: 250,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+        content.add(pw.NewPage());
+        // Segment-wise Details
+        content.add(
+          pw.Text(
+            'Chainage-wise Statistics',
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        );
+        content.add(pw.SizedBox(height: 5));
+        // Prediction Based
+        content.add(
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey200,
+              borderRadius: pw.BorderRadius.circular(10),
+            ),
+            child: pw.Text(
+              'Prediction Based',
+              style: pw.TextStyle(
+                fontSize: 14,
+                color: PdfColors.blue,
+                fontWeight: pw.FontWeight.normal,
               ),
-            ],
-          ),
-        ),
-      );
-      content.add(pw.NewPage());
-      // Segment-wise Details
-      content.add(
-        pw.Text(
-          'Chainaige-wise Statistics',
-          style: pw.TextStyle(
-            fontSize: 18,
-            fontWeight: pw.FontWeight.bold,
-          ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      // Prediction Based
-      content.add(
-        pw.Container(
-          padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.grey200,
-            borderRadius: pw.BorderRadius.circular(10),
-          ),
-          child: pw.Text(
-            'Prediction Based',
-            style: pw.TextStyle(
-              fontSize: 14,
-              color: PdfColors.blue,
-              fontWeight: pw.FontWeight.normal,
             ),
           ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      content.add(_buildSegmentTable(segStats.predictedStats));
-      content.add(pw.SizedBox(height: 20));
-      // Velocity Based
-      content.add(
-        pw.Container(
-          padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.grey200,
-            borderRadius: pw.BorderRadius.circular(10),
-          ),
-          child: pw.Text(
-            'Velocity Based',
-            style: pw.TextStyle(
-              fontSize: 14,
-              color: PdfColors.blue,
-              fontWeight: pw.FontWeight.normal,
-            ),
-          ),
-        ),
-      );
-      content.add(pw.SizedBox(height: 5));
-      // Segment-wise Details - velocity based
-      content.add(_buildSegmentTable(segStats.velocityStats));
-      // Page break between roads
-      // if the road is already last then don't add new page
-      if (roadIndex != mapPageController.roadStats.length - 1) {
+        );
+        content.add(pw.SizedBox(height: 5));
+        content.add(_buildSegmentTable(ss.predictedStats));
+        // Page break between roads
+        // if the road is already last then don't add new page
         content.add(pw.NewPage());
       }
     }
@@ -510,8 +498,11 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
       ],
       headerStyle: pw.TextStyle(
         fontWeight: pw.FontWeight.bold,
+        fontSize: 12,
       ),
-      cellStyle: pw.TextStyle(),
+      cellStyle: pw.TextStyle(
+        fontSize: 10,
+      ),
       border: pw.TableBorder.all(color: PdfColors.black),
       headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
     );
@@ -523,30 +514,33 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
       context: null,
       data: [
         [
-          'Name',
-          'Road No.',
-          'Seg. No.',
+          'Segment\nNo.',
           'From',
           'To',
-          'Distance (km)',
-          'PCI',
+          'Distance\n(km)',
+          'Prediction\nPCI',
+          'Velocity\nPCI',
+          'Minimum\nPCI',
           'Remarks'
         ],
         ...stats.map((seg) => [
-              seg.name,
-              seg.roadNo,
               seg.segmentNo,
               seg.from,
               seg.to,
               seg.distance,
               seg.pci,
+              seg.velocityPCI,
+              min(seg.pci, seg.velocityPCI),
               seg.remarks,
             ]),
       ],
       headerStyle: pw.TextStyle(
         fontWeight: pw.FontWeight.bold,
+        fontSize: 12,
       ),
-      cellStyle: pw.TextStyle(),
+      cellStyle: pw.TextStyle(
+        fontSize: 10,
+      ),
       border: pw.TableBorder.all(color: PdfColors.black),
       headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
     );
