@@ -164,12 +164,13 @@ class ResponseController extends GetxController {
           vehicleType: _dropdownValue.value,
           planned: isPlanned.value ? "Planned" : "Unplanned",
           userNo: user['phone'],
+          time: dateTimeParser.formatDateTime(currTime, "dd-MMM-yyyy HH:mm"),
+          submissionStatus: status,
         ),
         _outputDataController.fetchData(),
         _savedFileController.refreshData(),
       ]);
 
-      ///
       pciMethodsCalls.stopSending();
       _fileNameController.value.clear();
     }
@@ -232,12 +233,16 @@ class ResponseController extends GetxController {
     required String vehicleType,
     required String userNo,
     required String planned,
+    required String time,
+    required int submissionStatus,
   }) async {
     List<List<dynamic>> csvData = _prepareCsvData(
       dataPointsToSave,
       fileName,
       vehicleType,
       planned,
+      time,
+      submissionStatus,
     );
     String savedCSVdata = _convertToCsv(csvData);
     String filePath = await _getFilePath(fileName, vehicleType);
@@ -249,26 +254,22 @@ class ResponseController extends GetxController {
     String fileName,
     String vehicleType,
     String planned,
+    String time,
+    int submissionStatus,
   ) {
     List<List<dynamic>> csvData = [];
 
     // Add metadata before CSV data
-    csvData.add([
-      'FileName',
-      'VehicleType',
-      'UserNo',
-      'Planned/Unplanned',
-      'Date',
-      'Time',
-    ]);
-    csvData.add([
-      fileName,
-      vehicleType,
-      planned,
-      _userDataController.user['phone'],
-      DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      DateFormat('HH:mm:ss').format(DateTime.now()),
-    ]);
+    Map<String, dynamic> metaData = {
+      "file": fileName,
+      "vehicleType": vehicleType,
+      "userNo.": _userDataController.user['phone'],
+      "planned/unplanned": planned,
+      "time": time,
+      "submissionStatus": submissionStatus,
+    };
+    String metaDataString = jsonEncode(metaData);
+    csvData.add([metaDataString]);
     // Add column headers
     csvData.add([
       'x_acc',
@@ -305,7 +306,7 @@ class ResponseController extends GetxController {
   Future<String> _getFilePath(String fileName, String vehicleType) async {
     String accDataDirectoryPath = await localDatabase.initializeDirectory();
     String savedFileName =
-        '$fileName#${DateFormat('dd-MMM-yyyy HH:mm').format(DateTime.now())}#$vehicleType.csv';
+        '$fileName${dateTimeParser.formatDateTime(DateTime.now(), "dd-MMM-yyyy_HH:mm")}.csv';
     return '$accDataDirectoryPath/$savedFileName';
   }
 
@@ -316,7 +317,9 @@ class ResponseController extends GetxController {
 
   Future<void> shareFile(String filePath) async {
     XFile fileToShare = XFile(filePath);
-    await Share.shareXFiles([fileToShare]);
+    await Share.shareXFiles(
+      [fileToShare],
+    );
   }
 
   /// Compresses a JSON Map<String, dynamic> to GZIP binary format.
