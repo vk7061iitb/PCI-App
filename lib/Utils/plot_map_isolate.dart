@@ -20,12 +20,13 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   final List<List<Map<String, dynamic>>> roadOutputData =
       isolateData['roadOutputData'];
   final bool showPCIlabel = isolateData['showPCIlabel'];
-  final List<RoadStats> roadStats = [];
-  final List<SegStats> segStats = [];
+
   final Set<Polyline> pciPolylines = <Polyline>{};
   final Set<Polyline> drrpPolylines =
       isolateData['drrpPolylines'] as Set<Polyline>;
   final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
+  final List<List<RoadStats>> roadStats = [];
+  final List<List<SegStats>> segStats = [];
   double minimumLat = 0, minimumLon = 0, maximumLat = 0, maximumLon = 0;
 
   try {
@@ -33,6 +34,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
     for (int i = 0; i < roadOutputData.length; i++) {
       var roadQuery = roadOutputData[i];
       var currJourney = selectedRoads[i];
+      List<RoadStats> rs = [];
+      List<SegStats> ss = [];
 
       /// Process each road in a journey
       for (int j = 0; j < roadQuery.length; j++) {
@@ -79,8 +82,9 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               LatLng(secondLabel['latitude'], secondLabel['longitude']);
           double firstValue = (firstLabel['prediction'] as num).toDouble();
           double secondValue = (secondLabel['prediction'] as num).toDouble();
-          double velPredPCI = min(velocityToPCI(3.6 * secondLabel['velocity']),
-              velocityToPCI(3.6 * firstLabel['velocity']));
+          double velPredPCI = min(
+              velocityToPCI(velocityKmph: 3.6 * secondLabel['velocity']),
+              velocityToPCI(velocityKmph: 3.6 * firstLabel['velocity']));
           // Calculate distance between points
           double d = Geolocator.distanceBetween(
             firstPoint.latitude,
@@ -181,19 +185,20 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           );
         }
         logger.i("Distance(Polylines): $disP");
+        final completeStats = setRoadStatistics(
+          journeyData: road,
+          filename: currJourney['filename'],
+        );
+        for (var stats in completeStats[0]) {
+          rs.add(stats);
+        }
+        for (var stats in completeStats[1]) {
+          ss.add(stats);
+        }
       }
 
-      /// Set road statistics
-      final completeStats = setRoadStatistics(
-        journeyData: roadQuery,
-        filename: currJourney['filename'],
-      );
-      for (var stats in completeStats[0]) {
-        roadStats.add(stats);
-      }
-      for (var stats in completeStats[1]) {
-        segStats.add(stats);
-      }
+      roadStats.add(rs);
+      segStats.add(ss);
     }
     LatLng southwest = LatLng(minimumLat, minimumLon);
     LatLng northeast = LatLng(maximumLat, maximumLon);
