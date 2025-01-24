@@ -2,3 +2,4 @@
 - [Manual](/guides/manual)
 - [FAQ](/faq)
 - [Download](download.md)
+- [Dashboard](dashboard.md)
