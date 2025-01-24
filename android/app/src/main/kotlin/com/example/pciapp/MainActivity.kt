@@ -8,7 +8,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity(){
-    private var channel = "pci_app/notification"
+    private var channel = "pciapp/notification"
     @RequiresApi(Build.VERSION_CODES.M)
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

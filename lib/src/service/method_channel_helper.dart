@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
-import 'package:pci_app/Objects/data.dart';
+import 'package:pciapp/Objects/data.dart';
 
 class PciMethodsCalls {
-  static const platform = MethodChannel("pci_app/notification");
+  static const platform = MethodChannel("pciapp/notification");
 
   Future<void> startNotification() async {
     try {

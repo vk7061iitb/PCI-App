@@ -1,5 +1,5 @@
 import 'package:googleapis/drive/v3.dart';
-import 'package:pci_app/src/service/google_drive_api.dart' as gdrive;
+import 'package:pciapp/src/service/google_drive_api.dart' as gdrive;
 import 'package:googleapis/drive/v3.dart' as googleapi;
 import 'package:http/http.dart' as http;
 import '../../Objects/data.dart';
@@ -26,38 +26,44 @@ class DriveHelper {
     }
   }
 
-  // create the pci_app folder to store the data
+  // create the pciapp folder to store the data
   Future<String?> createAppFolder() async {
     final http.Client? client = await googleDriveApiService.getClient();
     if (client == null) {
       return null;
     }
     String? folderID;
-    String folderName = "pci_app";
+    String folderName = "pciapp";
     final DriveApi driveApi = DriveApi(client);
-    final driveFiles = await driveApi.files.list(
-      q: "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-      $fields: 'files(id, name)',
-    );
-    if (driveFiles.files != null && driveFiles.files!.isNotEmpty) {
-      folderID = driveFiles.files!.first.id;
-    }
-    if (folderID != null && folderID.isNotEmpty) {
-      logger.i("Folder $folderName already exists!");
-      logger.d("Folder ID : $folderID");
+    try {
+      final driveFiles = await driveApi.files.list(
+        q: "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+        $fields: 'files(id, name)',
+      );
+      if (driveFiles.files != null && driveFiles.files!.isNotEmpty) {
+        folderID = driveFiles.files!.first.id;
+      }
+      if (folderID != null && folderID.isNotEmpty) {
+        logger.i("Folder $folderName already exists!");
+        logger.d("Folder ID : $folderID");
+        return folderID;
+      }
+
+      final folder = googleapi.File()
+        ..name = folderName
+        ..mimeType = 'application/vnd.google-apps.folder';
+      folder.parents = ['root'];
+      googleapi.File file = await driveApi.files.create(
+        folder,
+        enforceSingleParent: true,
+        $fields: 'id, name',
+      );
+      return file.driveId;
+    } catch (error, stackTrace) {
+      logger.f(error);
+      logger.d(stackTrace);
       return folderID;
     }
-
-    final folder = googleapi.File()
-      ..name = folderName
-      ..mimeType = 'application/vnd.google-apps.folder';
-    folder.parents = ['root'];
-    googleapi.File file = await driveApi.files.create(
-      folder,
-      enforceSingleParent: true,
-      $fields: 'id, name',
-    );
-    return file.driveId;
   }
 
   // create other folder with parent

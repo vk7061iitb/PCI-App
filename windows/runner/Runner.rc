@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "pci_app" "\0"
+            VALUE "CompanyName", "com.uma" "\0"
+            VALUE "FileDescription", "pciapp" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "pci_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "pci_app.exe" "\0"
-            VALUE "ProductName", "pci_app" "\0"
+            VALUE "InternalName", "pciapp" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 com.uma. All rights reserved." "\0"
+            VALUE "OriginalFilename", "pciapp.exe" "\0"
+            VALUE "ProductName", "pciapp" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

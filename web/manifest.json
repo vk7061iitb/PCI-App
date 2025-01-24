@@ -1,6 +1,6 @@
 {
-    "name": "pci_app",
-    "short_name": "pci_app",
+    "name": "pciapp",
+    "short_name": "pciapp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/location_permission.dart';
-import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/location_permission.dart';
+import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
 import '../../../../../Utils/font_size.dart';
 
 class StartButton extends StatelessWidget {

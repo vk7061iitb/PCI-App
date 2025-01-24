@@ -20,7 +20,7 @@ class NotificationService: Service(){
     companion object{
         // Unique identifier for the notification channel
         // Used to create and identify a specific type of notification
-        const val CHANNEL_ID = "pci_app_notification"
+        const val CHANNEL_ID = "pciapp_notification"
 
         // Human-readable name for the notification channel
         // Visible to users in system settings

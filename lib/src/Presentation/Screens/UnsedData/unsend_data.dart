@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/UnsedData/unsent_file_tile.dart';
+import 'package:pciapp/src/Presentation/Controllers/response_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/UnsedData/unsent_file_tile.dart';
 import '../../../../Objects/data.dart';
 
 class UnsendData extends StatefulWidget {

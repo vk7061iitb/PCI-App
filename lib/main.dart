@@ -1,23 +1,22 @@
-import 'dart:ui';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pciapp/firebase_options.dart';
 import 'Objects/data.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pci_app/firebase_options.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
 import 'src/Presentation/Controllers/response_controller.dart';
 import 'src/Presentation/Controllers/user_data_controller.dart';
+import 'src/Presentation/Screens/HomePage/home_screen.dart';
 import 'src/Presentation/Screens/UserProfile/user_page.dart';
 import 'src/Presentation/Controllers/map_page_controller.dart';
 import 'src/Presentation/Controllers/output_data_controller.dart';
 import 'src/Presentation/Controllers/sensor_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/HomePage/home_screen.dart';
 import 'src/Presentation/Screens/Login/login_screen.dart';
 import 'src/Presentation/Screens/SignUp/signup_screen.dart';
 

@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/Utils/cal_map_bounds.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/Utils/cal_map_bounds.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../Utils/plot_map_isolate.dart';
 import '../../Models/stats_data.dart';
 

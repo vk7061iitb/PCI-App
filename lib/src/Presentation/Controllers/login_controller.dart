@@ -7,11 +7,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/API/auth_service.dart';
-import 'package:pci_app/src/Models/user_data.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/API/auth_service.dart';
+import 'package:pciapp/src/Models/user_data.dart';
+import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 
 class LoginController extends GetxController {
   UserAuthenticationService userAuthenticationService =

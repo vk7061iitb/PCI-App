@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/message_widget.dart';
-import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/reading_widget.dart';
-import 'package:pci_app/src/Presentation/Screens/SensorPage/widgets/start_end_widget.dart';
-import 'package:pci_app/src/Presentation/Widgets/custom_appbar.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/message_widget.dart';
+import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/reading_widget.dart';
+import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/start_end_widget.dart';
+import 'package:pciapp/src/Presentation/Widgets/custom_appbar.dart';
 
 class SensorScreen extends StatelessWidget {
   const SensorScreen({super.key});

@@ -3,8 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/config/config.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/config/config.dart';
 import '../Models/user_data.dart';
 
 class UserAuthenticationService {

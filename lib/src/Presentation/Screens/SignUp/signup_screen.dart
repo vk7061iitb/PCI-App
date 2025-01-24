@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/src/Presentation/Controllers/signup_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/src/Presentation/Controllers/signup_controller.dart';
+import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../Login/roles_dropdown.dart';
 

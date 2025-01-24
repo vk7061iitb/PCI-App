@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 
 class SendNotification: Service() {
     companion object {
-        const val CHANNEL_ID = "pci_app_notification"
+        const val CHANNEL_ID = "pciapp_notification"
         const val CHANNEL_NAME = "PCI App Foreground Service"
         const val SENDING_NOTIFICATION_ID = 108
     }

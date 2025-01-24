@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Utils/get_road_color.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
+import 'package:pciapp/Utils/get_road_color.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/map_page_controller.dart';
 
 class PolylineBottomSheet extends StatelessWidget {
   final Map<String, dynamic> data;

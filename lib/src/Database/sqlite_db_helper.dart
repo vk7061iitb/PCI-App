@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pci_app/Objects/data.dart';
+import 'package:pciapp/Objects/data.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Models/data_points.dart';
 import '../Models/stats_data.dart';
@@ -14,7 +14,7 @@ class SQLDatabaseHelper {
 
   Future<void> initDB() async {
     var databaseDirectoryPath = await getDatabasesPath();
-    String localDatabasePath = join(databaseDirectoryPath, 'pci_app.db');
+    String localDatabasePath = join(databaseDirectoryPath, 'pciapp.db');
 
     try {
       _localDbInstance = await openDatabase(

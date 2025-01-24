@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:pci_app/Objects/data.dart';
+import 'package:pciapp/Objects/data.dart';
 
 class DateTimeParser {
   DateTime? parseDateTime(String dateStr, String format) {

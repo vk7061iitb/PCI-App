@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/Utils/font_size.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/MapsPage/widget/road_stats.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Utils/get_icon.dart';
 import '../MapsPage/maps_page.dart';
 

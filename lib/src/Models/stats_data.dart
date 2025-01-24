@@ -1,4 +1,4 @@
-import 'package:pci_app/src/Models/pci_data.dart';
+import 'package:pciapp/src/Models/pci_data.dart';
 
 class OutputStats {
   final int outputDataID;

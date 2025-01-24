@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
-import 'package:pci_app/src/service/method_channel_helper.dart';
+import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/src/service/method_channel_helper.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../Objects/data.dart';
 import '../../service/send_data_api.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/signup_controller.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/signup_controller.dart';
 
 import '../../Controllers/login_controller.dart';
 

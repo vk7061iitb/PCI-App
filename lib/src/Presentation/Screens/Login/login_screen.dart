@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/login_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/Login/roles_dropdown.dart';
-import 'package:pci_app/src/Presentation/Screens/SignUp/signup_screen.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/login_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/Login/roles_dropdown.dart';
+import 'package:pciapp/src/Presentation/Screens/SignUp/signup_screen.dart';
 import '../../Controllers/signup_controller.dart';
 
 class LoginScreen extends StatelessWidget {

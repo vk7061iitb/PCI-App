@@ -3,10 +3,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
-import 'package:pci_app/src/Presentation/Controllers/road_stats_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/OutputData/output_data_tile.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pciapp/src/Presentation/Controllers/road_stats_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/OutputData/output_data_tile.dart';
 
 import '../../../../Utils/font_size.dart';
 import '../MapsPage/maps_page.dart';

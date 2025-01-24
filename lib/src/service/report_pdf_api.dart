@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:pci_app/Objects/data.dart';
+import 'package:pciapp/Objects/data.dart';
 import 'package:share_plus/share_plus.dart';
 import '../config/config.dart';
 import 'package:http/http.dart' as http;

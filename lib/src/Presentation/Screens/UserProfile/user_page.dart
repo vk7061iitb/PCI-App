@@ -3,9 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Objects/data.dart';
-import 'package:pci_app/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pci_app/src/Presentation/Screens/Login/login_screen.dart';
+import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
+import 'package:pciapp/src/Presentation/Screens/Login/login_screen.dart';
 
 import '../../../../Utils/font_size.dart';
 

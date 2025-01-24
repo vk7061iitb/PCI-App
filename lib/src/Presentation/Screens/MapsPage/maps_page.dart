@@ -12,7 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../../Controllers/map_page_controller.dart';
 import 'widget/map_page_legends.dart';
@@ -114,7 +114,7 @@ class MapPage extends StatelessWidget {
                             backgroundColor: WidgetStatePropertyAll(
                               mapPageController.isDrrpLayerVisible
                                   ? Colors.blue.withValues(alpha: 0.1)
-                                  : Colors.black.withValues(alpha:0.05),
+                                  : Colors.black.withValues(alpha: 0.05),
                             ),
                           ),
                           child: Row(

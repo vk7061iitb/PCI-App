@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/src/Presentation/Controllers/output_data_controller.dart';
+import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
 import '../../../../Utils/font_size.dart';
 import '../../Controllers/map_page_controller.dart';
 import '../MapsPage/widget/maptype_dropdown.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:pci_app/Utils/get_icon.dart';
-import 'package:pci_app/src/Presentation/Controllers/response_controller.dart';
+import 'package:pciapp/Utils/get_icon.dart';
+import 'package:pciapp/src/Presentation/Controllers/response_controller.dart';
 
 class VehicleType extends StatelessWidget {
   const VehicleType({required this.width, super.key});

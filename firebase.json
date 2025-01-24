@@ -1,1 +1,1 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"pci-app-6be73","appId":"1:94412646522:android:9d0aee48f0dd17290eb3c3","fileOutput":"android/app/google-services.json"}}}}}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"uma-pci","appId":"1:125846371754:android:c78372fa2e43f6a8b8bfd3","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"uma-pci","configurations":{"android":"1:125846371754:android:c78372fa2e43f6a8b8bfd3"}}}}}}

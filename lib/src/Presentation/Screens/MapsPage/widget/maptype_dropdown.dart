@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pci_app/src/Presentation/Controllers/map_page_controller.dart';
+import 'package:pciapp/src/Presentation/Controllers/map_page_controller.dart';
 
 class SelectMapType extends StatelessWidget {
   const SelectMapType({super.key});

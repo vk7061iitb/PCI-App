@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:path/path.dart';
-import 'package:pci_app/Objects/data.dart';
+import 'package:pciapp/Objects/data.dart';
 import '../Models/stats_data.dart';
 import '../config/config.dart';
 import 'package:http/http.dart' as http;

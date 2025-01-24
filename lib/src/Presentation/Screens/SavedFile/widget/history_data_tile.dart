@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pci_app/Utils/font_size.dart';
-import 'package:pci_app/src/Presentation/Controllers/saved_file_controller.dart';
+import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/src/Presentation/Controllers/saved_file_controller.dart';
 import '../../../../../Utils/get_icon.dart';
 
 class HistoryDataItem extends StatelessWidget {
