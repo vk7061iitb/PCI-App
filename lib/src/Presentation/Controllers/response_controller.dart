@@ -319,14 +319,14 @@ class ResponseController extends GetxController {
     await Share.shareXFiles([fileToShare]);
   }
 
-  /// Compresses a JSON Map<String, dynamic> to GZIP binary format.
+  // Compresses a JSON Map<String, dynamic> to GZIP binary format.
   List<int> compressJson(Map<String, dynamic> jsonData) {
     String jsonString = jsonEncode(jsonData);
     List<int> jsonBytes = utf8.encode(jsonString);
     return gzip.encode(jsonBytes);
   }
 
-  /// Decompresses GZIP binary back to JSON Map<String, dynamic>.
+  // Decompresses GZIP binary back to JSON Map<String, dynamic>.
   Map<String, dynamic> decompressJson(List<int> compressedData) {
     List<int> decompressedBytes = gzip.decode(compressedData);
     String jsonString = utf8.decode(decompressedBytes);
