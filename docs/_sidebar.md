@@ -1,4 +1,4 @@
 - [Home](/)
 - [Manual](/guides/manual)
 - [FAQ](/faq)
-- [Download](/download)
+- [Download](download.md)
