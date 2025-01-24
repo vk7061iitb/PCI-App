@@ -8,6 +8,8 @@ import 'package:pci_app/Objects/data.dart';
 import 'package:pci_app/Utils/font_size.dart';
 import 'package:pci_app/src/Presentation/Controllers/sensor_controller.dart';
 
+import '../../../../../Utils/format_chainage.dart';
+
 class ReadingWidget extends StatelessWidget {
   const ReadingWidget({super.key});
 
@@ -38,6 +40,52 @@ class ReadingWidget extends StatelessWidget {
     FontSize fs = getFontSize(w);
     return Column(
       children: [
+        Obx(() {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+              child: SizedBox(
+                height: totalH * 0.05, // 5% of total height
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    children: [
+                      AutoSizeText(
+                        "Distance Travelled",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontSize: fs.heading2FontSize,
+                          color: textColor,
+                        ),
+                      ),
+                      const Gap(10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          formatChainage(
+                              accDataController.totalDistanceTravelled.value),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            fontSize: fs.heading2FontSize,
+                            color: activeColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        Gap(h * 0.02),
         // RoadType
         Align(
           alignment: Alignment.centerLeft,
@@ -385,7 +433,7 @@ class ReadingWidget extends StatelessWidget {
                   ),
                 ),
               );
-            })
+            }),
           ],
         ),
         Gap(totalH * 0.04), // 2.5% of total height

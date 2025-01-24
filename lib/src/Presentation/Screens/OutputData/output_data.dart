@@ -201,21 +201,6 @@ class _OutputDataPageState extends State<OutputDataPage> {
                                   ),
                                 ),
                               ),
-                              PopupMenuItem(
-                                onTap: () async {
-                                  await outputDataController
-                                      .insertJourneyDataviaUpload();
-                                },
-                                child: Text(
-                                  "Sync with drive",
-                                  style: GoogleFonts.inter(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: MediaQuery.textScalerOf(context)
-                                        .scale(16),
-                                  ),
-                                ),
-                              ),
                             ],
                           );
                         },

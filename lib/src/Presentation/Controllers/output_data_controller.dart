@@ -198,7 +198,7 @@ class OutputDataController extends GetxController {
     final Archive archive = Archive();
     for (int id in slectedFiles) {
       List<Map<String, dynamic>> roadOutputDataQuery =
-          await localDatabase.queryRoadOutputData(jouneyID: id);
+          await localDatabase.queryRoadOutputData(journeyID: id);
 
       Map<String, dynamic> currRoadData = {};
       for (var road in outputDataFile) {
@@ -288,7 +288,7 @@ class OutputDataController extends GetxController {
     _mapPageController.clearData();
     for (int id in slectedFiles) {
       List<Map<String, dynamic>> roadOutputDataQuery =
-          await localDatabase.queryRoadOutputData(jouneyID: id);
+          await localDatabase.queryRoadOutputData(journeyID: id);
 
       Map<String, dynamic> currRoadData = {};
       for (var road in outputDataFile) {
@@ -333,29 +333,32 @@ class OutputDataController extends GetxController {
   // upload the JSON formatted journey data and inset to the database
   Future<void> insertJourneyDataviaUpload() async {
     File? file;
-    FilePickerResult? res = await FilePicker.platform.pickFiles();
+    FilePickerResult? res = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Please select the journey file',
+    );
     if (res != null) {
       file = File(res.files.single.path!);
     }
     if (file == null) {
       return;
     }
-    String jsonData = await file.readAsString();
-    // decode the JSON string
-    final decodeJSONdata = jsonDecode(jsonData);
-    // extract the metadata
-    final metaData = decodeJSONdata['info'];
-    // extract the output data
-    final outputData = decodeJSONdata['data']; // may contains multiple road
-    // insert to database
-    int outputDataID = await localDatabase.insertJourneyData(
-      filename: metaData['filename'],
-      vehicleType: metaData['vehicleType'],
-      time:
-          dateTimeParser.parseDateTime(metaData['time'], "dd-MMM-yyyy HH:mm")!,
-      planned: metaData['planned'] ?? "Planned",
-    );
+    int outputDataID = -1;
     try {
+      String jsonData = await file.readAsString();
+      // decode the JSON string
+      final decodeJSONdata = jsonDecode(jsonData);
+      // extract the metadata
+      final metaData = decodeJSONdata['info'];
+      // extract the output data
+      final outputData = decodeJSONdata['data']; // may contains multiple road
+      // insert to database
+      outputDataID = await localDatabase.insertJourneyData(
+        filename: metaData['filename'],
+        vehicleType: metaData['vehicleType'],
+        time: dateTimeParser.parseDateTime(
+            metaData['time'], "dd-MMM-yyyy HH:mm")!,
+        planned: metaData['planned'] ?? "Planned",
+      );
       List<RoadOutputData> roadOutputData = [];
       // extract each road and insert to db
       for (var road in outputData) {
@@ -376,9 +379,13 @@ class OutputDataController extends GetxController {
       // finally inert to database after verification
       localDatabase.insertToRoadOutputData(roadOutputData: roadOutputData);
     } catch (error, stackTrace) {
-      await localDatabase.deleteOutputData(outputDataID);
+      if (outputDataID != -1) {
+        await localDatabase.deleteOutputData(outputDataID);
+      }
       logger.d(error);
       logger.d(stackTrace);
+      Get.showSnackbar(customGetSnackBar(
+          "Import Failed", error.toString(), Icons.error_outline));
     } finally {
       await fetchData();
     }
@@ -401,20 +408,20 @@ class OutputDataController extends GetxController {
       file.writeAsString(jsonEncode(data));
       String? fileID = await driveHelper.uploadJourneyData(
           file, journeyfolderID ?? "", metaData['filename']);
-      logger.i("file idddddd : $fileID");
       if (fileID == null) {
         return;
       }
-      logger.i("file idddddd : $fileID");
+
       await localDatabase.updateJourneyData(fileID, id);
       Get.showSnackbar(
         customGetSnackBar(
-            "Uploaded", "Data succesfully uploaded to drive", Icons.check),
+            "Uploaded", "Journey succesfully uploaded to drive", Icons.check),
       );
-      await fetchData();
     } catch (error, stackTrace) {
       logger.f(error);
       logger.d(stackTrace);
+    } finally {
+      await fetchData();
     }
   }
 

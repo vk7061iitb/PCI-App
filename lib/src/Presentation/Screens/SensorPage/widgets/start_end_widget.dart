@@ -42,8 +42,8 @@ class StartButton extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black
-                      .withOpacity(0.1), // Light black shadow for soft look
+                  color: Colors.black.withValues(
+                      alpha: 0.1), // Light black shadow for soft look
                   blurRadius: 12, // Larger blur for soft shadow effect
                   spreadRadius: 0, // Minimal spread to keep shadow clean
                   offset: Offset(

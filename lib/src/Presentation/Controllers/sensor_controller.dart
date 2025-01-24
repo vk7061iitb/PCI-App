@@ -38,7 +38,7 @@ class AccDataController extends GetxController {
     speed: 0,
     speedAccuracy: 0,
   ).obs;
-
+  RxDouble totalDistanceTravelled = 0.0.obs;
   final List<AccData> _downSampledDatapoints = [];
   final RxBool _isRecordingData = false.obs;
   StreamSubscription<Position>? _positionStream;
@@ -55,6 +55,7 @@ class AccDataController extends GetxController {
   List<String> roads = ["Paved", "Unpaved", "Pedestrian"];
   RxString currRoadType = "".obs;
   RxInt bnb = (-1).obs;
+  RxInt crossDrainage = 101.obs;
   RxInt currRoadIndex = (-1).obs;
   RxBool isPedestrianFound = false.obs;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
@@ -92,6 +93,15 @@ class AccDataController extends GetxController {
       location.onLocationChanged.listen(
         (loc.LocationData currentLocation) {
           _count++;
+          // if getting location updates then start updating the total distance
+          if (_count > 5 && !showStartButton) {
+            totalDistanceTravelled.value += Geolocator.distanceBetween(
+              _devicePosition.value.latitude,
+              _devicePosition.value.longitude,
+              currentLocation.latitude ?? 0,
+              currentLocation.longitude ?? 0,
+            );
+          }
           _devicePosition.value = Position(
             latitude: currentLocation.latitude!,
             longitude: currentLocation.longitude!,
@@ -139,12 +149,9 @@ class AccDataController extends GetxController {
     }
     if (currRoadType.value.isEmpty || (bnb.value == -1)) {
       _roadSelectDialogue();
-/*       _showDialog('Road Type not selected',
-          'Please select the road type and try again.');
- */
       return;
     }
-
+    // show the bottom sheet to fill the road details, width etc...
     await WakelockPlus.toggle(enable: true);
     pciMethodsCalls.startNotification();
     _isRecordingData.value = true;
@@ -152,6 +159,7 @@ class AccDataController extends GetxController {
     isPedestrianFound.value = false;
     downSampledDatapoints.clear();
     dataPointsList.clear();
+    totalDistanceTravelled.value = 0.0;
     logger.i('Recording Started');
     _userDataController.getUserData();
     _userID = _userDataController.user['ID'];

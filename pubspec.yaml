@@ -1,7 +1,7 @@
 name: pci_app
 description: "PCI App"
 publish_to: "none"
-version: 2.3.4
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
@@ -44,10 +44,9 @@ dependencies:
   googleapis: ^13.2.0
   googleapis_auth: ^1.6.0
   google_sign_in: ^6.2.2
-  firebase_auth: ^5.4.0
-  flutter_secure_storage: ^9.2.4
   url_launcher: ^6.3.1
   file_picker: ^8.1.7
+  change_app_package_name: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -74,3 +73,7 @@ flutter:
     - lib\Assets\roadType\pedestrian-walk.svg
     - lib\Assets\roadType\break.svg
     - lib\Assets\roadType\no_break.svg
+    - lib\Assets\roadType\cross_drainage.svg 
+    - lib\Assets\roadType\bridge.svg 
+    - lib\Assets\roadType\wallL.svg 
+    - lib\Assets\roadType\wallS.svg 

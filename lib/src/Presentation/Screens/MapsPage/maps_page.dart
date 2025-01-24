@@ -113,8 +113,8 @@ class MapPage extends StatelessWidget {
                           style: ButtonStyle(
                             backgroundColor: WidgetStatePropertyAll(
                               mapPageController.isDrrpLayerVisible
-                                  ? Colors.blue.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.05),
+                                  ? Colors.blue.withValues(alpha: 0.1)
+                                  : Colors.black.withValues(alpha:0.05),
                             ),
                           ),
                           child: Row(
@@ -161,7 +161,7 @@ class MapPage extends StatelessWidget {
                           },
                           style: ButtonStyle(
                             backgroundColor: WidgetStatePropertyAll(
-                              Colors.blue.withOpacity(0.1),
+                              Colors.blue.withValues(alpha: 0.1),
                             ),
                           ),
                           child: Row(

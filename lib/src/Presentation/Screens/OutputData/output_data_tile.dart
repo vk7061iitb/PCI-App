@@ -100,7 +100,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
                 onTap: () async {
                   // Function to export the data
                   List<Map<String, dynamic>> query = await localDatabase
-                      .queryRoadOutputData(jouneyID: widget.id);
+                      .queryRoadOutputData(journeyID: widget.id);
                   Map<String, dynamic> metaData = {
                     'filename': widget.filename,
                     'vehicleType': widget.vehicleType,
@@ -164,7 +164,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
               onTap: () async {
                 // Function to export the data
                 List<Map<String, dynamic>> query = await localDatabase
-                    .queryRoadOutputData(jouneyID: widget.id);
+                    .queryRoadOutputData(journeyID: widget.id);
                 outputDataController.exportData(
                   filename: widget.filename,
                   vehicle: widget.vehicleType,
@@ -182,7 +182,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
               onTap: () async {
                 // Function to export the data
                 List<Map<String, dynamic>> query = await localDatabase
-                    .queryRoadOutputData(jouneyID: widget.id);
+                    .queryRoadOutputData(journeyID: widget.id);
                 Map<String, dynamic> metaData = {
                   'filename': widget.filename,
                   'vehicleType': widget.vehicleType,
@@ -332,7 +332,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Text(

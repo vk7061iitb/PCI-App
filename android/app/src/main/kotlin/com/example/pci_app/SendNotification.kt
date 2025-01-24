@@ -1,4 +1,4 @@
-package com.example.pci_app
+package com.uma.pciapp
 
 import android.annotation.SuppressLint
 import android.app.Notification

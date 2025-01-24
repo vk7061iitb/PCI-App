@@ -88,8 +88,7 @@ class SaveFile extends StatelessWidget {
                                     responseController.isPlanned.value = true;
                                   },
                                   style: ButtonStyle(
-                                      backgroundColor:
-                                          WidgetStateProperty.all(
+                                      backgroundColor: WidgetStateProperty.all(
                                     backgroundColor,
                                   )),
                                   child: FittedBox(
@@ -123,12 +122,10 @@ class SaveFile extends StatelessWidget {
                               Flexible(
                                 child: TextButton(
                                   onPressed: () {
-                                    responseController.isPlanned.value =
-                                        false;
+                                    responseController.isPlanned.value = false;
                                   },
                                   style: ButtonStyle(
-                                      backgroundColor:
-                                          WidgetStateProperty.all(
+                                      backgroundColor: WidgetStateProperty.all(
                                     backgroundColor,
                                   )),
                                   child: FittedBox(
@@ -314,8 +311,7 @@ class SaveFile extends StatelessWidget {
                                         if (accDataController
                                                 .isPedestrianFound.value &&
                                             !responseController
-                                                .pedestrianFormKey
-                                                .currentState!
+                                                .pedestrianFormKey.currentState!
                                                 .validate()) {
                                           return;
                                         }
@@ -325,6 +321,8 @@ class SaveFile extends StatelessWidget {
                                           accData: accDataController
                                               .downSampledDatapoints,
                                         );
+                                        accDataController
+                                            .totalDistanceTravelled.value = 0.0;
                                       },
                                       style: OutlinedButton.styleFrom(
                                         shape: RoundedRectangleBorder(

@@ -64,7 +64,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     // Clear previous data
     mapPageController.roadOutputData = [];
     List<Map<String, dynamic>> res =
-        await localDatabase.queryRoadOutputData(jouneyID: widget.id);
+        await localDatabase.queryRoadOutputData(journeyID: widget.id);
     mapPageController.roadOutputData.add(res);
 
     if (mapPageController.roadStats.isNotEmpty) {

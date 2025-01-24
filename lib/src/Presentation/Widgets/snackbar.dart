@@ -27,7 +27,7 @@ GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
     isDismissible: true,
     boxShadows: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.2), // Subtle shadow
+        color: Colors.black.withValues(alpha: 0.2), // Subtle shadow
         spreadRadius: 0,
         blurRadius: 6,
         offset: const Offset(0, 2),

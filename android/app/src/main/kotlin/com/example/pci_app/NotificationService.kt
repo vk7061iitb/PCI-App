@@ -1,4 +1,4 @@
-package com.example.pci_app
+package com.uma.pciapp
 
 import android.app.Notification
 import android.app.NotificationChannel

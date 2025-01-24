@@ -116,7 +116,7 @@ class _MapPageRoadStatisticsState extends State<MapPageRoadStatistics>
                             padding: const EdgeInsets.only(bottom: 5.0),
                             child: ExpansionTile(
                                 collapsedBackgroundColor:
-                                    Colors.black.withOpacity(0.05),
+                                    Colors.black.withValues(alpha: 0.05),
                                 collapsedShape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
@@ -232,7 +232,7 @@ class _RoadStatisticsState extends State<RoadStatistics>
     ) async {
       mapPageController.roadOutputData = [];
       List<Map<String, dynamic>> res =
-          await localDatabase.queryRoadOutputData(jouneyID: id);
+          await localDatabase.queryRoadOutputData(journeyID: id);
       mapPageController.roadOutputData.add(res);
       if (mapPageController.roadStats.isNotEmpty) {
         mapPageController.roadStats.clear();
@@ -369,10 +369,10 @@ Widget _buildSegmentTable(List<SegmentStats> stats) {
           clipBehavior: Clip.antiAlias,
           columnSpacing: 20.0,
           headingRowColor: WidgetStateProperty.resolveWith(
-              (states) => Colors.black.withOpacity(0.05)),
+              (states) => Colors.black.withValues(alpha: 0.05)),
           border: TableBorder.symmetric(
             inside: BorderSide(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               width: 1.0,
             ),
           ),
@@ -478,7 +478,8 @@ class _StatsPageViewState extends State<StatsPageView>
                 const Gap(10),
                 ExpansionTile(
                   initiallyExpanded: false,
-                  collapsedBackgroundColor: Colors.black.withOpacity(0.05),
+                  collapsedBackgroundColor:
+                      Colors.black.withValues(alpha: 0.05),
                   collapsedShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -546,7 +547,8 @@ class _StatsPageViewState extends State<StatsPageView>
                 const Gap(10),
                 ExpansionTile(
                     initiallyExpanded: false,
-                    collapsedBackgroundColor: Colors.black.withOpacity(0.05),
+                    collapsedBackgroundColor:
+                        Colors.black.withValues(alpha: 0.05),
                     collapsedShape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -616,10 +618,10 @@ Widget _buildDataTable(List<dynamic> statsList) {
       clipBehavior: Clip.antiAlias,
       columnSpacing: 20.0,
       headingRowColor: WidgetStateProperty.resolveWith(
-          (states) => Colors.black.withOpacity(0.05)),
+          (states) => Colors.black.withValues(alpha: 0.05)),
       border: TableBorder.symmetric(
         inside: BorderSide(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           width: 1.0,
         ),
       ),

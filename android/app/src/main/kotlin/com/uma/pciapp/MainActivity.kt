@@ -1,4 +1,4 @@
-package com.example.pci_app
+package com.uma.pciapp
 
 import android.content.Intent
 import android.os.Build

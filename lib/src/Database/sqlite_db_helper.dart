@@ -42,6 +42,7 @@ class SQLDatabaseHelper {
                   roadType INTEGER, 
                   bnb INTEGER,
                   Time TIMESTAMP,
+                  unsendDataID INTEGER,
                   FOREIGN KEY (unsendDataID) REFERENCES unsendDataInfo(id) ON DELETE CASCADE
             )''',
           );
@@ -52,7 +53,8 @@ class SQLDatabaseHelper {
                   filename TEXT, 
                   vehicleType TEXT, 
                   Time TIMESTAMP,
-                  planned TEXT
+                  planned TEXT,
+                  driveFileID TEXT DEFAULT ""
               )''',
           );
           db.execute(
@@ -60,7 +62,8 @@ class SQLDatabaseHelper {
                   id INTEGER PRIMARY KEY AUTOINCREMENT,  
                   roadName TEXT, 
                   labels TEXT, 
-                  stats TEXT
+                  stats TEXT,
+                  journeyID INTEGER,
                   FOREIGN KEY (journeyID) REFERENCES outputData(id) ON DELETE CASCADE
             )''',
           );
@@ -73,11 +76,14 @@ class SQLDatabaseHelper {
               time TEXT,
               vehicleType TEXT,
               path TEXT,
-              status INTEGER,
+              status INTEGER
           )''',
           );
         },
         onUpgrade: onUpgrade,
+        onOpen: (db) async {
+          await db.execute('PRAGMA foreign_keys = ON');
+        },
         version: 4,
       );
     } catch (error) {
@@ -89,7 +95,7 @@ class SQLDatabaseHelper {
 
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      db.execute(
+      await db.execute(
           '''ALTER TABLE outputData ADD COLUMN driveFileID TEXT DEFAULT ""''');
     }
   }
@@ -143,7 +149,7 @@ class SQLDatabaseHelper {
           },
         );
       }
-      await accBatch.commit();
+      await accBatch.commit(noResult: true);
     });
   }
 
@@ -216,10 +222,8 @@ class SQLDatabaseHelper {
   }
 
   Future<void> updateJourneyData(String driveFileID, int id) async {
-    logger.d("id: $id");
-    logger.d("driveFileID: $driveFileID");
     try {
-      _localDbInstance.update(
+      await _localDbInstance.update(
           'outputData',
           {
             'driveFileID': driveFileID,
@@ -257,15 +261,16 @@ class SQLDatabaseHelper {
           ],
         );
       }
-      await roadOutputDataBatch.commit();
+      await roadOutputDataBatch.commit(noResult: true);
       logger.i('Road Output Data inserted!');
     });
   }
 
   Future<List<Map<String, dynamic>>> queryRoadOutputData(
-      {required jouneyID}) async {
+      {required journeyID}) async {
     List<Map<String, dynamic>> roadOutputDataQuery = await _localDbInstance
-        .query('roadOutputData', where: 'journeyID = ?', whereArgs: [jouneyID]);
+        .query('roadOutputData',
+            where: 'journeyID = ?', whereArgs: [journeyID]);
     return roadOutputDataQuery;
   }
 

@@ -18,6 +18,10 @@ class AssetsPath {
   final String pedestrian = 'lib/Assets/roadType/pedestrian-walk.svg';
   final String breAk = 'lib/Assets/roadType/break.svg';
   final String noBreak = 'lib/Assets/roadType/no_break.svg';
+  final String crossDrainage = 'lib/Assets/roadType/cross_drainage.svg';
+  final String bridge = 'lib/Assets/roadType/bridge.svg';
+  final String wallL = 'lib/Assets/roadType/wallL.svg';
+  final String wallS = 'lib/Assets/roadType/wallS.svg';
 
   // Roads
   final String roadDRRP = "lib/Assets/Roads/road_drrp.geojson";

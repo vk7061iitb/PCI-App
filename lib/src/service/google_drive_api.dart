@@ -18,9 +18,7 @@ class GoogleDriveApiService {
     if (user == null) {
       return null;
     }
-
     GoogleSignInAuthentication auth = await user.authentication;
-
     return GoogleAuthClient(auth.accessToken!);
   }
 
