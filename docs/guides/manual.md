@@ -107,4 +107,4 @@ Need help? Contact us:
 
 ---
 # Video Tutorial
-<iframe width="560" height="315" src="https://youtu.be/UTvB3CGhZbg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+![Video Guide](https://youtu.be/UTvB3CGhZbg)
