@@ -3,4 +3,4 @@
 - [FAQ](/faq)
 - [Download](download.md)
 - [Dashboard](dashboard.md)
-- [Privacy Policy](privacy.md)
+- [Privacy Policy](/guides/privacy.md)
