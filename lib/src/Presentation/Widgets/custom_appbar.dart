@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/src/Presentation/About/about_app.dart';
 import 'package:pciapp/src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'package:pciapp/src/Presentation/Screens/UserProfile/user_page.dart';
 
@@ -170,12 +171,15 @@ class CustomSliverAppBar extends StatelessWidget {
                 ),
               ),
               PopupMenuItem(
+                onTap: () {
+                  Get.to(() => AboutApp(), transition: Transition.cupertino);
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.settings_outlined, color: Colors.black87),
+                    const Icon(Icons.info_outline, color: Colors.black87),
                     SizedBox(width: 8),
-                    Text("Settings", style: actionTextStyle),
+                    Text("About app", style: actionTextStyle),
                   ],
                 ),
               ),

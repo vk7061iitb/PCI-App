@@ -85,18 +85,19 @@ class SegmentStats {
   final int pci;
   final int velocityPCI;
   final String remarks;
+  final String surfaceType;
 
-  SegmentStats({
-    required this.name,
-    required this.roadNo,
-    required this.segmentNo,
-    required this.from,
-    required this.to,
-    required this.distance,
-    required this.pci,
-    required this.velocityPCI,
-    required this.remarks,
-  });
+  SegmentStats(
+      {required this.name,
+      required this.roadNo,
+      required this.segmentNo,
+      required this.from,
+      required this.to,
+      required this.distance,
+      required this.pci,
+      required this.velocityPCI,
+      required this.remarks,
+      required this.surfaceType});
 }
 
 class SegStats {

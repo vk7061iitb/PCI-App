@@ -39,6 +39,7 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
+
     Map<int, dynamic> stats = {};
     // initialize the stats
     for (int i = 0; i <= 5; i++) {
@@ -79,8 +80,12 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
         secondPoint.latitude,
         secondPoint.longitude,
       ); // in meters
-      double t = (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
-      velocities.add(firstLabel['velocity']);
+      double t = (d /
+          avg([
+            double.parse(firstLabel['velocity'].toString()),
+            double.parse(secondLabel['velocity'].toString())
+          ]));
+      velocities.add(double.parse(firstLabel['velocity'].toString()));
       if (secondPointPCI != firstPointPCI) {
         /// add overall stats
         stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
@@ -91,18 +96,21 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
         totalSegments += 1;
         velSegStats.add(
           SegmentStats(
-              name: filename,
-              roadNo: roadName,
-              segmentNo: totalSegments.toString(),
-              from: formatChainage(td - distance),
-              to: formatChainage(td),
-              distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: firstPointPCI.toInt(),
-              velocityPCI:
-                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-              remarks: remarks(firstLabel['road_type'] ?? -1)),
+            name: filename,
+            roadNo: roadName,
+            segmentNo: totalSegments.toString(),
+            from: formatChainage(td - distance),
+            to: formatChainage(td),
+            distance: (distance.round() / 1000).toStringAsFixed(4),
+            pci: firstPointPCI.toInt(),
+            velocityPCI:
+                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+            remarks: getSurfaceType(firstLabel['road_type'] ?? -1),
+            surfaceType: 'surfaceType',
+          ),
         );
-        // reset the data
+
+        /// reset the data
         velocities = [firstLabel['velocity']];
         distance = 0.0;
         time = 0.0;
@@ -112,26 +120,28 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
       time += t;
     }
     if (velocities.length == 1) {
-      // there is last segment which has different PCI than the previous one,
-      // so we need to add it to the stats
+      /// there is last segment which has different PCI than the previous one,
+      /// so we need to add it to the stats
       stats[secondPointPCI.toInt()]['number_of_segments'] += 1;
       stats[secondPointPCI.toInt()]['total_time'] += time;
       stats[secondPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
-        // add the segment to the list
+        /// add the segment to the list
         totalSegments += 1;
         velSegStats.add(
           SegmentStats(
-              name: filename,
-              roadNo: roadName,
-              segmentNo: totalSegments.toString(),
-              from: formatChainage(td - distance),
-              to: formatChainage(td),
-              distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toInt(),
-              velocityPCI:
-                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-              remarks: remarks(secondLabel['road_type'] ?? -1)),
+            name: filename,
+            roadNo: roadName,
+            segmentNo: totalSegments.toString(),
+            from: formatChainage(td - distance),
+            to: formatChainage(td),
+            distance: (distance.round() / 1000).toStringAsFixed(4),
+            pci: secondPointPCI.toInt(),
+            velocityPCI:
+                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+            remarks: getSurfaceType(secondLabel['road_type'] ?? -1),
+            surfaceType: 'surfaceType',
+          ),
         );
       }
     } else {
@@ -146,16 +156,18 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
         totalSegments += 1;
         velSegStats.add(
           SegmentStats(
-              name: filename,
-              roadNo: roadName,
-              segmentNo: totalSegments.toString(),
-              from: formatChainage(td - distance),
-              to: formatChainage(td),
-              distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: secondPointPCI.toInt(),
-              velocityPCI:
-                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-              remarks: remarks(secondLabel['road_type'] ?? -1)),
+            name: filename,
+            roadNo: roadName,
+            segmentNo: totalSegments.toString(),
+            from: formatChainage(td - distance),
+            to: formatChainage(td),
+            distance: (distance.round() / 1000).toStringAsFixed(4),
+            pci: secondPointPCI.toInt(),
+            velocityPCI:
+                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+            remarks: getSurfaceType(secondLabel['road_type'] ?? -1),
+            surfaceType: 'surfaceType',
+          ),
         );
       }
     }
@@ -190,8 +202,9 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
+
     Map<int, dynamic> stats = {};
-    for (int i = 0; i <= 5; i++) {
+    for (int i = -2; i <= 5; i++) {
       stats[i] = {
         'avg_velocity': 0.0,
         'distance_travelled': 0.0,
@@ -211,16 +224,15 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
     for (int k = 0; k < labels.length - 1; k++) {
       firstLabel = labels[k];
       secondLabel = labels[k + 1];
+
       LatLng firstPoint =
           LatLng(firstLabel['latitude'], firstLabel['longitude']);
       LatLng secondPoint =
           LatLng(secondLabel['latitude'], secondLabel['longitude']);
 
-      firstPointPCI = secondPointPCI;
-      double firstValue = (firstLabel['prediction'] as num).toDouble();
-      double secondValue = (secondLabel['prediction'] as num).toDouble();
-      secondPointPCI = min(firstValue, secondValue);
-
+      // Instead, use the current point's prediction directly
+      firstPointPCI = (firstLabel['prediction'] as num).toDouble();
+      secondPointPCI = (secondLabel['prediction'] as num).toDouble();
       // Calculate distance between points
       double d = Geolocator.distanceBetween(
         firstPoint.latitude,
@@ -228,31 +240,38 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
         secondPoint.latitude,
         secondPoint.longitude,
       ); // in meters
-      double t = (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
-      velocities.add(firstLabel['velocity']);
+
+      double t = (d /
+          avg([
+            double.parse(firstLabel['velocity'].toString()),
+            double.parse(secondLabel['velocity'].toString())
+          ]));
+      velocities.add(double.parse(firstLabel['velocity'].toString()));
+
       if (secondPointPCI != firstPointPCI) {
         stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
         stats[firstPointPCI.toInt()]['total_time'] += time;
         stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
         // add the segment to the list
-
         totalSegments += 1;
         predSegStats.add(
           SegmentStats(
-              name: filename,
-              roadNo: roadName,
-              segmentNo: totalSegments.toString(),
-              from: formatChainage(td - distance),
-              to: formatChainage(td),
-              distance: (distance.round() / 1000).toStringAsFixed(4),
-              pci: firstPointPCI.toInt(),
-              velocityPCI:
-                  velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-              remarks: remarks(firstLabel['road_type'] ?? -1)),
+            name: filename,
+            roadNo: roadName,
+            segmentNo: totalSegments.toString(),
+            from: formatChainage(td - distance),
+            to: formatChainage(td),
+            distance: (distance.round() / 1000).toStringAsFixed(4),
+            pci: firstPointPCI.toInt(),
+            velocityPCI:
+                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+            remarks: firstLabel['remarks'] ?? "--",
+            surfaceType: getSurfaceType(firstLabel['road_type']),
+          ),
         );
 
         // reset the data
-        velocities = [firstLabel['velocity']];
+        velocities = [double.parse(firstLabel['velocity'].toString())];
         distance = 0.0;
         time = 0.0;
       }
@@ -261,6 +280,9 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       time += t;
     }
     if (velocities.length == 1) {
+      if (firstLabel['prediction'] < 0) {
+        logger.d(firstLabel['remarks']);
+      }
       // there is last segment which has different PCI than the previous one,
       // so we need to add it to the stats
       stats[secondPointPCI.toInt()]['number_of_segments'] += 1;
@@ -271,16 +293,18 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       totalSegments += 1;
       predSegStats.add(
         SegmentStats(
-            name: filename,
-            roadNo: roadName,
-            segmentNo: totalSegments.toStringAsFixed(0),
-            from: formatChainage(td - distance),
-            to: formatChainage(td),
-            distance: (distance.round() / 1000).toStringAsFixed(4),
-            pci: secondPointPCI.toInt(),
-            velocityPCI:
-                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-            remarks: remarks(secondLabel['road_type'] ?? -1)),
+          name: filename,
+          roadNo: roadName,
+          segmentNo: totalSegments.toStringAsFixed(0),
+          from: formatChainage(td - distance),
+          to: formatChainage(td),
+          distance: (distance.round() / 1000).toStringAsFixed(4),
+          pci: secondPointPCI.toInt(),
+          velocityPCI:
+              velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+          remarks: secondLabel['remarks'] ?? "--",
+          surfaceType: getSurfaceType(secondLabel['road_type']),
+        ),
       );
     } else {
       // the last segment has the same PCI as the previous one,
@@ -294,16 +318,18 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       totalSegments += 1;
       predSegStats.add(
         SegmentStats(
-            name: filename,
-            roadNo: roadName,
-            segmentNo: totalSegments.toStringAsFixed(0),
-            from: formatChainage(td - distance),
-            to: formatChainage(td),
-            distance: (distance.round() / 1000).toStringAsFixed(4),
-            pci: secondPointPCI.toInt(),
-            velocityPCI:
-                velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
-            remarks: remarks(secondLabel['road_type'] ?? -1)),
+          name: filename,
+          roadNo: roadName,
+          segmentNo: totalSegments.toStringAsFixed(0),
+          from: formatChainage(td - distance),
+          to: formatChainage(td),
+          distance: (distance.round() / 1000).toStringAsFixed(4),
+          pci: secondPointPCI.toInt(),
+          velocityPCI:
+              velocityToPCI(velocityKmph: 3.6 * (distance / time)).toInt(),
+          remarks: secondLabel['remarks'] ?? "--",
+          surfaceType: getSurfaceType(secondLabel['road_type']),
+        ),
       );
     }
 
@@ -332,7 +358,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
   }
 }
 
-String remarks(int roadType) {
+String getSurfaceType(int roadType) {
   String res;
   switch (roadType) {
     case 0:
@@ -345,7 +371,7 @@ String remarks(int roadType) {
       res = "Pedestrian";
       break;
     default:
-      res = "No Remarks";
+      res = "-";
   }
   return res;
 }

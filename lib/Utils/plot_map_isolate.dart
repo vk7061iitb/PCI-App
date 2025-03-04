@@ -76,6 +76,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
 
           var firstLabel = labels[k];
           var secondLabel = labels[k + 1];
+
           LatLng firstPoint =
               LatLng(firstLabel['latitude'], firstLabel['longitude']);
           LatLng secondPoint =
@@ -93,13 +94,16 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             secondPoint.longitude,
           ); // in meters
           // calculate the time
-          double t =
-              (d / avg([firstLabel['velocity'], secondLabel['velocity']]));
+          double t = (d /
+              avg([
+                double.parse(firstLabel['velocity'].toString()),
+                double.parse(secondLabel['velocity'].toString())
+              ]));
           firstPointPCI = secondPointPCI;
           secondPointPCI = showPCIlabel
               ? min(firstValue, secondValue)
               : velPredPCI.toDouble();
-          velocities.add(firstLabel['velocity']);
+          velocities.add(double.parse(firstLabel['velocity'].toString()));
           points.add(firstPoint);
           totalD += d;
           // Create polyline when prediction changes
@@ -116,7 +120,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               'distance': distance / 1000,
               'start': (totalD - distance) / 1000,
               'end': totalD / 1000,
-              'latlngs': [point1, point2]
+              'latlngs': [point1, point2],
+              'remarks': firstLabel['remarks']
             };
             pciPolylines.add(
               createPolyline(

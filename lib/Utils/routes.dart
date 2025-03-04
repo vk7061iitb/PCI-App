@@ -9,4 +9,5 @@ class MyRoutes {
   String outputFilesRoute = "/outputFiles";
   String userProfileRoute = "/userProfile";
   String statsRoute = "/stats";
+  String abouApp = "/about";
 }

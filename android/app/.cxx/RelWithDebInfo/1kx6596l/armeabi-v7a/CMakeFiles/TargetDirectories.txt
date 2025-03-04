@@ -1,0 +1,2 @@
+C:/Users/vk706/OneDrive/Documents/Projects-Flutter/PCI App/pci_app/android/app/.cxx/RelWithDebInfo/1kx6596l/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/vk706/OneDrive/Documents/Projects-Flutter/PCI App/pci_app/android/app/.cxx/RelWithDebInfo/1kx6596l/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -9,6 +9,7 @@ import 'package:pciapp/firebase_options.dart';
 import 'Objects/data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'src/Presentation/About/about_app.dart';
 import 'src/Presentation/Controllers/location_permission.dart';
 import 'src/Presentation/Controllers/response_controller.dart';
 import 'src/Presentation/Controllers/user_data_controller.dart';
@@ -129,6 +130,10 @@ class _MainAppState extends State<MainApp> {
         GetPage(
           name: myRoutes.signUpRoute,
           page: () => const SignupScreen(),
+        ),
+        GetPage(
+          name: myRoutes.abouApp,
+          page: () => const AboutApp(),
         ),
       ],
     );

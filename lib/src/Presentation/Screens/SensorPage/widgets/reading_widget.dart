@@ -7,8 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
 import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
+import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 
 import '../../../../../Utils/format_chainage.dart';
+import 'pause_resume.dart';
 
 class ReadingWidget extends StatelessWidget {
   const ReadingWidget({super.key});
@@ -52,7 +54,7 @@ class ReadingWidget extends StatelessWidget {
                   child: Row(
                     children: [
                       AutoSizeText(
-                        "Distance Travelled",
+                        "You've travelled",
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w500,
                           fontSize: fs.heading2FontSize,
@@ -77,7 +79,16 @@ class ReadingWidget extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                      )
+                      ),
+                      const Gap(10),
+                      AutoSizeText(
+                        "Km",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontSize: fs.heading2FontSize,
+                          color: textColor,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -124,6 +135,9 @@ class ReadingWidget extends StatelessWidget {
                   message: "Tap when road is paved",
                   child: InkWell(
                     onTap: () {
+                      if (accDataController.currRoadIndex < 0) {
+                        return;
+                      }
                       accDataController.currRoadType.value = "Paved";
                       accDataController.currRoadIndex.value = accDataController
                           .roads
@@ -188,6 +202,9 @@ class ReadingWidget extends StatelessWidget {
                   message: "Tap when raod is unpaved",
                   child: InkWell(
                     onTap: () {
+                      if (accDataController.currRoadIndex < 0) {
+                        return;
+                      }
                       accDataController.currRoadType.value = "Unpaved";
                       accDataController.currRoadIndex.value = accDataController
                           .roads
@@ -252,6 +269,9 @@ class ReadingWidget extends StatelessWidget {
                   message: "Tap when road in pedestrian",
                   child: InkWell(
                     onTap: () {
+                      if (accDataController.currRoadIndex < 0) {
+                        return;
+                      }
                       accDataController.currRoadType.value = "Pedestrian";
                       accDataController.currRoadIndex.value = accDataController
                           .roads
@@ -317,17 +337,54 @@ class ReadingWidget extends StatelessWidget {
               return SizedBox(
                 width: w * 0.3,
                 child: Tooltip(
-                  message: "Tap when there's a breaker",
+                  message: "Tap when you want to pause the reading",
                   child: InkWell(
                     onTap: () async {
-                      // break
-                      accDataController.bnb.value = 1;
-                      // after 2 sec
-                      if (!accDataController.showStartButton) {
-                        Future.delayed(const Duration(seconds: 2)).then((_) {
-                          accDataController.bnb.value = 0;
-                        });
+                      if (accDataController.showStartButton) {
+                        // reading is not started yet
+                        Get.showSnackbar(
+                          customGetSnackBar(
+                            "Error",
+                            "Reading has not been started yet!",
+                            Icons.warning_amber,
+                          ),
+                        );
+                        return;
                       }
+                      if (accDataController.currRoadIndex < 0) {
+                        // resume is not tapped yet
+                        // this will work as resume button
+                        // resume the reading
+                        // reset the data
+                        accDataController.currRoadIndex.value =
+                            accDataController.prevRoadIndex.value;
+                        accDataController.remarks.value = "-";
+                        accDataController.pauseReasonSelectedOption.value = "";
+                        accDataController.pauseReasonController.clear();
+                        return;
+                      }
+                      // pause button tapped
+                      accDataController.prevRoadIndex.value =
+                          accDataController.currRoadIndex.value;
+                      bool? type = await _selectReason(context);
+                      if (type == null) {
+                        return;
+                      } else if (type == true) {
+                        accDataController.currRoadIndex.value = -1;
+                        accDataController.pauseReasonSelectedOption.value =
+                            "Measurement";
+                      } else {
+                        accDataController.currRoadIndex.value = -2;
+                        accDataController.pauseReasonSelectedOption.value =
+                            "Others";
+                      }
+                      // open the panel
+                      Get.bottomSheet(
+                        PauseResume(),
+                        isDismissible: false,
+                        enableDrag: false,
+                        ignoreSafeArea: false,
+                      );
                     },
                     radius: 25,
                     borderRadius: BorderRadius.circular(5),
@@ -342,27 +399,35 @@ class ReadingWidget extends StatelessWidget {
                             height: (w > 600) ? w * 0.12 : w * 0.1,
                             child: SvgPicture.asset(
                               colorFilter: ColorFilter.mode(
-                                (accDataController.bnb.value == 1)
+                                (accDataController.currRoadIndex.value < 0)
                                     ? Colors.blue
                                     : Colors.black,
                                 BlendMode.srcIn,
                               ),
-                              assetsPath.breAk,
+                              (accDataController.currRoadIndex.value >= 0)
+                                  ? assetsPath.pause
+                                  : assetsPath.resume,
                             ),
                           ),
                           Gap(h * 0.01),
                           Center(
                             child: FittedBox(
                               child: AutoSizeText(
-                                "Break",
+                                (accDataController.currRoadIndex.value >= 0)
+                                    ? "Pause"
+                                    : "Resume",
                                 style: GoogleFonts.inter(
                                   fontSize: fs.bodyTextFontSize,
-                                  fontWeight: (accDataController.bnb.value == 1)
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: (accDataController.bnb.value == 1)
-                                      ? activeColor
-                                      : Colors.black,
+                                  fontWeight:
+                                      (accDataController.currRoadIndex.value <
+                                              0)
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                  color:
+                                      (accDataController.currRoadIndex.value <
+                                              0)
+                                          ? activeColor
+                                          : Colors.black,
                                 ),
                                 group: textGroup,
                                 overflow: TextOverflow.ellipsis,
@@ -377,63 +442,6 @@ class ReadingWidget extends StatelessWidget {
               );
             }),
             Gap(w * 0.05),
-
-            /// No-Break
-            Obx(() {
-              return SizedBox(
-                width: w * 0.3,
-                child: Tooltip(
-                  message: "Tap when there's no speed breaker",
-                  child: InkWell(
-                    onTap: () {
-                      // break
-                      accDataController.bnb.value = 0;
-                    },
-                    radius: 25,
-                    borderRadius: BorderRadius.circular(5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: (w > 600)
-                                ? w * 0.12
-                                : w * 0.1, // Larger icon size for wide screens
-                            height: (w > 600) ? w * 0.12 : w * 0.1,
-                            child: SvgPicture.asset(
-                              colorFilter: ColorFilter.mode(
-                                (accDataController.bnb.value == 0)
-                                    ? Colors.blue
-                                    : Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                              assetsPath.noBreak,
-                            ),
-                          ),
-                          Gap(h * 0.01),
-                          Center(
-                            child: AutoSizeText(
-                              "No-Break",
-                              style: GoogleFonts.inter(
-                                fontSize: fs.bodyTextFontSize,
-                                fontWeight: (accDataController.bnb.value == 0)
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                                color: (accDataController.bnb.value == 0)
-                                    ? activeColor
-                                    : Colors.black,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              group: textGroup,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
           ],
         ),
         Gap(totalH * 0.04), // 2.5% of total height
@@ -457,7 +465,7 @@ class ReadingWidget extends StatelessWidget {
             ),
           ),
         ),
-        Gap(totalH * 0.02), // 1.5% of total height
+        Gap(totalH * 0.02),
 
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,4 +823,54 @@ class ReadingWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+Future<bool?> _selectReason(BuildContext context) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Reason'),
+        titleTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+          fontSize: 24,
+        ),
+        content: const Text('Please select the reason for this pause'),
+        contentTextStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+          fontSize: 16,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Get.back(result: true);
+            },
+            child: Text(
+              'Measurements',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: Text(
+              'Others',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

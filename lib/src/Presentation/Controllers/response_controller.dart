@@ -279,7 +279,7 @@ class ResponseController extends GetxController {
       'Longitude',
       'Speed',
       'roadType',
-      'bnb',
+      'remarks',
       'accTime'
     ]);
     // Add data points
@@ -292,7 +292,7 @@ class ResponseController extends GetxController {
         element.longitude,
         element.speed,
         element.roadType,
-        element.bnb,
+        element.remarks,
         DateFormat('yyyy-MM-dd HH:mm:ss:S').format(element.accTime)
       ]);
     }

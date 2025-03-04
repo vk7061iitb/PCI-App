@@ -40,7 +40,7 @@ class SQLDatabaseHelper {
                   Longitude REAL, 
                   Speed REAL,
                   roadType INTEGER, 
-                  bnb INTEGER,
+                  remarks TEXT,
                   Time TIMESTAMP,
                   unsendDataID INTEGER,
                   FOREIGN KEY (unsendDataID) REFERENCES unsendDataInfo(id) ON DELETE CASCADE
@@ -84,21 +84,16 @@ class SQLDatabaseHelper {
         onOpen: (db) async {
           await db.execute('PRAGMA foreign_keys = ON');
         },
-        version: 4,
+        version: 5,
       );
     } catch (error) {
       if (kDebugMode) {
         print(error.toString());
       }
-    }
+    } finally {}
   }
 
-  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < newVersion) {
-      await db.execute(
-          '''ALTER TABLE outputData ADD COLUMN driveFileID TEXT DEFAULT ""''');
-    }
-  }
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {}
 
   Future<void> dbSize() async {
     int? pgCont = Sqflite.firstIntValue(
@@ -144,7 +139,7 @@ class SQLDatabaseHelper {
             'Longitude': data.longitude,
             'Speed': data.speed,
             'roadType': data.roadType,
-            'bnb': data.bnb,
+            'remarks': data.remarks,
             'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(data.accTime),
           },
         );

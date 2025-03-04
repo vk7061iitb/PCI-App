@@ -71,7 +71,7 @@ class SendDataToServer {
             labels: (responseData[road]['labels'] as List<dynamic>)
                 .map((item) => item as Map<String, dynamic>)
                 .toList(),
-            stats: responseData[road]['stats'],
+            stats: responseData[road]['stats'] ?? {},
           );
 
           // Add the journey data to the roadOutputData

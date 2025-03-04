@@ -237,25 +237,26 @@ class SignupScreen extends StatelessWidget {
                           // Sign up logic
                           if (signupController.signupFormKey.currentState!
                               .validate()) {
+                            final user = await userDataController.getUserData();
+                            logger.i(user);
                             await signupController.signUp().then((_) {
-                              if (userDataController.user["isLoggedIn"] ==
-                                  false) {
+                              if (user["isLoggedIn"] == true) {
+                                Get.showSnackbar(
+                                  customGetSnackBar(
+                                      "Welcome!",
+                                      "Success! Account created successfully.",
+                                      Icons.check_circle_outline),
+                                );
+                                Get.offNamed(myRoutes.homeRoute);
+                              } else {
                                 Get.showSnackbar(
                                   customGetSnackBar(
                                       "Account Exists",
                                       "Error! The user is already registered",
                                       Icons.error_outline),
                                 );
-
                                 return;
                               }
-                              Get.showSnackbar(
-                                customGetSnackBar(
-                                    "Welcome!",
-                                    "Success! Account created successfully.",
-                                    Icons.check_circle_outline),
-                              );
-                              Get.offNamed(myRoutes.homeRoute);
                             });
                           }
                         },

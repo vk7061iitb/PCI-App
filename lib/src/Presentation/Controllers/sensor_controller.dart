@@ -54,12 +54,16 @@ class AccDataController extends GetxController {
   final LocationController locationController = Get.find<LocationController>();
   List<String> roads = ["Paved", "Unpaved", "Pedestrian"];
   RxString currRoadType = "".obs;
-  RxInt bnb = (-1).obs;
-  RxInt crossDrainage = 101.obs;
-  RxInt currRoadIndex = (-1).obs;
+  RxString remarks = "-".obs;
+  RxInt currRoadIndex = (100).obs;
+  RxInt prevRoadIndex = (100).obs;
   RxBool isPedestrianFound = false.obs;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
-
+  // pause
+  TextEditingController pauseReasonController = TextEditingController();
+  String pauseReason = "";
+  GlobalKey<FormState> pauseFormKey = GlobalKey<FormState>();
+  RxString pauseReasonSelectedOption = "".obs;
   // Getters
   List<AccData> get downSampledDatapoints => _downSampledDatapoints;
   List<AccData> get dataPointsList => _dataPointsList;
@@ -147,7 +151,7 @@ class AccDataController extends GetxController {
           'Please hit the start button again and give a try.');
       return;
     }
-    if (currRoadType.value.isEmpty || (bnb.value == -1)) {
+    if (currRoadType.value.isEmpty) {
       _roadSelectDialogue();
       return;
     }
@@ -180,7 +184,7 @@ class AccDataController extends GetxController {
               speed:
                   double.parse(_devicePosition.value.speed.toStringAsFixed(4)),
               roadType: currRoadIndex.value,
-              bnb: bnb.value,
+              remarks: remarks.value,
               accTime: DateTime.now(),
             ),
           );
@@ -203,9 +207,9 @@ class AccDataController extends GetxController {
     for (AccData data in downSampledDatapoints) {
       _downSampledDatapoints.add(data);
     }
-    currRoadIndex.value = -1;
+    currRoadIndex.value = 100;
     currRoadType.value = "";
-    bnb.value = -1;
+    remarks.value = "-";
     await WakelockPlus.toggle(enable: false);
   }
 }
@@ -273,29 +277,6 @@ void _roadSelectDialogue() {
               fontStyle: FontStyle.italic,
               color: Colors.grey[700],
             ),
-          ),
-          const TextSpan(
-            text: ') and ',
-          ),
-          TextSpan(
-            text: 'speed breaker status',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.normal,
-              color: Colors.blue[600],
-            ),
-          ),
-          const TextSpan(
-            text: ' (',
-          ),
-          TextSpan(
-            text: 'break/no break',
-            style: GoogleFonts.inter(
-              fontStyle: FontStyle.normal,
-              color: Colors.red[700],
-            ),
-          ),
-          const TextSpan(
-            text: ').',
           ),
         ],
       ),

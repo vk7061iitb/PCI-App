@@ -70,9 +70,5 @@ flutter:
     - lib\Assets\roadType\pave-road.svg
     - lib\Assets\roadType\un-pave-road.svg
     - lib\Assets\roadType\pedestrian-walk.svg
-    - lib\Assets\roadType\break.svg
-    - lib\Assets\roadType\no_break.svg
-    - lib\Assets\roadType\cross_drainage.svg 
-    - lib\Assets\roadType\bridge.svg 
-    - lib\Assets\roadType\wallL.svg 
-    - lib\Assets\roadType\wallS.svg 
+    - lib\Assets\roadType\pause.svg
+    - lib\Assets\roadType\resume.svg

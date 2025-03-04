@@ -25,7 +25,6 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
   for (int i = 1; i < accDataList.length - 1; i++) {
     AccData before = accDataList[0];
     AccData after;
-
     if (accDataList[i].accTime.isBefore(nextSampleTime) ||
         accDataList[i].accTime.isAtSameMomentAs(nextSampleTime)) {
       before = average(accDataList[i], accDataList[i - 1]);
@@ -47,11 +46,9 @@ List<AccData> downsampleTo50Hz(List<AccData> accDataList) {
             linInterpolate(before, after, nextSampleTime);
         downsampledList.add(interPolatedAccData);
       }
-
       nextSampleTime = nextSampleTime.add(Duration(microseconds: interval));
     }
   }
-
   return downsampledList;
 }
 
@@ -73,16 +70,23 @@ AccData average(AccData accData1, AccData accData2) {
   avgY = double.parse(avgY.toStringAsFixed(4));
   avgZ = double.parse(avgZ.toStringAsFixed(4));
   speed = double.parse(speed.toStringAsFixed(4));
+  String remarks = "";
+  if (accData1.remarks.isNotEmpty) {
+    remarks = accData1.remarks;
+  } else if (accData2.remarks.isNotEmpty) {
+    remarks = accData2.remarks;
+  }
   avgAccData = AccData(
-      xAcc: avgX,
-      yAcc: avgY,
-      zAcc: avgZ,
-      latitude: accData2.latitude,
-      longitude: accData2.longitude,
-      speed: speed,
-      roadType: accData2.roadType,
-      bnb: accData2.bnb,
-      accTime: accData2.accTime);
+    xAcc: avgX,
+    yAcc: avgY,
+    zAcc: avgZ,
+    latitude: accData2.latitude,
+    longitude: accData2.longitude,
+    speed: speed,
+    roadType: accData2.roadType,
+    remarks: remarks,
+    accTime: accData2.accTime,
+  );
   return avgAccData;
 }
 
@@ -105,16 +109,23 @@ AccData linInterpolate(AccData before, AccData after, DateTime curr) {
   interpolatedY = double.parse(interpolatedY.toStringAsFixed(4));
   interpolatedZ = double.parse(interpolatedZ.toStringAsFixed(4));
   speed = double.parse(speed.toStringAsFixed(4));
+  String remarks = "";
+  if (before.remarks.isNotEmpty) {
+    remarks = before.remarks;
+  } else if (after.remarks.isNotEmpty) {
+    remarks = after.remarks;
+  }
   AccData interpolatedData = AccData(
-      xAcc: interpolatedX,
-      yAcc: interpolatedY,
-      zAcc: interpolatedZ,
-      latitude: after.latitude,
-      longitude: after.longitude,
-      speed: speed,
-      roadType: after.roadType,
-      bnb: after.bnb,
-      accTime: curr);
+    xAcc: interpolatedX,
+    yAcc: interpolatedY,
+    zAcc: interpolatedZ,
+    latitude: after.latitude,
+    longitude: after.longitude,
+    speed: speed,
+    roadType: after.roadType,
+    remarks: remarks,
+    accTime: curr,
+  );
 
   return interpolatedData;
 }

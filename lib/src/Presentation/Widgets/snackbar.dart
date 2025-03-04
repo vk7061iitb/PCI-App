@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// Returns:
 /// - `GetSnackBar`: A configured GetSnackBar widget.
 GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
+  Color boxColor = Colors.blueAccent;
   return GetSnackBar(
     snackPosition: SnackPosition.BOTTOM,
     backgroundColor: Colors.white,
@@ -76,19 +77,11 @@ GetSnackBar customGetSnackBar(String title, String message, IconData icon) {
         InkWell(
           onTap: () {
             Clipboard.setData(ClipboardData(text: message));
-            Get.snackbar(
-              "Copied",
-              "Message copied to clipboard!",
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.black45,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 2),
-            );
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.blueAccent,
+              color: boxColor,
               borderRadius: BorderRadius.circular(15),
             ),
             child: Text(

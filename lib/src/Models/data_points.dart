@@ -14,7 +14,7 @@ class AccData {
   final double longitude;
   final double speed;
   final int roadType;
-  final int bnb; // Break-NoBreak = 0-> NO, 1-> YES
+  final String remarks;
   final DateTime accTime;
 
   AccData(
@@ -25,7 +25,7 @@ class AccData {
       required this.longitude,
       required this.speed,
       required this.roadType,
-      required this.bnb,
+      required this.remarks,
       required this.accTime});
 
 // Convert the data points to a JSON format.
@@ -39,7 +39,7 @@ class AccData {
       'Longitude': longitude,
       'Velocity': double.parse(speed.toStringAsFixed(4)),
       'roadType': roadType,
-      'bnb': bnb,
+      'remarks': remarks,
       'Time': DateFormat('yyyy-MM-dd HH:mm:ss:S').format(accTime),
     };
   }

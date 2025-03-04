@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -313,7 +312,6 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
       int noOfRoads = journeyStats.length;
       for (int j = 0; j < noOfRoads; j++) {
         final rs = journeyStats[j].predStats;
-        final vs = journeyStats[j].velStats;
         final ss = segmentsStatsList[j];
         // Road Name Section
         content.add(
@@ -368,7 +366,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
               borderRadius: pw.BorderRadius.circular(10),
             ),
             child: pw.Text(
-              'Velocity Based',
+              'Pause/Resume Data',
               style: pw.TextStyle(
                 fontSize: 14,
                 color: PdfColors.blue,
@@ -377,8 +375,31 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
             ),
           ),
         );
-        content.add(pw.SizedBox(height: 5));
-        content.add(_buildStatTable(vs));
+        bool hasPauseData = false;
+        for (var data in ss.predictedStats) {
+          if (data.pci < 0) {
+            hasPauseData = true;
+            break;
+          }
+        }
+        if (hasPauseData) {
+          content.add(pw.SizedBox(height: 5));
+          content.add(_buildPauseResumeTable(ss.predictedStats));
+        } else {
+          content.add(pw.SizedBox(height: 5));
+          content.add(
+            pw.Text(
+              '*No pause/resume data available',
+              style: pw.TextStyle(
+                fontSize: 12,
+                color: PdfColors.black,
+                fontWeight: pw.FontWeight.normal,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          );
+        }
+
         // Page break between overall and chainage stats
         content.add(pw.NewPage());
         content.add(
@@ -456,24 +477,6 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
         );
         content.add(pw.SizedBox(height: 5));
         // Prediction Based
-        content.add(
-          pw.Container(
-            padding: pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey200,
-              borderRadius: pw.BorderRadius.circular(10),
-            ),
-            child: pw.Text(
-              'Prediction Based',
-              style: pw.TextStyle(
-                fontSize: 14,
-                color: PdfColors.blue,
-                fontWeight: pw.FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-        content.add(pw.SizedBox(height: 5));
         content.add(_buildSegmentTable(ss.predictedStats));
         // Page break between roads
         // if the road is already last then don't add new page
@@ -483,18 +486,52 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     return content;
   }
 
+  pw.Widget _buildPauseResumeTable(List<dynamic> statsList) {
+    return pw.TableHelper.fromTextArray(
+      cellAlignment: pw.Alignment.center,
+      context: null,
+      columnWidths: {
+        0: pw.FixedColumnWidth(150),
+        1: pw.FixedColumnWidth(150),
+        3: pw.FlexColumnWidth(2),
+      },
+      data: [
+        ['From', 'To', 'Remarks'],
+        ...statsList
+            .where((stats) => double.parse(stats.pci.toString()) < 0)
+            .map((stats) => [
+                  stats.from,
+                  stats.to,
+                  stats.remarks,
+                ]),
+      ],
+      headerStyle: pw.TextStyle(
+        fontWeight: pw.FontWeight.bold,
+        fontSize: 12,
+      ),
+      cellStyle: pw.TextStyle(
+        fontSize: 10,
+      ),
+      border: pw.TableBorder.all(color: PdfColors.black),
+      headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+    );
+  }
+
   pw.Widget _buildStatTable(List<dynamic> statsList) {
     return pw.TableHelper.fromTextArray(
       cellAlignment: pw.Alignment.center,
       context: null,
       data: [
         ['PCI', 'Distance (km)', 'Velocity (kmph)', 'No. of Segments'],
-        ...statsList.map((stats) => [
-              stats.pci.toString(),
-              (double.parse(stats.distanceTravelled) / 1000).toStringAsFixed(3),
-              (double.parse(stats.avgVelocity) * 3.6).toStringAsFixed(3),
-              stats.numberOfSegments.toString(),
-            ]),
+        ...statsList
+            .where((stats) => double.parse(stats.pci) > 0)
+            .map((stats) => [
+                  stats.pci.toString(),
+                  (double.parse(stats.distanceTravelled) / 1000)
+                      .toStringAsFixed(3),
+                  (double.parse(stats.avgVelocity) * 3.6).toStringAsFixed(3),
+                  stats.numberOfSegments.toString(),
+                ]),
       ],
       headerStyle: pw.TextStyle(
         fontWeight: pw.FontWeight.bold,
@@ -519,18 +556,16 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
           'To',
           'Distance\n(km)',
           'Prediction\nPCI',
-          'Velocity\nPCI',
-          'Minimum\nPCI',
+          'Surface\nType',
           'Remarks'
         ],
-        ...stats.map((seg) => [
+        ...stats.where((segment) => segment.pci > 0).map((seg) => [
               seg.segmentNo,
               seg.from,
               seg.to,
               seg.distance,
               seg.pci,
-              seg.velocityPCI,
-              min(seg.pci, seg.velocityPCI),
+              seg.surfaceType,
               seg.remarks,
             ]),
       ],

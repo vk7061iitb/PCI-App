@@ -233,6 +233,7 @@ class _RoadStatisticsState extends State<RoadStatistics>
       mapPageController.roadOutputData = [];
       List<Map<String, dynamic>> res =
           await localDatabase.queryRoadOutputData(journeyID: id);
+
       mapPageController.roadOutputData.add(res);
       if (mapPageController.roadStats.isNotEmpty) {
         mapPageController.roadStats.clear();
@@ -451,7 +452,6 @@ class _StatsPageViewState extends State<StatsPageView>
       body: ListView.builder(
         itemCount: mapPageController.roadStats[widget.index].length,
         itemBuilder: (context, roadIndex) {
-          logger.i(mapPageController.roadStats.length);
           final outputStats =
               mapPageController.roadStats[widget.index][roadIndex].predStats;
           final velBasedStats =
