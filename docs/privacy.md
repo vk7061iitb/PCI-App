@@ -1,12 +1,12 @@
-**Privacy Policy for Pavement Condition Index (PCI) App**
+# **Privacy Policy for Pavement Condition Index (PCI) App**
 
 **Effective Date:** 4 March 2025
 
-**1. Introduction**
+## **1. Introduction**
 
 Welcome to the Pavement Condition Index (PCI) App ("the App"), developed jointly by Unnat Maharashtra Abhiyan, IIT Bombay, and Zilla Parishad, Ratnagiri ("we," "us," or "our").  We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and protect your information when you use the PCI App.
 
-**2. Information We Collect**
+## **2. Information We Collect**
 
 To provide you with the services offered by the PCI App, we collect the following types of information:
 
@@ -34,7 +34,7 @@ To provide you with the services offered by the PCI App, we collect the followin
 *   **User Input Data:**
     *   **Pothole Counts (Textual Input):** You may manually input the number of potholes observed during your road assessment journey. This information supplements sensor data and contributes to the PCI calculation.
 
-**3. How We Use Your Information**
+## **3. How We Use Your Information**
 
 We use the collected information for the following purposes:
 
@@ -54,7 +54,7 @@ We use the collected information for the following purposes:
 *   **Communication (if necessary):**
     *   To communicate with you regarding your account, App updates, or technical issues (if necessary).
 
-**4. Data Sharing and Disclosure**
+## **4. Data Sharing and Disclosure**
 
 **We DO NOT share your personal information or collected data with any third parties.**
 
@@ -71,11 +71,11 @@ We are committed to protecting your information and have implemented reasonable 
 
 **However, please be aware that no method of transmission over the internet or method of electronic storage is completely secure. While we strive to use commercially acceptable means to protect your personal information, we cannot guarantee its absolute security.**
 
-**6. Data Retention**
+## **6. Data Retention**
 
 We will retain your personal information and collected data for as long as necessary to fulfill the purposes outlined in this Privacy Policy, or as required by applicable laws and regulations.  When your data is no longer needed, we will securely dispose of it.
 
-**7. Children's Privacy**
+## **7. Children's Privacy**
 
 **The PCI App is intended for use by adults who can safely operate a vehicle and assess road conditions while driving. It is not intended for use by children under the age of 16.**
 
@@ -83,7 +83,7 @@ We do not knowingly collect personal information from children under 16. If you 
 
 **The App requires users to travel and potentially drive to collect data.  Therefore, it is not suitable for children who cannot legally and safely operate a vehicle.**  We strongly discourage children from using this App.
 
-**8. Your Rights**
+## **8. Your Rights**
 
 You may have certain rights regarding your personal information, depending on your location and applicable laws. These rights may include:
 
@@ -94,11 +94,11 @@ You may have certain rights regarding your personal information, depending on yo
 
 To exercise these rights, please contact us at the contact information provided below. We will respond to your request in accordance with applicable laws.
 
-**9. Changes to this Privacy Policy**
+## **9. Changes to this Privacy Policy**
 
 We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will post any changes to this Privacy Policy within the App and/or on our website, and update the "Effective Date" at the top of this policy. We encourage you to review this Privacy Policy periodically for any updates.  **Significant changes to this policy will be notified to users through the app or other reasonable means.**
 
-**10. Contact Us**
+## **10. Contact Us**
 
 If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
 
