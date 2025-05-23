@@ -18,9 +18,9 @@ class AboutApp extends StatelessWidget {
                     fontSize: 16.0, color: Colors.black, height: 1.5),
                 children: [
                   TextSpan(
-                    text: 'Welcome to the PCI App\n\n',
+                    text: 'Welcome to the PCI App\n',
                     style: GoogleFonts.inter(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                        fontSize: 26, fontWeight: FontWeight.bold),
                   ),
                   const TextSpan(
                     text:
@@ -29,7 +29,7 @@ class AboutApp extends StatelessWidget {
                   TextSpan(
                     text: 'Overview\n',
                     style: GoogleFonts.inter(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const TextSpan(
                     text:
@@ -38,7 +38,7 @@ class AboutApp extends StatelessWidget {
                   TextSpan(
                     text: 'Goals\n',
                     style: GoogleFonts.inter(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   _buildBulletPoint(
                       'Develop software to gather sensor data systematically.'),
@@ -53,7 +53,7 @@ class AboutApp extends StatelessWidget {
                   TextSpan(
                     text: '\nHow it Works\n',
                     style: GoogleFonts.inter(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   _buildSubheading('Data Collection:'),
                   const TextSpan(
@@ -79,7 +79,7 @@ class AboutApp extends StatelessWidget {
                   TextSpan(
                     text: 'Benefits\n',
                     style: GoogleFonts.inter(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   _buildBulletPoint(
                       'Efficiency: Automation streamlines the assessment process, saving time and resources.'),
@@ -109,7 +109,7 @@ class AboutApp extends StatelessWidget {
   static TextSpan _buildSubheading(String text) {
     return TextSpan(
       text: '$text ',
-      style: GoogleFonts.inter(fontSize: 16.0, fontWeight: FontWeight.bold),
+      style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.bold),
     );
   }
 }
