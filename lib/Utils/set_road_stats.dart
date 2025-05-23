@@ -361,6 +361,11 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
 String getSurfaceType(int roadType) {
   String res;
   switch (roadType) {
+    case -1:
+      res = "Measurement";
+      break;
+    case -2:
+      res = "Pause";
     case 0:
       res = "Paved";
       break;
@@ -371,7 +376,7 @@ String getSurfaceType(int roadType) {
       res = "Pedestrian";
       break;
     default:
-      res = "-";
+      res = "";
   }
   return res;
 }
