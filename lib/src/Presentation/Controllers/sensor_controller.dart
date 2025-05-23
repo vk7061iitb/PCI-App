@@ -57,7 +57,6 @@ class AccDataController extends GetxController {
   RxString remarks = "-".obs;
   RxInt currRoadIndex = (100).obs;
   RxInt prevRoadIndex = (100).obs;
-  RxBool isPedestrianFound = false.obs;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
   // pause
   TextEditingController pauseReasonController = TextEditingController();
@@ -160,7 +159,6 @@ class AccDataController extends GetxController {
     pciMethodsCalls.startNotification();
     _isRecordingData.value = true;
     _showStartButton.value = false;
-    isPedestrianFound.value = false;
     downSampledDatapoints.clear();
     dataPointsList.clear();
     totalDistanceTravelled.value = 0.0;

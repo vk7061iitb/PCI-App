@@ -21,11 +21,7 @@ class ResponseController extends GetxController {
   final RxString _dropdownValue = vehicleType.first.obs;
   final Rx<TextEditingController> _fileNameController =
       TextEditingController().obs;
-  final Rx<TextEditingController> _pedestianController =
-      TextEditingController().obs;
   final Rx<GlobalKey<FormState>> _formKey = GlobalKey<FormState>().obs;
-  final Rx<GlobalKey<FormState>> _pedestrianFormKey =
-      GlobalKey<FormState>().obs;
   final RxBool _savingData = false.obs;
   final RxString _serverMessage = ''.obs;
   final Rx<int> _serverResponseCode = 0.obs;
@@ -41,9 +37,7 @@ class ResponseController extends GetxController {
   String get serverMessage => _serverMessage.value;
   bool get savingData => _savingData.value;
   GlobalKey<FormState> get formKey => _formKey.value;
-  GlobalKey<FormState> get pedestrianFormKey => _pedestrianFormKey.value;
   TextEditingController get fileNameController => _fileNameController.value;
-  TextEditingController get pedestianController => _pedestianController.value;
 
   set dropdownValue(String value) => _dropdownValue.value = value;
   set savingData(bool value) => _savingData.value = value;
