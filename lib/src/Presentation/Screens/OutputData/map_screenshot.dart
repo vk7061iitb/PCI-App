@@ -23,19 +23,19 @@ class MapScreenshot extends StatelessWidget {
         Get.find<OutputDataController>();
     Uint8List predBasedImdData = Uint8List.fromList([]);
     Uint8List velBasedImdData = Uint8List.fromList([]);
-    mapPageController.showPCIlabel = true;
     mapPageController.isPredPCICaptured.value = false;
     mapPageController.isVelPCICaptured.value = false;
     double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Obx(() {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (!mapPageController.isPredPCICaptured.value &&
                 !mapPageController.isVelPCICaptured.value)
-              InkWell(
-                onTap: () async {
+              OutlinedButton(
+                onPressed: () async {
                   await outputDataController.takeSS().then((val) async {
                     mapPageController.showPCIlabel = false;
                     predBasedImdData = val;
@@ -44,12 +44,17 @@ class MapScreenshot extends StatelessWidget {
                     });
                   });
                 },
-                child: _buildButton("Prediction Based", context),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
+                    Colors.black87,
+                  ),
+                ),
+                child: captureSSButton("Prediction Based", context),
               ),
             if (mapPageController.isPredPCICaptured.value &&
                 !mapPageController.isVelPCICaptured.value)
-              InkWell(
-                onTap: () async {
+              OutlinedButton(
+                onPressed: () async {
                   await outputDataController.takeSS().then((val) {
                     velBasedImdData = val;
                     mapPageController.showPCIlabel = true;
@@ -69,7 +74,12 @@ class MapScreenshot extends StatelessWidget {
                     transition: Transition.cupertino,
                   );
                 },
-                child: _buildButton("Velocity Based", context),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
+                    Colors.black87,
+                  ),
+                ),
+                child: captureSSButton("Velocity Based", context),
               ),
           ],
         );
@@ -131,38 +141,26 @@ class MapScreenshot extends StatelessWidget {
     );
   }
 
-  Widget _buildButton(String text, context) {
+  Widget captureSSButton(String text, context) {
     double w = MediaQuery.sizeOf(context).width;
     FontSize fs = getFontSize(w);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 5,
-            offset: Offset(0, 2),
+    return Row(
+      children: [
+        const Icon(
+          Icons.camera_alt_outlined,
+          color: Colors.white,
+          weight: 2,
+        ),
+        const Gap(10),
+        Text(
+          text,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w500,
+            fontSize: fs.bodyTextFontSize,
+            color: Colors.white,
           ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.camera_alt_outlined),
-          const Gap(5),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500,
-              fontSize: fs.bodyTextFontSize,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
