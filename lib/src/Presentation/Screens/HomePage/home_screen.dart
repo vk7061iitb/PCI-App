@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/location_permission.dart';
 import '../SensorPage/sensor_screen.dart';
 import '../SavedFile/saved_files_page.dart';
@@ -136,43 +136,21 @@ Future<bool?> _showAlert(BuildContext context) async {
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Exit Application?'),
-        titleTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: 24,
-        ),
+        titleTextStyle: dialogTitleStyle,
         content: const Text('Are you sure you want to close the application?'),
-        contentTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          fontSize: 16,
-        ),
+        contentTextStyle: dialogContentStyle,
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Get.back(result: false);
             },
-            child: Text(
-              'No',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('No', style: dialogButtonStyle),
           ),
           TextButton(
             onPressed: () {
               Get.back(result: true);
             },
-            child: Text(
-              'Yes',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Yes', style: dialogButtonStyle),
           ),
         ],
       );

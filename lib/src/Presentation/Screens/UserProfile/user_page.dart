@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/Login/login_screen.dart';
 
@@ -183,17 +184,9 @@ Future<bool?> _showconfirmDialog(BuildContext context) async {
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Confirm Logout'),
-        titleTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: 24,
-        ),
+        titleTextStyle: dialogTitleStyle,
         content: const Text('Are you sure you want to logout?'),
-        contentTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          fontSize: 16,
-        ),
+        contentTextStyle: dialogContentStyle,
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -201,25 +194,15 @@ Future<bool?> _showconfirmDialog(BuildContext context) async {
             },
             child: Text(
               'Cancel',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
+              style: dialogButtonStyle,
             ),
           ),
           TextButton(
             onPressed: () {
               Get.back(result: true);
             },
-            child: Text(
-              'Log Out',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.red,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Log Out',
+                style: dialogButtonStyle.copyWith(color: Colors.red)),
           ),
         ],
       );

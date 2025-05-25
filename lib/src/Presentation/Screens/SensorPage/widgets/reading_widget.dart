@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import 'journey_summary.dart';
@@ -624,43 +625,21 @@ Future<bool?> _selectReason(BuildContext context) async {
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Reason'),
-        titleTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: 24,
-        ),
+        titleTextStyle: dialogTitleStyle,
         content: const Text('Please select the reason for this pause'),
-        contentTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          fontSize: 16,
-        ),
+        contentTextStyle: dialogContentStyle,
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Get.back(result: true);
             },
-            child: Text(
-              'Measurements',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Measurements', style: dialogButtonStyle),
           ),
           TextButton(
             onPressed: () {
               Get.back(result: false);
             },
-            child: Text(
-              'Others',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Others', style: dialogButtonStyle),
           ),
         ],
       );

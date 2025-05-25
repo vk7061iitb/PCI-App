@@ -298,42 +298,22 @@ Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Delete File?'),
-        titleTextStyle: GoogleFonts.inter(
-          color: textColor,
-          fontWeight: FontWeight.w500,
-          fontSize: 24,
-        ),
+        titleTextStyle: dialogTitleStyle,
         content: const Text('Are you sure you want to delete this file?'),
-        contentTextStyle: GoogleFonts.inter(
-          fontSize: 16,
-          color: textColor,
-        ),
+        contentTextStyle: dialogContentStyle,
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Get.back(result: false);
             },
-            child: Text(
-              'No',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('No', style: dialogButtonStyle),
           ),
           TextButton(
             onPressed: () {
               Get.back(result: true);
             },
-            child: Text(
-              'Yes',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                color: Colors.red,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Yes',
+                style: dialogButtonStyle.copyWith(color: Colors.red)),
           ),
         ],
       );

@@ -295,7 +295,7 @@ Future<bool?> _showAlert(BuildContext context) async {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('Are you sure?'),
+        title: const Text("Don't want to save recording?"),
         titleTextStyle: dialogTitleStyle,
         content: const Text(
           'Arey you sure you do not want to save the recording?',
