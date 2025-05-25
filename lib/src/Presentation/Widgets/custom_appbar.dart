@@ -4,116 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
 import 'package:pciapp/src/Presentation/About/about_app.dart';
-import 'package:pciapp/src/Presentation/Screens/UnsedData/unsend_data.dart';
 import 'package:pciapp/src/Presentation/Screens/UserProfile/user_page.dart';
-
-class CustomAppBar extends StatelessWidget {
-  const CustomAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    TextStyle titleTextStyle = GoogleFonts.inter(
-      color: Colors.black,
-      fontWeight: FontWeight.w800,
-      fontSize: MediaQuery.textScalerOf(context).scale(32),
-    );
-    TextStyle actionTextStyle = GoogleFonts.inter(
-      color: Colors.black,
-      fontWeight: FontWeight.normal,
-      fontSize: MediaQuery.textScalerOf(context).scale(16),
-    );
-
-    return AppBar(
-      title: Text(
-        'PCI App',
-        style: titleTextStyle,
-      ),
-      backgroundColor: backgroundColor,
-      scrolledUnderElevation: 0,
-      elevation: 0,
-      forceMaterialTransparency: false,
-      actions: [
-        PopupMenuButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          itemBuilder: (BuildContext context) {
-            return [
-              PopupMenuItem(
-                onTap: () {
-                  Get.to(
-                    () => UserPage(),
-                    transition: Transition.cupertino,
-                  );
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 5),
-                      child: Icon(
-                        Icons.person_2_outlined,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      "Profile",
-                      style: actionTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                onTap: () {
-                  Get.to(
-                    () => UnsendData(),
-                    transition: Transition.cupertino,
-                  );
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 5),
-                      child: Icon(
-                        Icons.file_copy_outlined,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      "Unsent Files",
-                      style: actionTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 5),
-                      child: Icon(
-                        Icons.settings_outlined,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      "Settings",
-                      style: actionTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-            ];
-          },
-        )
-      ],
-    );
-  }
-}
-
-//
 
 class CustomSliverAppBar extends StatelessWidget {
   const CustomSliverAppBar({super.key});
@@ -153,7 +44,7 @@ class CustomSliverAppBar extends StatelessWidget {
       actions: [
         PopupMenuButton(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(15),
           ),
           itemBuilder: (BuildContext context) {
             return [
@@ -164,7 +55,7 @@ class CustomSliverAppBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.person_2_outlined, color: Colors.black87),
+                    Icon(Icons.person_2_outlined, color: textColor),
                     SizedBox(width: 8),
                     Text("Profile", style: actionTextStyle),
                   ],
