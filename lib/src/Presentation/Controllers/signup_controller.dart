@@ -9,11 +9,11 @@
 */
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
 import '../../../Objects/data.dart';
 import '../../API/auth_service.dart';
+import '../Widgets/snackbar.dart';
 
 class SignupController extends GetxController {
   UserAuthenticationService userAuthenticationService =
@@ -28,9 +28,11 @@ class SignupController extends GetxController {
   final RxBool _isSignedUp = false.obs;
   final RxString _userRole = "Admin".obs;
   final UserDataController _userDataController = UserDataController();
+
   // Getters
   bool get isSignedUp => _isSignedUp.value;
   String get userRole => _userRole.value;
+
   // Setters
   set isSignedUp(bool value) => _isSignedUp.value = value;
   set userRole(String value) => _userRole.value = value;
@@ -50,24 +52,45 @@ class SignupController extends GetxController {
       email: emailController.text,
       phone: phoneController.text,
     );
+
     logger.i(serverMessage.toString());
+
     if (serverMessage.isEmpty) {
+      // sigup failed
+      Get.showSnackbar(
+        customGetSnackBar("Account Exists",
+            "Error! $serverMessage", Icons.error_outline),
+      );
       _isSignedUp.value = false;
-    } else {
-      // successfull signup
-      final user = {
-        "ID": serverMessage['User_Id'].toString(),
-        "email": emailController.text,
-        "phone": phoneController.text,
-        "role": _userRole.value,
-        "isLoggedIn": true,
-      };
-      _userDataController.storage.write("user", user);
-      _userDataController.user = user;
-      _isSignedUp.value = true;
-      nameController.clear();
-      emailController.clear();
-      phoneController.clear();
+      return;
     }
+
+    // successfull signup
+    final user = {
+      "ID": serverMessage['User_Id'].toString(),
+      "email": emailController.text,
+      "phone": phoneController.text,
+      "role": _userRole.value,
+      "isLoggedIn": true,
+    };
+
+    // write the user in local database 
+    _userDataController.storage.write("user", user);
+    _userDataController.user = user;
+    _isSignedUp.value = true;
+
+    Get.showSnackbar(
+      customGetSnackBar(
+        "Welcome!",
+        "Success! Account created successfully.",
+        Icons.check_circle_outline,
+      ),
+    );
+    // move to homepage directly
+    Get.offNamed(myRoutes.homeRoute);
+
+    nameController.clear();
+    emailController.clear();
+    phoneController.clear();
   }
 }
