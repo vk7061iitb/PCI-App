@@ -8,6 +8,7 @@ import '../src/Models/stats_data.dart';
 import '../Functions/avg.dart';
 import 'format_chainage.dart';
 
+// compute the road statistics using the journey data (JSON direlctly got from local db)
 List<dynamic> setRoadStatistics({
   required Map<String, dynamic> journeyData,
   required String filename,
@@ -15,35 +16,49 @@ List<dynamic> setRoadStatistics({
   if (journeyData.isEmpty) {
     return [];
   }
-  List<RoadStats> roadStatistics = [];
-  List<SegStats> segStats = [];
-  List<SegmentStats> predSegStats = [];
-  List<SegmentStats> velSegStats = [];
+
+  List<RoadStatsOverall> roadOverallStats = [];
+  List<RoadStatsChainage> roadSegmentStats = [];
+
+  // passed by ref and updated in the stats calculating function
+  List<RoadChainageStatistics> chainageStatsPredictionBased = [];
+  List<RoadChainageStatistics> chainageStatsVelocityBased = [];
 
   String roadName = journeyData["roadName"];
-  roadStatistics.add(
-    RoadStats(
+  roadOverallStats.add(
+    RoadStatsOverall(
       roadName: roadName,
-      predStats: _predStats(journeyData, predSegStats, filename, roadName),
-      velStats: _velStats(journeyData, velSegStats, filename, roadName),
+      overallStatsPredictionBased: _calculatePredictionBasedStats(
+          journeyData, chainageStatsPredictionBased, filename, roadName),
+      overallStatsVelocityBased: _calculateVelocityBasedStats(
+          journeyData, chainageStatsVelocityBased, filename, roadName),
     ),
   );
 
-  segStats
-      .add(SegStats(predictedStats: predSegStats, velocityStats: velSegStats));
-  return [roadStatistics, segStats];
+  roadSegmentStats.add(
+    RoadStatsChainage(
+      chainageStatsPredictionBased: chainageStatsPredictionBased,
+      chainageStatsVelocityBased: chainageStatsVelocityBased,
+    ),
+  );
+  return [roadOverallStats, roadSegmentStats];
 }
 
-List<RoadStatsData> _velStats(Map<String, dynamic> road,
-    List<SegmentStats> velSegStats, String filename, String roadName) {
+/// calculate the stats based on velocity 
+/// (this is considered as evaluating paramenter for road PCI not the one predicted by model)
+List<RoadPCIStatistics> _calculateVelocityBasedStats(
+    Map<String, dynamic> road,
+    List<RoadChainageStatistics> velSegStats,
+    String filename,
+    String roadName) {
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
 
-    Map<int, dynamic> stats = {};
-    // initialize the stats
+    Map<int, dynamic> overallStats = {};
+    // initialize the overall stats (velocity based)
     for (int i = 0; i <= 5; i++) {
-      stats[i] = {
+      overallStats[i] = {
         'avg_velocity': 0.0,
         'distance_travelled': 0.0,
         'number_of_segments': 0.0,
@@ -87,15 +102,15 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
           ]));
       velocities.add(double.parse(firstLabel['velocity'].toString()));
       if (secondPointPCI != firstPointPCI) {
-        /// add overall stats
-        stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
-        stats[firstPointPCI.toInt()]['total_time'] += time;
-        stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
+        /// add overall stats of the road
+        overallStats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+        overallStats[firstPointPCI.toInt()]['total_time'] += time;
+        overallStats[firstPointPCI.toInt()]['distance_travelled'] += distance;
 
         /// add the segment to the list
         totalSegments += 1;
         velSegStats.add(
-          SegmentStats(
+          RoadChainageStatistics(
             name: filename,
             roadNo: roadName,
             segmentNo: totalSegments.toString(),
@@ -122,14 +137,14 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
     if (velocities.length == 1) {
       /// there is last segment which has different PCI than the previous one,
       /// so we need to add it to the stats
-      stats[secondPointPCI.toInt()]['number_of_segments'] += 1;
-      stats[secondPointPCI.toInt()]['total_time'] += time;
-      stats[secondPointPCI.toInt()]['distance_travelled'] += distance;
+      overallStats[secondPointPCI.toInt()]['number_of_segments'] += 1;
+      overallStats[secondPointPCI.toInt()]['total_time'] += time;
+      overallStats[secondPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         /// add the segment to the list
         totalSegments += 1;
         velSegStats.add(
-          SegmentStats(
+          RoadChainageStatistics(
             name: filename,
             roadNo: roadName,
             segmentNo: totalSegments.toString(),
@@ -148,14 +163,14 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
       // the last segment has the same PCI as the previous one, but the loop has ended before adding it to the stats,
       // so we need to add it now
       velocities.add(labels.last['velocity']);
-      stats[firstPointPCI.toInt()]['number_of_segments'] += 1;
-      stats[firstPointPCI.toInt()]['total_time'] += time;
-      stats[firstPointPCI.toInt()]['distance_travelled'] += distance;
+      overallStats[firstPointPCI.toInt()]['number_of_segments'] += 1;
+      overallStats[firstPointPCI.toInt()]['total_time'] += time;
+      overallStats[firstPointPCI.toInt()]['distance_travelled'] += distance;
       if (secondPointPCI != 0) {
         // add the segment to the list
         totalSegments += 1;
         velSegStats.add(
-          SegmentStats(
+          RoadChainageStatistics(
             name: filename,
             roadNo: roadName,
             segmentNo: totalSegments.toString(),
@@ -172,20 +187,20 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
       }
     }
 
-    List<RoadStatsData> velStatsList = [];
-    for (var key in stats.keys) {
+    List<RoadPCIStatistics> velStatsList = [];
+    for (var key in overallStats.keys) {
       if (key == 0) {
         continue;
       }
       velStatsList.add(
-        RoadStatsData(
+        RoadPCIStatistics(
           pci: key.toString(),
-          avgVelocity: stats[key]['number_of_segments'] == 0
+          avgVelocity: overallStats[key]['number_of_segments'] == 0
               ? '0'
-              : (stats[key]['distance_travelled'] / stats[key]['total_time'])
+              : (overallStats[key]['distance_travelled'] / overallStats[key]['total_time'])
                   .toString(),
-          distanceTravelled: stats[key]['distance_travelled'].toString(),
-          numberOfSegments: stats[key]['number_of_segments'].toStringAsFixed(0),
+          distanceTravelled: overallStats[key]['distance_travelled'].toString(),
+          numberOfSegments: overallStats[key]['number_of_segments'].toStringAsFixed(0),
         ),
       );
     }
@@ -197,8 +212,11 @@ List<RoadStatsData> _velStats(Map<String, dynamic> road,
   }
 }
 
-List<RoadStatsData> _predStats(Map<String, dynamic> road,
-    List<SegmentStats> predSegStats, String filename, String roadName) {
+List<RoadPCIStatistics> _calculatePredictionBasedStats(
+    Map<String, dynamic> road,
+    List<RoadChainageStatistics> predSegStats,
+    String filename,
+    String roadName) {
   try {
     // Add velocity Based Stats
     List<dynamic> labels = jsonDecode(road["labels"]);
@@ -255,7 +273,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
         // add the segment to the list
         totalSegments += 1;
         predSegStats.add(
-          SegmentStats(
+          RoadChainageStatistics(
             name: filename,
             roadNo: roadName,
             segmentNo: totalSegments.toString(),
@@ -292,7 +310,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       // add the segment to the list
       totalSegments += 1;
       predSegStats.add(
-        SegmentStats(
+        RoadChainageStatistics(
           name: filename,
           roadNo: roadName,
           segmentNo: totalSegments.toStringAsFixed(0),
@@ -317,7 +335,7 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       // add the segment to the list
       totalSegments += 1;
       predSegStats.add(
-        SegmentStats(
+        RoadChainageStatistics(
           name: filename,
           roadNo: roadName,
           segmentNo: totalSegments.toStringAsFixed(0),
@@ -333,13 +351,13 @@ List<RoadStatsData> _predStats(Map<String, dynamic> road,
       );
     }
 
-    List<RoadStatsData> predStatsList = [];
+    List<RoadPCIStatistics> predStatsList = [];
     for (var key in stats.keys) {
       if (key == 0) {
         continue;
       }
       predStatsList.add(
-        RoadStatsData(
+        RoadPCIStatistics(
           pci: key.toString(),
           avgVelocity: stats[key]['number_of_segments'] == 0
               ? '0'
