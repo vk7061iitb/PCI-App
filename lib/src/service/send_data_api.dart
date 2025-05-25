@@ -18,11 +18,10 @@ class SendDataToServer {
     required DateTime time,
     required String planned,
   }) async {
-    ///
     String message = "Data Submitted Successfully";
     String url = "$sendBaseURL${Config.sendDataEndPoint}";
     join(sendBaseURL, Config.sendDataEndPoint);
-    List<RoadOutputData> roadOutputData = [];
+    List<RoadOutputData> roadOutputData = []; // stores the data received from the server
     logger.i("Planned/Unplanned : $planned");
     try {
       final http.Response response = await http
