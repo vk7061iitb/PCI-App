@@ -3,6 +3,7 @@ FontSize getFontSize(double screenWidth) {
   double heading1FontSize;
   double heading2FontSize;
   double bodyTextFontSize;
+  double smallTextFontSize;
 
   // Define font sizes based on screen width
   if (screenWidth <= 320) {
@@ -11,30 +12,35 @@ FontSize getFontSize(double screenWidth) {
     heading1FontSize = 22.0;
     heading2FontSize = 20.0;
     bodyTextFontSize = 14.0;
+    smallTextFontSize = 12.0;
   } else if (screenWidth <= 480) {
     // Medium screen (e.g., large phones)
     appBarFontSize = 20.0;
     heading1FontSize = 26.0;
     heading2FontSize = 24.0;
     bodyTextFontSize = 16.0;
+    smallTextFontSize = 14.0;
   } else if (screenWidth <= 720) {
     // Tablets or larger screens
     appBarFontSize = 22.0;
     heading1FontSize = 30.0;
     heading2FontSize = 28.0;
     bodyTextFontSize = 18.0;
+    smallTextFontSize = 16.0;
   } else {
     // Very large screens (e.g., large tablets, laptops)
     appBarFontSize = 24.0;
     heading1FontSize = 36.0;
     heading2FontSize = 32.0;
     bodyTextFontSize = 20.0;
+    smallTextFontSize = 18.0;
   }
   FontSize f = FontSize(
       appBarFontSize: appBarFontSize,
       heading1FontSize: heading1FontSize,
       heading2FontSize: heading2FontSize,
-      bodyTextFontSize: bodyTextFontSize);
+      bodyTextFontSize: bodyTextFontSize,
+      smallTextFontSize: smallTextFontSize,);
   return f;
 }
 
@@ -77,12 +83,14 @@ class FontSize {
   final double heading1FontSize;
   final double heading2FontSize;
   final double bodyTextFontSize;
+  final double smallTextFontSize;
 
   FontSize({
     required this.appBarFontSize,
     required this.heading1FontSize,
     required this.heading2FontSize,
     required this.bodyTextFontSize,
+    required this.smallTextFontSize,
   });
 }
 
