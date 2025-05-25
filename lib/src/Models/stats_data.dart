@@ -1,20 +1,5 @@
-import 'package:pciapp/src/Models/pci_data.dart';
-
-class OutputStats {
-  final int outputDataID;
-  final String pci;
-  final String avgVelocity;
-  final String distanceTravelled;
-  final String numberOfSegments;
-
-  OutputStats(
-      {required this.outputDataID,
-      required this.pci,
-      required this.avgVelocity,
-      required this.distanceTravelled,
-      required this.numberOfSegments});
-}
-
+/// this is the format how server send the prossed data for a road (a joueny may contains multiple roads)
+/// NOTE : (do not it change without cosulting with backend developer)
 class RoadData {
   final String roadName;
   final List<Map<String, dynamic>> labels;
@@ -27,8 +12,9 @@ class RoadData {
   });
 }
 
+/// representation of a road covered in a journey
 class RoadOutputData {
-  final int outputDataID;
+  final int outputDataID; // a key to map the a road's data to a given journey or trip
   final RoadData roadData;
 
   RoadOutputData({
@@ -37,25 +23,15 @@ class RoadOutputData {
   });
 }
 
-class Road {
-  final String roadName;
-  final List<RoadPCIdata> roadPciData;
-  final List<RoadStats> roadStats;
 
-  Road({
-    required this.roadName,
-    required this.roadPciData,
-    required this.roadStats,
-  });
-}
-
-class RoadStatsData {
+// represents overall stats representation of a road
+class RoadPCIStatistics {
   final String pci;
   final String avgVelocity;
   final String distanceTravelled;
   final String numberOfSegments;
 
-  RoadStatsData({
+  RoadPCIStatistics({
     required this.pci,
     required this.avgVelocity,
     required this.distanceTravelled,
@@ -63,19 +39,21 @@ class RoadStatsData {
   });
 }
 
-class RoadStats {
+/// represent oveall stats of a journey
+class RoadStatsOverall {
   final String roadName;
-  final List<RoadStatsData> predStats;
-  final List<RoadStatsData> velStats;
+  final List<RoadPCIStatistics> overallStatsPredictionBased;
+  final List<RoadPCIStatistics> overallStatsVelocityBased;
 
-  RoadStats({
+  RoadStatsOverall({
     required this.roadName,
-    required this.predStats,
-    required this.velStats,
+    required this.overallStatsPredictionBased,
+    required this.overallStatsVelocityBased,
   });
 }
 
-class SegmentStats {
+/// repreresents chainage/segment-wise stats of a road
+class RoadChainageStatistics {
   final String name;
   final String roadNo;
   final String segmentNo;
@@ -87,7 +65,7 @@ class SegmentStats {
   final String remarks;
   final String surfaceType;
 
-  SegmentStats(
+  RoadChainageStatistics(
       {required this.name,
       required this.roadNo,
       required this.segmentNo,
@@ -100,12 +78,13 @@ class SegmentStats {
       required this.surfaceType});
 }
 
-class SegStats {
-  final List<SegmentStats> predictedStats;
-  final List<SegmentStats> velocityStats;
+/// repreresents chainage/segment-wise stats of a journey
+class RoadStatsChainage {
+  final List<RoadChainageStatistics> chainageStatsPredictionBased;
+  final List<RoadChainageStatistics> chainageStatsVelocityBased;
 
-  SegStats({
-    required this.predictedStats,
-    required this.velocityStats,
+  RoadStatsChainage({
+    required this.chainageStatsPredictionBased,
+    required this.chainageStatsVelocityBased,
   });
 }
