@@ -6,8 +6,14 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/saved_file_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/SavedFile/widget/history_data_tile.dart';
+
+String aboutPage = '''
+This page displays all recorded data. If any data was not submitted due to a network issue, you can resend it from here. 
+Note: Exported data will be in its raw, unprocessed format as originally recorded.
+''';
 
 class HistoryDataPage extends StatefulWidget {
   const HistoryDataPage({super.key});
@@ -54,7 +60,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
               savedFileController.selectedFilter.value = val;
             },
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
             ),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               PopupMenuItem(
@@ -148,6 +154,47 @@ class HistoryDataPageState extends State<HistoryDataPage> {
               ),
             ],
           ),
+
+          // about page
+          PopupMenuButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              itemBuilder: (context) => [
+                    // info button
+                    PopupMenuItem(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('About the journey history',
+                                style: dialogTitleStyle),
+                            content: Text(aboutPage, style: dialogContentStyle),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  'OK',
+                                  style: dialogButtonStyle,
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.info_outline_rounded),
+                          const Gap(8),
+                          Text(
+                            "About Page",
+                            style: popUpMenuTextStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]),
         ],
       ),
       body: SafeArea(
