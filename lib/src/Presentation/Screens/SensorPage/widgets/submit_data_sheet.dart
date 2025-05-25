@@ -4,12 +4,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/response_controller.dart';
 import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/vehicle_type_dropdown.dart';
 
-class SaveFile extends StatelessWidget {
-  const SaveFile({super.key});
+class SubmitDataSheet extends StatelessWidget {
+  const SubmitDataSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -226,74 +227,6 @@ class SaveFile extends StatelessWidget {
                         ],
                       ),
                       const Gap(20),
-                      Obx(() {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Pedestrian reason
-                            (accDataController.isPedestrianFound.value)
-                                ? Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Reason for Pedestrian",
-                                        style: GoogleFonts.inter(
-                                          fontSize: fs.appBarFontSize,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const Gap(10),
-                                      Form(
-                                        key: responseController
-                                            .pedestrianFormKey,
-                                        child: TextFormField(
-                                          controller: responseController
-                                              .pedestianController,
-                                          validator: (value) {
-                                            if (value!.isEmpty) {
-                                              return "Please metion the reason";
-                                            }
-                                            return null;
-                                          },
-                                          expands: false,
-                                          maxLines: 2,
-                                          decoration: InputDecoration(
-                                            prefixIcon: Icon(Icons.notes),
-                                            enabled: true,
-                                            hintText:
-                                                'Describe why there was a Pedestrian area',
-                                            isDense: true,
-                                            labelStyle: GoogleFonts.inter(
-                                              color: Colors.black54,
-                                              fontSize: fs.bodyTextFontSize,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                            focusedBorder:
-                                                const OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: Colors.black,
-                                                width: 2,
-                                              ),
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(15),
-                                              ),
-                                            ),
-                                            border: const OutlineInputBorder(
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(15),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : SizedBox(),
-                          ],
-                        );
-                      }),
                       const Gap(20),
                       Obx(() {
                         return responseController.savingData
@@ -306,13 +239,6 @@ class SaveFile extends StatelessWidget {
                                         if (!responseController
                                             .formKey.currentState!
                                             .validate()) {
-                                          return;
-                                        }
-                                        if (accDataController
-                                                .isPedestrianFound.value &&
-                                            !responseController
-                                                .pedestrianFormKey.currentState!
-                                                .validate()) {
                                           return;
                                         }
                                         responseController.savingData = true;
@@ -370,44 +296,23 @@ Future<bool?> _showAlert(BuildContext context) async {
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Are you sure?'),
-        titleTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: 24,
+        titleTextStyle: dialogTitleStyle,
+        content: const Text(
+          'Arey you sure you do not want to save the recording?',
         ),
-        content:
-            const Text('Arey you sure you do not want to save the recording?'),
-        contentTextStyle: GoogleFonts.inter(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          fontSize: 16,
-        ),
+        contentTextStyle: dialogContentStyle,
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Get.back(result: false);
             },
-            child: Text(
-              'Save',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Save', style: dialogButtonStyle),
           ),
           TextButton(
             onPressed: () {
               Get.back(result: true);
             },
-            child: Text(
-              'Discard',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Discard', style: dialogButtonStyle),
           ),
         ],
       );
