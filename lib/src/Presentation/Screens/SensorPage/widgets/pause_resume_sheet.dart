@@ -7,14 +7,14 @@ import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../../../Utils/font_size.dart';
 
-class PauseResume extends StatefulWidget {
-  const PauseResume({super.key});
+class PauseResumeSheet extends StatefulWidget {
+  const PauseResumeSheet({super.key});
 
   @override
-  State<PauseResume> createState() => _PauseResumeState();
+  State<PauseResumeSheet> createState() => _PauseResumeStateSPauseResumeSheet();
 }
 
-class _PauseResumeState extends State<PauseResume> {
+class _PauseResumeStateSPauseResumeSheet extends State<PauseResumeSheet> {
   AccDataController accDataController = Get.find();
   @override
   Widget build(BuildContext context) {
