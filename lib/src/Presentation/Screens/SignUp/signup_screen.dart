@@ -3,8 +3,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/src/Presentation/Controllers/signup_controller.dart';
-import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
-import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
 import '../../../../Objects/data.dart';
 import '../Login/roles_dropdown.dart';
 
@@ -14,7 +12,6 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SignupController signupController = Get.find<SignupController>();
-    UserDataController userDataController = UserDataController();
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -45,7 +42,7 @@ class SignupScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Enter your details to get started.",
+                    "Enter your details to get started",
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       color: Colors.black54,
@@ -234,31 +231,9 @@ class SignupScreen extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          // Sign up logic
-                          if (signupController.signupFormKey.currentState!
-                              .validate()) {
-                            final user = await userDataController.getUserData();
-                            logger.i(user);
-                            await signupController.signUp().then((_) {
-                              if (user["isLoggedIn"] == true) {
-                                Get.showSnackbar(
-                                  customGetSnackBar(
-                                      "Welcome!",
-                                      "Success! Account created successfully.",
-                                      Icons.check_circle_outline),
-                                );
-                                Get.offNamed(myRoutes.homeRoute);
-                              } else {
-                                Get.showSnackbar(
-                                  customGetSnackBar(
-                                      "Account Exists",
-                                      "Error! The user is already registered",
-                                      Icons.error_outline),
-                                );
-                                return;
-                              }
-                            });
-                          }
+                          // sign up using signup_controller
+                          await signupController.signUp();
+                          logger.i(user);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black87,
