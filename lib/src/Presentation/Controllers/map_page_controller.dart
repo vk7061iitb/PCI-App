@@ -27,8 +27,8 @@ class MapPageController extends GetxController {
   LatLng _northeast = const LatLng(0, 0);
   RxBool isPredPCICaptured = false.obs;
   RxBool isVelPCICaptured = false.obs;
-  List<List<RoadStats>> roadStats = [];
-  List<List<SegStats>> segStats = [];
+  List<List<RoadStatsOverall>> roadStats = [];
+  List<List<RoadStatsChainage>> segStats = [];
   final Rx<MapType> _backgroundMapType = MapType.normal.obs;
   final RxList<MapType> _googlemapType = [
     MapType.normal,
@@ -49,7 +49,7 @@ class MapPageController extends GetxController {
   RxSet<Polyline> get pciPolylines => _pciPolylines.toSet().obs;
   LatLng get getMinLat => _southwest;
   LatLng get getMaxLat => _northeast;
-  List<List<RoadStats>> get getRoadStats => roadStats;
+  List<List<RoadStatsOverall>> get getRoadStats => roadStats;
   GoogleMapController? get getGoogleMapController => _googleMapController;
   List<MapType> get googlemapType => _googlemapType.toList();
   List<String> get getMapType => mapType;
@@ -156,35 +156,57 @@ class MapPageController extends GetxController {
   // This function is used to plot the DRRP layer on the map.
   // It reads the geojson file containing the DRRP data and plots the polylines on the map.
   Future<void> plotDRRPLayer() async {
-    Map<String, dynamic> jsonData = {};
-    List<dynamic> features = [];
-    String geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
 
-    jsonData = jsonDecode(geoJsonString);
-    features = jsonData['features'];
+    try {
+          _isDrrpLayerVisible.value = !_isDrrpLayerVisible.value;
+      // if not plotted then plot it
+      if (_isDrrpLayerVisible.value == true) {
+        showIndicator.value == true;
+        Map<String, dynamic> jsonData = {};
+        List<dynamic> features = [];
+        String geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
 
-    for (int i = 0; i < features.length; i++) {
-      List<LatLng> points = [];
-      Map<String, dynamic> feature = features[i];
-      List<dynamic> coordinates = feature['geometry']['coordinates'];
-      for (var data in coordinates) {
-        points.add(
-          LatLng(data[1], data[0]),
-        );
+        jsonData = jsonDecode(geoJsonString);
+        features = jsonData['features'];
+
+        for (int i = 0; i < features.length; i++) {
+          List<LatLng> points = [];
+          Map<String, dynamic> feature = features[i];
+          List<dynamic> coordinates = feature['geometry']['coordinates'];
+          for (var data in coordinates) {
+            points.add(
+              LatLng(data[1], data[0]),
+            );
+          }
+
+          Polyline tempPolyline = Polyline(
+            polylineId: PolylineId('drrp_polyline$i'),
+            color: Colors.black,
+            width: 2,
+            endCap: Cap.roundCap,
+            startCap: Cap.roundCap,
+            jointType: JointType.round,
+            points: points,
+          );
+          _drrpPolylines.add(tempPolyline);
+        }
+        _pciPolylines.addAll(_drrpPolylines);
+        showIndicator.value = false;
+        return;
       }
 
-      Polyline tempPolyline = Polyline(
-        polylineId: PolylineId('drrp_polyline$i'),
-        color: Colors.black,
-        width: 2,
-        endCap: Cap.roundCap,
-        startCap: Cap.roundCap,
-        jointType: JointType.round,
-        points: points,
-      );
-      _drrpPolylines.add(tempPolyline);
+      // if already plotted then remove it
+      showIndicator.value = true;
+      removeDRRPLayer();
+      showIndicator.value = false;
+      
+    } catch (e) {
+      // Handle any errors that occur during the onTap execution
+      customGetSnackBar(
+          "Error", "'Error toggling DRRP layer: $e'", Icons.error_outline);
+      logger.e('Error toggling DRRP layer: $e');
     }
-    _pciPolylines.addAll(_drrpPolylines);
+
   }
 
 // This function is used to remove the DRRP layer from the map.
@@ -194,4 +216,5 @@ class MapPageController extends GetxController {
     }
     _drrpPolylines.clear();
   }
+
 }
