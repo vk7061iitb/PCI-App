@@ -7,9 +7,15 @@ import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pciapp/src/Presentation/Controllers/road_stats_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/OutputData/output_data_tile.dart';
-
+import 'package:pciapp/Utils/text_styles.dart';
 import '../../../../Utils/font_size.dart';
 import '../MapsPage/maps_page.dart';
+
+String aboutPage = '''
+This page displays all processed data, which contains the roads PCI(Pavement Condition Index) values. 
+You can see the road statistics and also download its PDF report. One can also visulize the data on
+maps.
+''';
 
 class OutputDataPage extends StatefulWidget {
   const OutputDataPage({super.key});
@@ -127,10 +133,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
     );
     double w = MediaQuery.sizeOf(context).width;
     FontSize fs = getFontSize(w);
-    IconsSize iS = getIconSize(w);
-    double left = 0, right = 0, top = 0, bottom = 0;
-    RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    IconsSize iconsSize = getIconSize(w);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: PreferredSize(
@@ -163,54 +166,67 @@ class _OutputDataPageState extends State<OutputDataPage> {
                     shadowColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     actions: [
-                      InkWell(
-                        radius: 25,
-                        borderRadius: BorderRadius.circular(30),
-                        onTapDown: (TapDownDetails tapdownDetails) {
-                          left = tapdownDetails.globalPosition.dx;
-                          top = tapdownDetails.globalPosition.dy;
-                          overlay = Overlay.of(context)
-                              .context
-                              .findRenderObject() as RenderBox;
-                          right = overlay.size.width - left;
-                          bottom = overlay.size.height - top;
-                          showMenu(
-                            context: context,
-                            position: RelativeRect.fromLTRB(
-                              left,
-                              top,
-                              right,
-                              bottom,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            items: [
-                              PopupMenuItem(
-                                onTap: () async {
-                                  await outputDataController
-                                      .insertJourneyDataviaUpload();
-                                },
-                                child: Text(
-                                  "Import File",
-                                  style: GoogleFonts.inter(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: MediaQuery.textScalerOf(context)
-                                        .scale(16),
+                      PopupMenuButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          itemBuilder: (BuildContext context) => [
+                                PopupMenuItem(
+                                  onTap: () async {
+                                    await outputDataController
+                                        .insertJourneyDataviaUpload();
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.download_outlined),
+                                      const Gap(8),
+                                      Text(
+                                        "Import File",
+                                        style: GoogleFonts.inter(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: MediaQuery.textScalerOf(context)
+                                              .scale(16),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            Icons.more_vert,
-                          ),
-                        ),
-                      ),
+                                // info button
+                                PopupMenuItem(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text('About the journey history',
+                                            style: dialogTitleStyle),
+                                        content: Text(aboutPage,
+                                            style: dialogContentStyle),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text(
+                                              'OK',
+                                              style: dialogButtonStyle,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.info_outline_rounded),
+                                      const Gap(8),
+                                      Text("About Page", style: popUpMenuTextStyle,),
+                                    ],
+                                  ),
+                                ),
+                              ]),
+                      // info
                     ],
                   ),
           );
@@ -229,7 +245,7 @@ class _OutputDataPageState extends State<OutputDataPage> {
                 children: [
                   SvgPicture.asset(
                     assetsPath.emptyFile,
-                    width: iS.generalIconSize,
+                    width: iconsSize.buttonIconSize,
                   ),
                   Text(
                     'There are no files to display',
