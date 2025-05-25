@@ -12,7 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
+import 'package:pciapp/Utils/font_size.dart';
 import '../../../../Objects/data.dart';
 import '../../Controllers/map_page_controller.dart';
 import 'widget/map_page_legends.dart';
@@ -24,9 +24,13 @@ class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MapPageController mapPageController = Get.find<MapPageController>();
-    double h = MediaQuery.sizeOf(context).height;
     double w = MediaQuery.sizeOf(context).width;
-
+    FontSize fs = getFontSize(w);
+    TextStyle normalStyle = GoogleFonts.inter(
+      color: textColor,
+      fontSize: fs.bodyTextFontSize,
+      fontWeight: FontWeight.w400,
+    );
     final GlobalKey gKey = GlobalKey();
     return Scaffold(
       body: SafeArea(
@@ -34,236 +38,44 @@ class MapPage extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Obx(
-                () {
-                  return RepaintBoundary(
-                    key: gKey,
-                    child: GoogleMap(
-                      buildingsEnabled: false,
-                      mapType: mapPageController.backgroundMapType,
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(
-                          0,
-                          0,
-                        ),
-                        zoom: 15,
+              child: RepaintBoundary(
+                key: gKey,
+                child: Obx(() {
+                  return GoogleMap(
+                    buildingsEnabled: false,
+                    myLocationButtonEnabled: false,
+                    compassEnabled: false,
+                    mapToolbarEnabled: false,
+                    liteModeEnabled: false,
+                    mapType: mapPageController.backgroundMapType,
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        0,
+                        0,
                       ),
-                      onMapCreated: (GoogleMapController controller) async {
-                        mapPageController.setGoogleMapController = controller;
-                        await mapPageController.animateToLocation(
-                          mapPageController.getMinLat,
-                          mapPageController.getMaxLat,
-                        );
-                        mapPageController.isMapCreated.value = true;
-                      },
-                      polylines: mapPageController.pciPolylines,
-                      zoomControlsEnabled: false,
+                      zoom: 15,
                     ),
+                    onMapCreated: (GoogleMapController controller) async {
+                      mapPageController.setGoogleMapController = controller;
+                      await mapPageController.animateToLocation(
+                        mapPageController.getMinLat,
+                        mapPageController.getMaxLat,
+                      );
+                      mapPageController.isMapCreated.value = true;
+                    },
+                    polylines: mapPageController.pciPolylines,
+                    zoomControlsEnabled: false,
                   );
-                },
+                }),
               ),
             ),
             Positioned(
-              top: 0,
-              left: 0,
-              child: Obx(
-                () => Container(
-                  padding: const EdgeInsets.all(10),
-                  width: w,
-                  height: h * 0.08,
-                  color: backgroundColor,
-                  child: FittedBox(
-                    child: Row(
-                      children: [
-                        TextButton(
-                          onPressed: () async {
-                            try {
-                              mapPageController.isDrrpLayerVisible =
-                                  !mapPageController.isDrrpLayerVisible;
-                              if (mapPageController.isDrrpLayerVisible) {
-                                mapPageController.showIndicator.value = true;
-                                mapPageController.plotDRRPLayer().then((_) {
-                                  Future.delayed(const Duration(seconds: 1))
-                                      .then((_) {
-                                    mapPageController.showIndicator.value =
-                                        false;
-                                  });
-                                });
-                                return;
-                              }
-                              // clear the DRRP layer
-                              mapPageController.showIndicator.value = true;
-                              await mapPageController
-                                  .removeDRRPLayer()
-                                  .then((_) {
-                                Future.delayed(const Duration(seconds: 1))
-                                    .then((_) {
-                                  mapPageController.showIndicator.value = false;
-                                });
-                              });
-                            } catch (e) {
-                              // Handle any errors that occur during the onTap execution
-                              customGetSnackBar(
-                                  "Error",
-                                  "'Error toggling DRRP layer: $e'",
-                                  Icons.error_outline);
-                              logger.e('Error toggling DRRP layer: $e');
-                            }
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(
-                              mapPageController.isDrrpLayerVisible
-                                  ? Colors.blue.withValues(alpha: 0.1)
-                                  : Colors.black.withValues(alpha: 0.05),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Gap(10),
-                              Icon(
-                                Icons.layers_outlined,
-                                size:
-                                    MediaQuery.textScalerOf(context).scale(20),
-                                color: mapPageController.isDrrpLayerVisible
-                                    ? Colors.blue
-                                    : Colors.black,
-                              ),
-                              const Gap(5),
-                              Text(
-                                "DRRP Layer",
-                                style: GoogleFonts.inter(
-                                  color: mapPageController.isDrrpLayerVisible
-                                      ? Colors.blue
-                                      : Colors.black,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: MediaQuery.textScalerOf(context)
-                                      .scale(18),
-                                ),
-                              ),
-                              const Gap(10),
-                            ],
-                          ),
-                        ),
-                        const Gap(10),
-                        TextButton(
-                          onPressed: () async {
-                            if (mapPageController.showIndicator.value) return;
-                            mapPageController.showPCIlabel =
-                                !mapPageController.showPCIlabel;
-                            logger.i(mapPageController.pciPolylines.length);
-                            mapPageController.showIndicator.value = true;
-                            await mapPageController.plotRoadData().then((_) {
-                              Future.delayed(const Duration(seconds: 1))
-                                  .then((_) {
-                                mapPageController.showIndicator.value = false;
-                              });
-                            });
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(
-                              Colors.blue.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                // tick icon
-                                mapPageController.showPCIlabel
-                                    ? Icons.insights_rounded
-                                    : Icons.speed_rounded,
-                                color: Colors.blue,
-                                size:
-                                    MediaQuery.textScalerOf(context).scale(20),
-                              ),
-                              const Gap(10),
-                              Text(
-                                mapPageController.showPCIlabel
-                                    ? "PCI (Prediction)"
-                                    : "PCI (Velocity)",
-                                style: GoogleFonts.inter(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: MediaQuery.textScalerOf(context)
-                                      .scale(18),
-                                ),
-                              ),
-                              const Gap(5),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: h * 0.08,
-              left: 0,
-              child: SizedBox(
-                width: w,
-                child: Obx(
-                  () {
-                    return mapPageController.showIndicator.value
-                        ? LinearProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blue[800]!),
-                          )
-                        : const SizedBox();
-                  },
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 10,
+              top: 10,
               left: 10,
               // Row containing the buttons to zoom, clear, change map type and view road statistics
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Road Statistics Button //
-                  /*  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      width: w * 0.12,
-                      height: w * 0.12,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: IconButton(
-                          onPressed: () {
-                            Get.bottomSheet(
-                              isDismissible: true,
-                              backgroundColor: Colors.white,
-                              MapPageRoadStatistics(
-                                roadStats: mapPageController.roadStats,
-                                selectedJourney:
-                                    mapPageController.selectedRoads,
-                                roadOutputData:
-                                    mapPageController.roadOutputData,
-                              ),
-                            );
-                          },
-                          icon: SvgPicture.asset(
-                            assetsPath.stats,
-                            height: 30,
-                            width: 30,
-                          ),
-                          tooltip: 'Road Statistics',
-                        ),
-                      ),
-                    ),
-                  ),
-                  */
                   const Gap(20),
                   // Zoom to Fit Button //
                   Container(
@@ -326,34 +138,186 @@ class MapPage extends StatelessWidget {
                 ],
               ),
             ),
-            Obx(
-              () => Positioned(
-                bottom: mapPageController.legendPos.value.dy,
-                right: mapPageController.legendPos.value.dx,
-                child: LongPressDraggable(
-                  rootOverlay: false,
-                  onDragEnd: (details) {
-                    mapPageController.legendPos.value = Offset(
-                      w - details.offset.dx - w * 0.2,
-                      h - details.offset.dy - h * 0.2,
-                    );
-                  },
-                  feedback: SizedBox(
-                    width: w * 0.2,
-                    height: h * 0.2,
-                    child: FittedBox(
-                      alignment: Alignment.center,
-                      fit: BoxFit.contain,
-                      child: const Legends(),
-                    ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: SizedBox(
+                width: w * 0.075,
+                child: FittedBox(
+                  child: Column(
+                    
+                    children: [
+                      for (var entry in legend.entries)
+                        Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              color: entry.value,
+                              margin: EdgeInsets.only(right: 6),
+                            ),
+                            Text(entry.key),
+                          ],
+                        ),
+                    ],
                   ),
-                  child: SizedBox(
-                    width: w * 0.2,
-                    height: h * 0.2,
-                    child: FittedBox(
-                      alignment: Alignment.center,
-                      fit: BoxFit.contain,
-                      child: const Legends(),
+                ),
+              ),
+            ),
+            Positioned(
+              child: DraggableScrollableSheet(
+                initialChildSize: 0.25, // Starting height (10% of screen)
+                minChildSize: 0.15, // Minimum height
+                maxChildSize: 0.4,
+                builder: (context, scrollController) => Container(
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(15)),
+                    boxShadow: [
+                      BoxShadow(blurRadius: 10, color: Colors.grey.shade300)
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        const Gap(10),
+                        Center(
+                          child: Container(
+                            width: w * 0.1,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        const Gap(15),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.layers_outlined,
+                                size:
+                                    MediaQuery.textScalerOf(context).scale(20),
+                                color: Colors.black,
+                              ),
+                              const Gap(10),
+                              Text(
+                                "Background Layer",
+                                style: normalStyle.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // background layer
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: () => mapPageController.plotDRRPLayer(),
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(
+                                Colors.black.withValues(alpha: 0.05),
+                              ),
+                            ),
+                            child: RepaintBoundary(
+                              child: Obx(
+                                () => Text(
+                                  "DRRP Layer",
+                                  style: normalStyle.copyWith(
+                                    color: mapPageController.isDrrpLayerVisible
+                                        ? Colors.blue
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // foreground layer
+                        const Gap(15),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.layers_outlined,
+                                size:
+                                    MediaQuery.textScalerOf(context).scale(20),
+                                color: Colors.black,
+                              ),
+                              const Gap(10),
+                              Text(
+                                "Foreground Layer",
+                                style: normalStyle.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  mapPageController.showPCIlabel = true;
+                                  mapPageController.plotRoadData();
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    Colors.black.withValues(alpha: 0.05),
+                                  ),
+                                ),
+                                child: RepaintBoundary(
+                                  child: Obx(
+                                    () => Text(
+                                      "PCI (Prediction)",
+                                      style: normalStyle.copyWith(
+                                        color: mapPageController.showPCIlabel
+                                            ? Colors.blue
+                                            : textColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const Gap(10),
+                              TextButton(
+                                onPressed: () {
+                                  mapPageController.showPCIlabel = false;
+                                  mapPageController.plotRoadData();
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    Colors.black.withValues(alpha: 0.05),
+                                  ),
+                                ),
+                                child: RepaintBoundary(
+                                  child: Obx(
+                                    () => Text(
+                                      "PCI (Velocity)",
+                                      style: normalStyle.copyWith(
+                                        color: mapPageController.showPCIlabel
+                                            ? textColor
+                                            : Colors.blue,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ),
