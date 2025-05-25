@@ -73,8 +73,8 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     for (var journey in res) {
       final completeStats =
           setRoadStatistics(journeyData: journey, filename: widget.filename);
-      mapPageController.roadStats.add(completeStats[0] as List<RoadStats>);
-      mapPageController.segStats.add(completeStats[1] as List<SegStats>);
+      mapPageController.roadStats.add(completeStats[0] as List<RoadStatsOverall>);
+      mapPageController.segStats.add(completeStats[1] as List<RoadStatsChainage>);
     }
 
     // Create PDF document
@@ -99,7 +99,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     double totalLegth = 0;
     for (int i = 0; i < mapPageController.segStats.length; i++) {
       String chainage =
-          mapPageController.segStats[i].last.predictedStats.last.to;
+          mapPageController.segStats[i].last.chainageStatsPredictionBased.last.to;
       totalLegth += chainageToLegth(chainage);
     }
     // Title
@@ -311,7 +311,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
       final segmentsStatsList = mapPageController.segStats[i];
       int noOfRoads = journeyStats.length;
       for (int j = 0; j < noOfRoads; j++) {
-        final rs = journeyStats[j].predStats;
+        final rs = journeyStats[j].overallStatsPredictionBased;
         final ss = segmentsStatsList[j];
         // Road Name Section
         content.add(
@@ -376,7 +376,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
           ),
         );
         bool hasPauseData = false;
-        for (var data in ss.predictedStats) {
+        for (var data in ss.chainageStatsPredictionBased) {
           if (data.pci < 0) {
             hasPauseData = true;
             break;
@@ -384,7 +384,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
         }
         if (hasPauseData) {
           content.add(pw.SizedBox(height: 5));
-          content.add(_buildPauseResumeTable(ss.predictedStats));
+          content.add(_buildPauseResumeTable(ss.chainageStatsPredictionBased));
         } else {
           content.add(pw.SizedBox(height: 5));
           content.add(
@@ -477,7 +477,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
         );
         content.add(pw.SizedBox(height: 5));
         // Prediction Based
-        content.add(_buildSegmentTable(ss.predictedStats));
+        content.add(_buildSegmentTable(ss.chainageStatsPredictionBased));
         // Page break between roads
         // if the road is already last then don't add new page
         content.add(pw.NewPage());
@@ -545,7 +545,7 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
     );
   }
 
-  pw.Widget _buildSegmentTable(List<SegmentStats> stats) {
+  pw.Widget _buildSegmentTable(List<RoadChainageStatistics> stats) {
     return pw.TableHelper.fromTextArray(
       cellAlignment: pw.Alignment.center,
       context: null,
@@ -559,14 +559,14 @@ class RoadStatisticsPdfPageState extends State<RoadStatisticsPdfPage> {
           'Surface\nType',
           'Remarks'
         ],
-        ...stats.where((segment) => segment.pci > 0).map((seg) => [
+        ...stats.map((seg) => [
               seg.segmentNo,
               seg.from,
               seg.to,
               seg.distance,
-              seg.pci,
+              (seg.pci < 0) ? "Pause" : seg.pci,
               seg.surfaceType,
-              seg.remarks,
+              (seg.pci < 0) ? "..." : seg.remarks,
             ]),
       ],
       headerStyle: pw.TextStyle(
