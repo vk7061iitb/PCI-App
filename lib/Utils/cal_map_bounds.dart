@@ -1,5 +1,6 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// find the bounds of a geomentry given its min and ma latitude and longitude
 LatLngBounds calculateBounds(LatLng min, LatLng max) {
   double minLat = min.latitude;
   double minLng = min.longitude;
