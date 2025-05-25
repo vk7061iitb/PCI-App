@@ -5,8 +5,8 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:location/location.dart' as loc;
+import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/location_permission.dart';
 import 'package:pciapp/src/Presentation/Controllers/user_data_controller.dart';
 import 'package:pciapp/src/service/method_channel_helper.dart';
@@ -38,7 +38,12 @@ class AccDataController extends GetxController {
     speed: 0,
     speedAccuracy: 0,
   ).obs;
+
   RxDouble totalDistanceTravelled = 0.0.obs;
+  Rx<Duration> elapsedTime = Duration(seconds: 0).obs;
+  Timer? _timer;
+  Rx<double> currSpeed = 0.0.obs;
+
   final List<AccData> _downSampledDatapoints = [];
   final RxBool _isRecordingData = false.obs;
   StreamSubscription<Position>? _positionStream;
@@ -58,11 +63,13 @@ class AccDataController extends GetxController {
   RxInt currRoadIndex = (100).obs;
   RxInt prevRoadIndex = (100).obs;
   final PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
+
   // pause
   TextEditingController pauseReasonController = TextEditingController();
   String pauseReason = "";
   GlobalKey<FormState> pauseFormKey = GlobalKey<FormState>();
   RxString pauseReasonSelectedOption = "".obs;
+
   // Getters
   List<AccData> get downSampledDatapoints => _downSampledDatapoints;
   List<AccData> get dataPointsList => _dataPointsList;
@@ -73,6 +80,7 @@ class AccDataController extends GetxController {
   bool get showResponseSheet => _showResponseSheet.value;
   Position get devicePosition => _devicePosition.value;
   bool get internetConnection => _internetConnection.value;
+
   // Setters
   set devicePosition(Position value) => _devicePosition.value = value;
   set downSampledDatapoints(List<AccData> value) =>
@@ -97,7 +105,8 @@ class AccDataController extends GetxController {
         (loc.LocationData currentLocation) {
           _count++;
           // if getting location updates then start updating the total distance
-          if (_count > 5 && !showStartButton) {
+          if (_count > 5 && !showStartButton && currRoadIndex.value >= 0) {
+            // the distance shown will only increase if the reading is not paused OR started
             totalDistanceTravelled.value += Geolocator.distanceBetween(
               _devicePosition.value.latitude,
               _devicePosition.value.longitude,
@@ -114,9 +123,14 @@ class AccDataController extends GetxController {
             altitudeAccuracy: 0,
             heading: currentLocation.heading!,
             headingAccuracy: currentLocation.headingAccuracy!,
-            speed: currentLocation.speed!,
+            speed: currentLocation.speed!, // m/s
             speedAccuracy: currentLocation.speedAccuracy!,
           );
+
+          // update the speed
+          if (_isRecordingData.value) {
+            currSpeed.value = currentLocation.speed!;
+          }
         },
       ).onError((error, stackTrace) {
         logger.e('Error in location stream: $error');
@@ -154,14 +168,10 @@ class AccDataController extends GetxController {
       _roadSelectDialogue();
       return;
     }
-    // show the bottom sheet to fill the road details, width etc...
     await WakelockPlus.toggle(enable: true);
-    pciMethodsCalls.startNotification();
+    pciMethodsCalls.startNotification(); // start the noification
     _isRecordingData.value = true;
     _showStartButton.value = false;
-    downSampledDatapoints.clear();
-    dataPointsList.clear();
-    totalDistanceTravelled.value = 0.0;
     logger.i('Recording Started');
     _userDataController.getUserData();
     _userID = _userDataController.user['ID'];
@@ -189,6 +199,21 @@ class AccDataController extends GetxController {
         }
       },
     );
+
+    // reset the readings
+    downSampledDatapoints.clear();
+    dataPointsList.clear();
+    _timer?.cancel();
+    totalDistanceTravelled.value = 0.0;
+
+    // this timer will be shown on reading page (duration)
+    elapsedTime.value = const Duration(seconds: 0);
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    // increase the time only when there's no pause
+      if (currRoadIndex.value >= 0) {
+        elapsedTime.value += const Duration(seconds: 1);
+      }
+    });
   }
 
   /// This function is called when the end button is pressed
@@ -199,6 +224,10 @@ class AccDataController extends GetxController {
     pciMethodsCalls.stopNotification();
     _accStream?.cancel();
     _positionStream?.cancel();
+    _timer?.cancel();
+    elapsedTime.value = const Duration(seconds: 0);
+    currSpeed.value = 0;
+    totalDistanceTravelled.value = 0;
     accData.value = AccelerometerEvent(0, 0, 0, DateTime.now());
     _showResponseSheet.value = true;
     List<AccData> downSampledDatapoints = downsampleTo50Hz(_dataPointsList);
@@ -216,25 +245,17 @@ void _showDialog(String title, String content) {
   Get.dialog(
     AlertDialog(
       title: Text(title),
-      titleTextStyle: GoogleFonts.inter(
-        color: Colors.black,
-        fontWeight: FontWeight.w500,
-        fontSize: 24,
-      ),
+      titleTextStyle: dialogTitleStyle,
       content: Text(
         content,
       ),
-      contentTextStyle: GoogleFonts.inter(
-        color: Colors.black,
-        fontWeight: FontWeight.normal,
-        fontSize: 16,
-      ),
+      contentTextStyle: dialogContentStyle,
       actions: [
         TextButton(
           onPressed: () {
             Get.back();
           },
-          child: const Text('OK'),
+          child: Text('OK', style: dialogButtonStyle,),
         ),
       ],
     ),
@@ -243,52 +264,41 @@ void _showDialog(String title, String content) {
 
 void _roadSelectDialogue() {
   Get.dialog(AlertDialog(
-    title: Text("Road Type not selected"),
-    titleTextStyle: GoogleFonts.inter(
-      color: textColor,
-      fontWeight: FontWeight.w500,
-      fontSize: 24,
-    ),
+    title: Text("Road Type not selected", ),
+    titleTextStyle: dialogTitleStyle,
     content: RichText(
       text: TextSpan(
-        style: GoogleFonts.inter(
-          fontSize: 16,
-          color: textColor,
-        ),
+        style: dialogContentStyle,
         children: [
           const TextSpan(
             text: 'Please select the ',
           ),
           TextSpan(
             text: 'road type',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.normal,
-              color: Colors.blue[600],
-            ),
+            style: dialogContentStyle.copyWith(
+              color: activeColor,
+            )
           ),
           const TextSpan(
             text: ' (',
           ),
           TextSpan(
             text: 'paved/unpaved/pedestrian',
-            style: GoogleFonts.inter(
-              fontStyle: FontStyle.italic,
-              color: Colors.grey[700],
-            ),
+            style: dialogContentStyle
+          ),
+          const TextSpan(
+            text: ')',
           ),
         ],
       ),
     ),
-    contentTextStyle: GoogleFonts.inter(
-      fontWeight: FontWeight.normal,
-      fontSize: 16,
-    ),
+    contentTextStyle: dialogContentStyle,
     actions: [
       TextButton(
         onPressed: () {
           Get.back();
         },
-        child: const Text('OK'),
+        child: Text('OK', style: dialogButtonStyle,),
       ),
     ],
   ));
@@ -313,4 +323,18 @@ void _showPermissionDialog() {
       ],
     ),
   );
+}
+
+String formatDuration(Duration duration) {
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+  final minutes = twoDigits(duration.inMinutes);
+  final seconds = twoDigits(duration.inSeconds.remainder(60));
+
+  return "$minutes:$seconds";
+}
+
+String formatSpeed(double speed) {
+  double converFactor = 5 / 18;
+  return (speed * converFactor).toStringAsFixed(3);
 }
