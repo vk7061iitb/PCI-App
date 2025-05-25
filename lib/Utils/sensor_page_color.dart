@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SensorPageColor {
-  Color startCircle = const Color(0xFF4285F4);
+  Color startCircle = const Color(0xFF0284C7); // Color(0xFFBAE6FD)
   Color endCircle = const Color(0xFFFF4444);
   Color containerBackground = const Color(0xFFE0E0E0);
   Color updateMessage = const Color(0xFF4CAF50);
