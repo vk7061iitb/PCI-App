@@ -1,16 +1,13 @@
 import 'dart:convert';
 import 'dart:isolate';
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'get_road_color.dart';
+import 'create_polyline.dart';
 import 'set_road_stats.dart';
 import 'vel_to_pci.dart';
 import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
-import '../src/Presentation/Screens/MapsPage/widget/polyline_bottom_sheet.dart';
 import '../Functions/avg.dart';
 
 /// Plots a map in an isolate with the given data.
@@ -25,8 +22,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   final Set<Polyline> drrpPolylines =
       isolateData['drrpPolylines'] as Set<Polyline>;
   final List<Map<String, dynamic>> selectedRoads = isolateData['selectedRoads'];
-  final List<List<RoadStats>> roadStats = [];
-  final List<List<SegStats>> segStats = [];
+  final List<List<RoadStatsOverall>> roadStats = [];
+  final List<List<RoadStatsChainage>> segStats = [];
   double minimumLat = 0, minimumLon = 0, maximumLat = 0, maximumLon = 0;
 
   try {
@@ -34,8 +31,8 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
     for (int i = 0; i < roadOutputData.length; i++) {
       var roadQuery = roadOutputData[i];
       var currJourney = selectedRoads[i];
-      List<RoadStats> rs = [];
-      List<SegStats> ss = [];
+      List<RoadStatsOverall> rs = [];
+      List<RoadStatsChainage> ss = [];
 
       /// Process each road in a journey
       for (int j = 0; j < roadQuery.length; j++) {
@@ -58,9 +55,11 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
         double time = 0.0;
         double totalD = 0.0;
         double disP = 0.0;
+
         // points to map the end of a segment
         LatLng point2 = LatLng(labels[0]['latitude'], labels[0]['longitude']);
         LatLng point1 = LatLng(0, 0);
+
         // Process road segments
         for (int k = 0; k < labels.length - 1; k++) {
           if (k == 0) {
@@ -86,6 +85,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           double velPredPCI = min(
               velocityToPCI(velocityKmph: 3.6 * secondLabel['velocity']),
               velocityToPCI(velocityKmph: 3.6 * firstLabel['velocity']));
+
           // Calculate distance between points
           double d = Geolocator.distanceBetween(
             firstPoint.latitude,
@@ -93,19 +93,23 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             secondPoint.latitude,
             secondPoint.longitude,
           ); // in meters
+
           // calculate the time
           double t = (d /
               avg([
                 double.parse(firstLabel['velocity'].toString()),
                 double.parse(secondLabel['velocity'].toString())
               ]));
+
           firstPointPCI = secondPointPCI;
           secondPointPCI = showPCIlabel
               ? min(firstValue, secondValue)
               : velPredPCI.toDouble();
+
           velocities.add(double.parse(firstLabel['velocity'].toString()));
           points.add(firstPoint);
           totalD += d;
+
           // Create polyline when prediction changes
           if (firstPointPCI != secondPointPCI) {
             point1 = point2;
@@ -123,6 +127,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
               'latlngs': [point1, point2],
               'remarks': firstLabel['remarks']
             };
+
             pciPolylines.add(
               createPolyline(
                   pci: firstPointPCI,
@@ -130,12 +135,14 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
                   polylineID: "Polyline$i$j$k",
                   polylineOnTapData: polylineOnTapData),
             );
+
             // Reset for next segment
             points = [firstPoint];
             velocities = [firstLabel['velocity']];
             distance = 0;
             time = 0;
           }
+
           distance += d;
           time += t;
         }
@@ -144,6 +151,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           disP += distance;
           point1 = point2;
           point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
+
           // create a polyline of last segment
           Map<String, dynamic> polylineOnTapData = {
             'roadName': roadName,
@@ -156,6 +164,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             'end': totalD / 1000,
             'latlngs': [point1, point2]
           };
+
           pciPolylines.add(
             createPolyline(
                 pci: secondPointPCI,
@@ -167,9 +176,11 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           disP += distance;
           point1 = point2;
           point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
+
           // add the last point in the points and create a new polyline
           points.add(LatLng(labels.last['latitude'], labels.last['longitude']));
           velocities.add(labels.last['velocity']);
+          
           Map<String, dynamic> polylineOnTapData = {
             'roadName': roadName,
             'filename': currJourney['filename'],
@@ -220,28 +231,4 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
     logger.d(stackTrace);
   }
   logger.d('Isolate ended');
-}
-
-Polyline createPolyline(
-    {required double pci,
-    required List<LatLng> points,
-    required String polylineID,
-    required Map<String, dynamic> polylineOnTapData}) {
-  return Polyline(
-    consumeTapEvents: true,
-    polylineId: PolylineId(polylineID),
-    color: getRoadColor(pci),
-    width: 5,
-    endCap: Cap.roundCap,
-    startCap: Cap.roundCap,
-    jointType: JointType.round,
-    points: List.from(points),
-    onTap: () {
-      Get.bottomSheet(
-        clipBehavior: Clip.antiAlias,
-        backgroundColor: Colors.white,
-        PolylineBottomSheet(data: polylineOnTapData),
-      );
-    },
-  );
 }
