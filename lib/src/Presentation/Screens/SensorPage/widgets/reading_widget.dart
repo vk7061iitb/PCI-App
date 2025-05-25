@@ -8,10 +8,14 @@ import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
 import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
 import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
+import 'journey_summary.dart';
+import 'pause_resume_sheet.dart';
+import 'road_type_button.dart';
+import 'section_name_widget.dart';
 
-import '../../../../../Utils/format_chainage.dart';
-import 'pause_resume.dart';
+final AutoSizeGroup textGroup = AutoSizeGroup();
 
+// the homepaege wigets
 class ReadingWidget extends StatelessWidget {
   const ReadingWidget({super.key});
 
@@ -38,87 +42,20 @@ class ReadingWidget extends StatelessWidget {
         kToolbarHeight -
         kBottomNavigationBarHeight -
         0.18 * w;
-    final AutoSizeGroup textGroup = AutoSizeGroup();
     FontSize fs = getFontSize(w);
     return Column(
       children: [
-        Obx(() {
-          return Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: w * 0.05),
-              child: SizedBox(
-                height: totalH * 0.05, // 5% of total height
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    children: [
-                      AutoSizeText(
-                        "You've travelled",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w500,
-                          fontSize: fs.heading2FontSize,
-                          color: textColor,
-                        ),
-                      ),
-                      const Gap(10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          formatChainage(
-                              accDataController.totalDistanceTravelled.value),
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w500,
-                            fontSize: fs.heading2FontSize,
-                            color: activeColor,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      const Gap(10),
-                      AutoSizeText(
-                        "Km",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w500,
-                          fontSize: fs.heading2FontSize,
-                          color: textColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
+        SectionName(totalH: totalH, width: w, label: "Journey Summary"),
+        Gap(h * 0.01),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+          child: JourneySummary(),
+        ),
+
         Gap(h * 0.02),
         // RoadType
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.05),
-            child: SizedBox(
-              height: totalH * 0.05, // 5% of total height
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: AutoSizeText(
-                  "Road Type",
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w500,
-                    fontSize: fs.heading2FontSize,
-                    color: textColor,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Gap(h * 0.02),
+        SectionName(totalH: totalH, width: w, label: "Road Type"),
+        Gap(h * 0.01),
         Wrap(
           spacing: w * 0.01, // Horizontal space between children
           runSpacing: w * 0.04, // Vertical space between rows
@@ -127,292 +64,156 @@ class ReadingWidget extends StatelessWidget {
           runAlignment:
               WrapAlignment.center, // Center the rows themselves vertically
           children: [
-            /// Paved
-            Obx(() {
-              return SizedBox(
-                width: w * 0.3,
-                child: Tooltip(
-                  message: "Tap when road is paved",
-                  child: InkWell(
-                    onTap: () {
-                      if (accDataController.currRoadIndex < 0) {
-                        return;
-                      }
-                      accDataController.currRoadType.value = "Paved";
-                      accDataController.currRoadIndex.value = accDataController
-                          .roads
-                          .indexOf(accDataController.currRoadType.value);
-                    },
-                    radius: 25,
-                    borderRadius: BorderRadius.circular(5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: (w > 600)
-                                ? w * 0.12
-                                : w * 0.1, // Larger icon size for wide screens
-                            height: (w > 600) ? w * 0.12 : w * 0.1,
-                            child: SvgPicture.asset(
-                              colorFilter: ColorFilter.mode(
-                                (accDataController.currRoadType.value ==
-                                        "Paved")
-                                    ? activeColor
-                                    : Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                              assetsPath.pave,
-                            ),
-                          ),
-                          Gap(h * 0.01),
-                          Center(
-                            child: AutoSizeText(
-                              "Paved",
-                              style: GoogleFonts.inter(
-                                fontSize: fs.bodyTextFontSize,
-                                fontWeight:
-                                    (accDataController.currRoadType.value ==
-                                            "Paved")
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                color: (accDataController.currRoadType.value ==
-                                        "Paved")
-                                    ? activeColor
-                                    : Colors.black,
-                              ),
-                              group: textGroup,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            /// Paved button
+            RoadTypeButton(
+                width: w,
+                height: h,
+                buttonImgPath: assetsPath.pave,
+                tooltipMessage: "Tap when road is paved",
+                label: "Paved",
+                selectedRoadType: accDataController.currRoadType,
+                onTap: () {
+                  // if pause/resume is already tapped then do nothing
+                  if (accDataController.currRoadIndex < 0) {
+                    return;
+                  }
+                  accDataController.currRoadType.value = "Paved";
+                  accDataController.currRoadIndex.value = accDataController
+                      .roads
+                      .indexOf(accDataController.currRoadType.value);
+                }),
+
             Gap(w * 0.05),
 
             /// Unpaved
-            Obx(() {
-              return SizedBox(
-                width: w * 0.3,
-                child: Tooltip(
-                  message: "Tap when raod is unpaved",
-                  child: InkWell(
-                    onTap: () {
-                      if (accDataController.currRoadIndex < 0) {
-                        return;
-                      }
-                      accDataController.currRoadType.value = "Unpaved";
-                      accDataController.currRoadIndex.value = accDataController
-                          .roads
-                          .indexOf(accDataController.currRoadType.value);
-                    },
-                    radius: 25,
-                    borderRadius: BorderRadius.circular(5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: (w > 600)
-                                ? w * 0.12
-                                : w * 0.1, // Larger icon size for wide screens
-                            height: (w > 600) ? w * 0.12 : w * 0.1,
-                            child: SvgPicture.asset(
-                              assetsPath.unPave,
-                              colorFilter: ColorFilter.mode(
-                                (accDataController.currRoadType.value ==
-                                        "Unpaved")
-                                    ? activeColor
-                                    : Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                          Gap(h * 0.01),
-                          Center(
-                            child: AutoSizeText(
-                              "Un-Paved",
-                              style: GoogleFonts.inter(
-                                fontSize: fs.bodyTextFontSize,
-                                fontWeight:
-                                    (accDataController.currRoadType.value ==
-                                            "Unpaved")
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                color: (accDataController.currRoadType.value ==
-                                        "Unpaved")
-                                    ? activeColor
-                                    : Colors.black,
-                              ),
-                              group: textGroup,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            RoadTypeButton(
+                width: w,
+                height: h,
+                buttonImgPath: assetsPath.unPave,
+                tooltipMessage: "Tap when road is unpaved",
+                label: "Unpaved",
+                selectedRoadType: accDataController.currRoadType,
+                onTap: () {
+                  // if pause/resume is already tapped then do nothing
+                  if (accDataController.currRoadIndex < 0) {
+                    return;
+                  }
+                  accDataController.currRoadType.value = "Unpaved";
+                  accDataController.currRoadIndex.value = accDataController
+                      .roads
+                      .indexOf(accDataController.currRoadType.value);
+                }),
+
             Gap(w * 0.05),
 
             /// Pedestrian
-            Obx(() {
-              return SizedBox(
-                width: w * 0.3,
-                child: Tooltip(
-                  message: "Tap when road in pedestrian",
-                  child: InkWell(
-                    onTap: () {
-                      if (accDataController.currRoadIndex < 0) {
-                        return;
-                      }
-                      accDataController.currRoadType.value = "Pedestrian";
-                      accDataController.currRoadIndex.value = accDataController
-                          .roads
-                          .indexOf(accDataController.currRoadType.value);
-                      accDataController.isPedestrianFound.value = true;
-                    },
-                    radius: 25,
-                    borderRadius: BorderRadius.circular(5),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              width: (w > 600)
-                                  ? w * 0.12
-                                  : w *
-                                      0.1, // Larger icon size for wide screens
-                              height: (w > 600) ? w * 0.12 : w * 0.1,
-                              child: SvgPicture.asset(
-                                assetsPath.pedestrian,
-                                colorFilter: ColorFilter.mode(
-                                  (accDataController.currRoadType.value ==
-                                          "Pedestrian")
-                                      ? activeColor
-                                      : Colors.black,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                            ),
-                            Gap(h * 0.01),
-                            Center(
-                              child: AutoSizeText(
-                                "Pedestrian",
-                                style: GoogleFonts.inter(
-                                  fontSize: fs.bodyTextFontSize,
-                                  fontWeight:
-                                      (accDataController.currRoadType.value ==
-                                              "Pedestrian")
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                  color:
-                                      (accDataController.currRoadType.value ==
-                                              "Pedestrian")
-                                          ? activeColor
-                                          : Colors.black,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                group: textGroup,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            RoadTypeButton(
+                width: w,
+                height: h,
+                buttonImgPath: assetsPath.pedestrian,
+                tooltipMessage: "Tap when road in pedestrian",
+                label: "Pedestrian",
+                selectedRoadType: accDataController.currRoadType,
+                onTap: () {
+                  // if pause/resume is already tapped then do nothing
+                  if (accDataController.currRoadIndex < 0) {
+                    return;
+                  }
+                  accDataController.currRoadType.value = "Pedestrian";
+                  accDataController.currRoadIndex.value = accDataController
+                      .roads
+                      .indexOf(accDataController.currRoadType.value);
+                }),
 
-            /// Break
-            Obx(() {
-              return SizedBox(
-                width: w * 0.3,
-                child: Tooltip(
-                  message: "Tap when you want to pause the reading",
-                  child: InkWell(
-                    onTap: () async {
-                      if (accDataController.showStartButton) {
-                        // reading is not started yet
-                        Get.showSnackbar(
-                          customGetSnackBar(
-                            "Error",
-                            "Reading has not been started yet!",
-                            Icons.warning_amber,
-                          ),
-                        );
-                        return;
-                      }
-                      if (accDataController.currRoadIndex < 0) {
-                        // resume is not tapped yet
-                        // this will work as resume button
-                        // resume the reading
-                        // reset the data
-                        accDataController.currRoadIndex.value =
-                            accDataController.prevRoadIndex.value;
-                        accDataController.remarks.value = "-";
-                        accDataController.pauseReasonSelectedOption.value = "";
-                        accDataController.pauseReasonController.clear();
-                        return;
-                      }
-                      // pause button tapped
-                      accDataController.prevRoadIndex.value =
-                          accDataController.currRoadIndex.value;
-                      bool? type = await _selectReason(context);
-                      if (type == null) {
-                        return;
-                      } else if (type == true) {
-                        accDataController.currRoadIndex.value = -1;
-                        accDataController.pauseReasonSelectedOption.value =
-                            "Measurement";
-                      } else {
-                        accDataController.currRoadIndex.value = -2;
-                        accDataController.pauseReasonSelectedOption.value =
-                            "Others";
-                      }
-                      // open the panel
-                      Get.bottomSheet(
-                        PauseResume(),
-                        isDismissible: false,
-                        enableDrag: false,
-                        ignoreSafeArea: false,
+            SectionName(totalH: totalH, width: w, label: "Pause/Resume"),
+
+            /// Pause/Resume
+            SizedBox(
+              width: w * 0.3,
+              child: Tooltip(
+                message: "Tap when you want to pause the reading",
+                child: InkWell(
+                  onTap: () async {
+                    if (accDataController.showStartButton) {
+                      // reading is not started yet
+                      Get.showSnackbar(
+                        customGetSnackBar(
+                          "Error",
+                          "Reading has not been started yet!",
+                          Icons.warning_amber,
+                        ),
                       );
-                    },
-                    radius: 25,
-                    borderRadius: BorderRadius.circular(5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
+                      return;
+                    }
+                    if (accDataController.currRoadIndex < 0) {
+                      // resume is tapped ( the pause make the current road index = -1/-2)
+                      // this will work as resume button
+                      // resume the reading
+                      // reset the data
+                      accDataController.currRoadIndex.value =
+                          accDataController.prevRoadIndex.value;
+                      accDataController.remarks.value = "-";
+                      accDataController.pauseReasonSelectedOption.value = "";
+                      accDataController.pauseReasonController.clear();
+                      return;
+                    }
+                    // pause button tapped
+                    accDataController.prevRoadIndex.value =
+                        accDataController.currRoadIndex.value;
+                    bool? type = await _selectReason(context);
+
+                    if (type == null) {
+                      return;
+                    } else if (type == true) {
+                      accDataController.currRoadIndex.value = -1;
+                      accDataController.pauseReasonSelectedOption.value =
+                          "Measurement";
+                    } else {
+                      accDataController.currRoadIndex.value = -2;
+                      accDataController.pauseReasonSelectedOption.value =
+                          "Others";
+                    }
+
+                    // open the panel
+                    Get.bottomSheet(
+                      PauseResumeSheet(),
+                      isDismissible: false,
+                      enableDrag: false,
+                      ignoreSafeArea: false,
+                    );
+                  },
+                  radius: 25,
+                  borderRadius: BorderRadius.circular(5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Column(
+                      children: [
+                        SizedBox(
                             width: (w > 600)
                                 ? w * 0.12
                                 : w * 0.1, // Larger icon size for wide screens
                             height: (w > 600) ? w * 0.12 : w * 0.1,
-                            child: SvgPicture.asset(
-                              colorFilter: ColorFilter.mode(
-                                (accDataController.currRoadIndex.value < 0)
-                                    ? Colors.blue
-                                    : Colors.black,
-                                BlendMode.srcIn,
+                            child: RepaintBoundary(
+                              child: Obx(
+                                () => SvgPicture.asset(
+                                  colorFilter: ColorFilter.mode(
+                                    (accDataController.currRoadIndex.value < 0)
+                                        ? Colors.blue
+                                        : Colors.black,
+                                    BlendMode.srcIn,
+                                  ),
+                                  (accDataController.currRoadIndex.value >= 0)
+                                      ? assetsPath.pause
+                                      : assetsPath.resume,
+                                ),
                               ),
-                              (accDataController.currRoadIndex.value >= 0)
-                                  ? assetsPath.pause
-                                  : assetsPath.resume,
-                            ),
-                          ),
-                          Gap(h * 0.01),
-                          Center(
-                            child: FittedBox(
-                              child: AutoSizeText(
+                            )),
+                        Gap(h * 0.01),
+                        Center(
+                          child: FittedBox(
+                              child: RepaintBoundary(
+                            child: Obx(
+                              () => AutoSizeText(
                                 (accDataController.currRoadIndex.value >= 0)
                                     ? "Pause"
                                     : "Resume",
@@ -433,40 +234,20 @@ class ReadingWidget extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          )),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              );
-            }),
-            Gap(w * 0.05),
-          ],
-        ),
-        Gap(totalH * 0.04), // 2.5% of total height
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.05),
-            child: SizedBox(
-              height: totalH * 0.05, // 5% of total height
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: AutoSizeText(
-                  "Sensor Reading",
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w500,
-                    fontSize: fs.heading2FontSize,
-                    color: textColor,
                   ),
                 ),
               ),
             ),
-          ),
+            Gap(w * 0.05),
+          ],
         ),
+        Gap(totalH * 0.05), // 5% of total height
+        SectionName(totalH: totalH, width: w, label: "Sensor Reading"),
         Gap(totalH * 0.02),
-
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -537,15 +318,17 @@ class ReadingWidget extends StatelessWidget {
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Center(
-                              child: Obx(() {
-                                return Text(
-                                  accDataController.accData.value.x
-                                      .toStringAsFixed(3),
-                                  style: labelTextStyle.copyWith(
-                                    fontSize: fs.bodyTextFontSize,
-                                  ),
-                                );
-                              }),
+                              child: RepaintBoundary(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.accData.value.x
+                                        .toStringAsFixed(3),
+                                    style: labelTextStyle.copyWith(
+                                      fontSize: fs.bodyTextFontSize,
+                                    ),
+                                  );
+                                }),
+                              ),
                             ),
                           ),
                         ],
@@ -579,15 +362,17 @@ class ReadingWidget extends StatelessWidget {
                               ],
                             ),
                             child: Center(
-                              child: Obx(() {
-                                return Text(
-                                  accDataController.accData.value.y
-                                      .toStringAsFixed(3),
-                                  style: labelTextStyle.copyWith(
-                                    fontSize: fs.bodyTextFontSize,
-                                  ),
-                                );
-                              }),
+                              child: RepaintBoundary(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.accData.value.y
+                                        .toStringAsFixed(3),
+                                    style: labelTextStyle.copyWith(
+                                      fontSize: fs.bodyTextFontSize,
+                                    ),
+                                  );
+                                }),
+                              ),
                             ),
                           ),
                         ],
@@ -621,15 +406,17 @@ class ReadingWidget extends StatelessWidget {
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Center(
-                              child: Obx(() {
-                                return Text(
-                                  accDataController.accData.value.z
-                                      .toStringAsFixed(3),
-                                  style: labelTextStyle.copyWith(
-                                    fontSize: fs.bodyTextFontSize,
-                                  ),
-                                );
-                              }),
+                              child: RepaintBoundary(
+                                child: Obx(() {
+                                  return Text(
+                                    accDataController.accData.value.z
+                                        .toStringAsFixed(3),
+                                    style: labelTextStyle.copyWith(
+                                      fontSize: fs.bodyTextFontSize,
+                                    ),
+                                  );
+                                }),
+                              ),
                             ),
                           ),
                         ],
@@ -706,18 +493,20 @@ class ReadingWidget extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.isRecordingData
-                                        ? accDataController
-                                            .devicePosition.latitude
-                                            .toStringAsFixed(3)
-                                        : "0.000",
-                                    style: labelTextStyle.copyWith(
-                                      fontSize: fs.bodyTextFontSize,
-                                    ),
-                                  );
-                                }),
+                                child: RepaintBoundary(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.latitude
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle.copyWith(
+                                        fontSize: fs.bodyTextFontSize,
+                                      ),
+                                    );
+                                  }),
+                                ),
                               ),
                             ),
                           ],
@@ -751,18 +540,20 @@ class ReadingWidget extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.isRecordingData
-                                        ? accDataController
-                                            .devicePosition.longitude
-                                            .toStringAsFixed(3)
-                                        : "0.000",
-                                    style: labelTextStyle.copyWith(
-                                      fontSize: fs.bodyTextFontSize,
-                                    ),
-                                  );
-                                }),
+                                child: RepaintBoundary(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.longitude
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle.copyWith(
+                                        fontSize: fs.bodyTextFontSize,
+                                      ),
+                                    );
+                                  }),
+                                ),
                               ),
                             ),
                           ],
@@ -795,18 +586,20 @@ class ReadingWidget extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Center(
-                                child: Obx(() {
-                                  return Text(
-                                    accDataController.isRecordingData
-                                        ? accDataController
-                                            .devicePosition.accuracy
-                                            .toStringAsFixed(3)
-                                        : "0.000",
-                                    style: labelTextStyle.copyWith(
-                                      fontSize: fs.bodyTextFontSize,
-                                    ),
-                                  );
-                                }),
+                                child: RepaintBoundary(
+                                  child: Obx(() {
+                                    return Text(
+                                      accDataController.isRecordingData
+                                          ? accDataController
+                                              .devicePosition.accuracy
+                                              .toStringAsFixed(3)
+                                          : "0.000",
+                                      style: labelTextStyle.copyWith(
+                                        fontSize: fs.bodyTextFontSize,
+                                      ),
+                                    );
+                                  }),
+                                ),
                               ),
                             ),
                           ],
