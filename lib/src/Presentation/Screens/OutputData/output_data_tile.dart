@@ -143,7 +143,7 @@ class _OutputDataItemState extends State<OutputDataItem> {
             PopupMenuItem(
               onTap: () async {
                 if (context.mounted) {
-                  Get.to(
+                  Get.to( 
                     () => RoadStatistics(
                       id: widget.id,
                       filename: widget.filename,
@@ -193,26 +193,6 @@ class _OutputDataItemState extends State<OutputDataItem> {
               },
               child: Text(
                 "Export JSON",
-                style: popUpMenuTextStyle,
-              ),
-            ),
-            PopupMenuItem(
-              onTap: () async {
-                // Function to export the data
-                final data = {
-                  'filename': widget.filename,
-                  'vehicle': widget.vehicleType,
-                  'time': widget.time,
-                  'id': widget.id,
-                };
-                try {
-                  await outputDataController.dowloadReport(data);
-                } catch (e) {
-                  logger.f(e.toString());
-                }
-              },
-              child: Text(
-                "Report",
                 style: popUpMenuTextStyle,
               ),
             ),
