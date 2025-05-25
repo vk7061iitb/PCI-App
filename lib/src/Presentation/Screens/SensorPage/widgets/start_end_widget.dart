@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/src/Presentation/Controllers/location_permission.dart';
 import 'package:pciapp/src/Presentation/Controllers/sensor_controller.dart';
-import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/save_file_widget.dart';
+import 'package:pciapp/src/Presentation/Screens/SensorPage/widgets/submit_data_sheet.dart';
 import '../../../../../Utils/font_size.dart';
 
 class StartButton extends StatelessWidget {
@@ -42,13 +42,10 @@ class StartButton extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(
-                      alpha: 0.1), // Light black shadow for soft look
-                  blurRadius: 12, // Larger blur for soft shadow effect
-                  spreadRadius: 0, // Minimal spread to keep shadow clean
-                  offset: Offset(
-                      0, 4), // Slight downward offset for floating effect
-                ),
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 12,
+                    spreadRadius: 0,
+                    offset: Offset(0, 4)),
               ],
             ),
           ),
@@ -56,13 +53,14 @@ class StartButton extends StatelessWidget {
         Center(
           child: InkWell(
             onTap: () async {
-              await locationController.locationPermission();
+              bool hasLocPerm = await locationController.locationPermission();
+              logger.i(hasLocPerm);
               if (accDataController.showStartButton) {
                 accDataController.onStartButtonPressed();
               } else {
                 await accDataController.onEndButtonPressed();
                 Get.bottomSheet(
-                  SaveFile(),
+                  SubmitDataSheet(),
                   isDismissible: false,
                   enableDrag: false,
                   ignoreSafeArea: false,
