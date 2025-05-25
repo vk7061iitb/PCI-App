@@ -11,6 +11,9 @@
 migrate_working_dir/
 *.env
 *.android
+# Add to .gitignore
+android/app/.cxx/
+
 
 # IntelliJ related
 *.iml
