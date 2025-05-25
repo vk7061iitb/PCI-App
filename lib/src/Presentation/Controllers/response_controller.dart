@@ -71,6 +71,8 @@ class ResponseController extends GetxController {
       );
       return;
     }
+
+    // proceed if enough data is there
     PciMethodsCalls pciMethodsCalls = PciMethodsCalls();
     var user = await _userDataController.getUserData();
     // will be inserted in savedData table
@@ -114,14 +116,17 @@ class ResponseController extends GetxController {
             vehicleType: _dropdownValue.value,
             time: currTime,
             planned: isPlanned.value ? "Planned" : "Unplanned");
+
+        // if succesfully inserted the unsent data info then
+        // insert the data point to local db (so it can be shared later)
         if (id != 0) {
-          // Insert the data points to unsendData table
           localDatabase.insertToUnsendData(
             accdata: accData,
             id: id,
           );
         }
 
+        // for now show the error encountered from the server
         Get.showSnackbar(
           customGetSnackBar(
             "Server Message",
@@ -130,7 +135,8 @@ class ResponseController extends GetxController {
           ),
         );
       }
-    } catch (e) {
+    } 
+    catch (e) {
       logger.e(e.toString());
       Get.showSnackbar(
         customGetSnackBar(
@@ -140,6 +146,8 @@ class ResponseController extends GetxController {
         ),
       );
     } finally {
+
+      // finally insert the file info to local db
       String path = await _getFilePath(
           _fileNameController.value.text, _dropdownValue.value);
       Map<String, dynamic> data = {
@@ -161,15 +169,19 @@ class ResponseController extends GetxController {
           time: dateTimeParser.formatDateTime(currTime, "dd-MMM-yyyy HH:mm"),
           submissionStatus: status,
         ),
+
+        // refresh the page
         _outputDataController.fetchData(),
         _savedFileController.refreshData(),
       ]);
 
+      // stop notification
       pciMethodsCalls.stopSending();
       _fileNameController.value.clear();
     }
   }
 
+  // this fuc will try to resend the unsent data, if sent succefully
   Future<int> reSendData({
     required List<Map<String, dynamic>> unsentData,
     required String filename,
