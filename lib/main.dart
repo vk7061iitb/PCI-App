@@ -52,6 +52,8 @@ Future<void> main() async {
     return true;
   };
 
+  // debugRepaintRainbowEnabled = true;
+
   runApp(
     MainApp(
       isLoggedIn: isLoggedIn,
