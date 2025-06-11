@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
-import 'package:pciapp/src/Presentation/Controllers/road_stats_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/OutputData/output_data_tile.dart';
 import 'package:pciapp/Utils/text_styles.dart';
 import '../../../../Utils/font_size.dart';
@@ -124,8 +123,6 @@ class _OutputDataPageState extends State<OutputDataPage> {
   Widget build(BuildContext context) {
     OutputDataController outputDataController =
         Get.find<OutputDataController>();
-    // ignore: unused_local_variable
-    RoadStatsController roadStatsController = Get.put(RoadStatsController());
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: Colors.black,
       fontWeight: FontWeight.normal,
