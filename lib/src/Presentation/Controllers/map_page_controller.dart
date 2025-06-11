@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -13,15 +15,17 @@ import '../../Models/stats_data.dart';
 
 class MapPageController extends GetxController {
   final RxBool _isDrrpLayerVisible = false.obs; // used to toggle DRRP Layers
+  final RxString backgroundMapLayerName =
+      "".obs; // currently plotted background layer (local file)
   final RxSet<Polyline> _pciPolylines =
       <Polyline>{}.obs; // polylines shown on the map page
-  final Set<Polyline> _drrpPolylines = <Polyline>{};
+  final Set<Polyline> _backgroundPolylines = <Polyline>{};
   GoogleMapController? _googleMapController;
   List<List<Map<String, dynamic>>> roadOutputData = <List<
       Map<String,
-          dynamic>>>[]; // contains the data of all selected journies in a list
+          dynamic>>>[]; // contains the pci data for seleceted file(s) to be plotte
   List<Map<String, dynamic>> selectedRoads =
-      []; // used for multipe selection of jouurney data
+      []; // contains the metadat for selected file(s) to be plotted
 
   LatLng _southwest = const LatLng(0, 0);
   LatLng _northeast = const LatLng(0, 0);
@@ -80,7 +84,11 @@ class MapPageController extends GetxController {
     _pciPolylines.clear();
     roadOutputData.clear();
     selectedRoads.clear();
-
+    _isDrrpLayerVisible.value = false;
+    backgroundMapLayerName.value = "";
+    showIndicator.value = false;
+    showPCIlabel = true;
+    _backgroundMapType.value = MapType.normal;
     _southwest = const LatLng(0, 0);
     _northeast = const LatLng(0, 0);
   }
@@ -100,6 +108,7 @@ class MapPageController extends GetxController {
   void takeSS() async {}
 
   Future<void> plotRoadData() async {
+    // reset the data
     _pciPolylines.clear();
     roadStats.clear();
     segStats.clear();
@@ -113,7 +122,7 @@ class MapPageController extends GetxController {
         'roadOutputData': roadOutputData,
         'showPCIlabel': _showPCIlabel.value,
         'selectedRoads': selectedRoads,
-        'drrpPolylines': _drrpPolylines,
+        'drrpPolylines': _backgroundPolylines,
       };
 
       await Isolate.spawn(plotMapIsolate, isoData);
@@ -131,56 +140,80 @@ class MapPageController extends GetxController {
       logger.e(e.toString());
     }
 
-    logger.i("No. of plolylines = ${_pciPolylines.length}");
+    // logger.i("No. of plolylines = ${_pciPolylines.length}");
   }
 
   // Function to animate the camera to the location of the polylines
   /// Animates the map view to the specified location bounds.
-  ///
-  /// This method takes two [LatLng] parameters, [min] and [max], which represent
-  /// the minimum and maximum coordinates of the bounding box to which the map
-  /// should be animated.
-  ///
-  /// The animation is performed asynchronously.
-  ///
-  /// - [min]: The minimum [LatLng] coordinate of the bounding box.
-  /// - [max]: The maximum [LatLng] coordinate of the bounding box.
-  ///
-  /// Returns a [Future] that completes when the animation is finished.
   Future<void> animateToLocation(LatLng min, LatLng max) async {
     LatLngBounds bounds = calculateBounds(min, max);
     _googleMapController
         ?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 20));
   }
 
-  // This function is used to plot the DRRP layer on the map.
-  // It reads the geojson file containing the DRRP data and plots the polylines on the map.
-  Future<void> plotDRRPLayer() async {
+// This function is used to remove the background layer from the map.
+  void removeBackgroundLayer() async {
+    for (Polyline polyline in _backgroundPolylines) {
+      _pciPolylines.remove(polyline);
+    }
+    _backgroundPolylines.clear();
+  }
 
+  // plot background layer
+  void plotMapBackground({
+    bool plotDRRPLayer = true,
+    bool removeAllBackgroundLayer = false,
+  }) async {
     try {
-          _isDrrpLayerVisible.value = !_isDrrpLayerVisible.value;
-      // if not plotted then plot it
-      if (_isDrrpLayerVisible.value == true) {
-        showIndicator.value == true;
-        Map<String, dynamic> jsonData = {};
-        List<dynamic> features = [];
-        String geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
+      if (removeAllBackgroundLayer) {
+        removeBackgroundLayer();
+        _isDrrpLayerVisible.value = false;
+        backgroundMapLayerName.value = "";
+        return;
+      }
 
-        jsonData = jsonDecode(geoJsonString);
-        features = jsonData['features'];
+      // if drrp is already plotted and plotdrrp is true
+      if (plotDRRPLayer && _isDrrpLayerVisible.value) {
+        return;
+      }
 
-        for (int i = 0; i < features.length; i++) {
-          List<LatLng> points = [];
-          Map<String, dynamic> feature = features[i];
+      String geoJsonString;
+
+      if (plotDRRPLayer) {
+        geoJsonString = await rootBundle.loadString(assetsPath.roadDRRP);
+      } else {
+        // open the file
+        dynamic fileRes = await openFile();
+        File file = fileRes[0];
+        String filePath = fileRes[1];
+
+        removeBackgroundLayer();
+
+        // received the file
+        geoJsonString = await file.readAsString();
+        backgroundMapLayerName.value = filePath;
+        logger.i(backgroundMapLayerName.value);
+      }
+
+      // make polyline and plot it
+      Map<String, dynamic> jsonData = jsonDecode(geoJsonString);
+      List<dynamic> features = jsonData["features"];
+      for (int i = 0; i < features.length; i++) {
+        List<LatLng> points = [];
+        Map<String, dynamic> feature = features[i];
+
+        /// polyline feature type can be "LineString" or "MultiLineString"
+        if (feature["geometry"]["type"].toString() == "LineString") {
+          // insert
           List<dynamic> coordinates = feature['geometry']['coordinates'];
           for (var data in coordinates) {
             points.add(
               LatLng(data[1], data[0]),
             );
           }
-
+          // all the polyline
           Polyline tempPolyline = Polyline(
-            polylineId: PolylineId('drrp_polyline$i'),
+            polylineId: PolylineId('b_layer$i'),
             color: Colors.black,
             width: 2,
             endCap: Cap.roundCap,
@@ -188,33 +221,61 @@ class MapPageController extends GetxController {
             jointType: JointType.round,
             points: points,
           );
-          _drrpPolylines.add(tempPolyline);
+          _backgroundPolylines.add(tempPolyline);
+
+          /// insert the multilinstring
+        } else {
+          // take care of coordinates
+          List<dynamic> coordinateList = feature['geometry']['coordinates'];
+          int j = 0;
+          for (var coordinates in coordinateList) {
+            // each coordinates => points of a single polyline
+            for (var data in coordinates) {
+              points.add(
+                LatLng(data[1], data[0]),
+              );
+            }
+            j++;
+            // add the polyline
+            Polyline tempPolyline = Polyline(
+              polylineId: PolylineId('b_layer$i$j'),
+              color: Colors.black,
+              width: 2,
+              endCap: Cap.roundCap,
+              startCap: Cap.roundCap,
+              jointType: JointType.round,
+              points: points,
+            );
+            _backgroundPolylines.add(tempPolyline);
+          }
         }
-        _pciPolylines.addAll(_drrpPolylines);
-        showIndicator.value = false;
-        return;
+      }
+      /// update the indicators
+      if (plotDRRPLayer) {
+        backgroundMapLayerName.value = "";
+        _isDrrpLayerVisible.value = true;
+      } else {
+        _isDrrpLayerVisible.value = false;
       }
 
-      // if already plotted then remove it
-      showIndicator.value = true;
-      removeDRRPLayer();
-      showIndicator.value = false;
-      
+      _pciPolylines.addAll(_backgroundPolylines);
     } catch (e) {
-      // Handle any errors that occur during the onTap execution
-      customGetSnackBar(
-          "Error", "'Error toggling DRRP layer: $e'", Icons.error_outline);
-      logger.e('Error toggling DRRP layer: $e');
+      logger.i(e);
+      customGetSnackBar("Error", e.toString(), Icons.error_outline);
     }
-
   }
 
-// This function is used to remove the DRRP layer from the map.
-  Future<void> removeDRRPLayer() async {
-    for (Polyline polyline in _drrpPolylines) {
-      _pciPolylines.remove(polyline);
+  Future<List<dynamic>> openFile() async {
+    File? file;
+    FilePickerResult? res = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Please select the background map layer file',
+    );
+    if (res != null) {
+      file = File(res.files.single.path!);
     }
-    _drrpPolylines.clear();
+    if (file == null) {
+      return [];
+    }
+    return [file, res!.files.single.name];
   }
-
 }
