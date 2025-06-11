@@ -99,9 +99,6 @@ class _OutputDataItemState extends State<OutputDataItem> {
             if (widget.driveFileID.isEmpty)
               PopupMenuItem(
                 onTap: () async {
-                  // Function to export the data
-                  List<Map<String, dynamic>> query = await localDatabase
-                      .queryRoadOutputData(journeyID: widget.id);
                   Map<String, dynamic> metaData = {
                     'filename': widget.filename,
                     'vehicleType': widget.vehicleType,
@@ -109,10 +106,10 @@ class _OutputDataItemState extends State<OutputDataItem> {
                     'user': user,
                   };
                   outputDataController.uploadToDrive(
-                      query, metaData, widget.id);
+                      metaData, widget.id);
                 },
                 child: Text(
-                  "Sync to drive",
+                  "Upload to drive",
                   style: popUpMenuTextStyle.copyWith(
                     color: activeColor,
                   ),
@@ -120,16 +117,15 @@ class _OutputDataItemState extends State<OutputDataItem> {
               ),
             PopupMenuItem(
               onTap: () async {
-                outputDataController.slectedFiles.clear();
-                outputDataController.slectedFiles.add(widget.id);
                 try {
-                  outputDataController.plotRoads().then((_) {
-                    Get.to(
-                      () => MapPage(),
-                      transition: Transition.cupertino,
-                    );
-                    outputDataController.slectedFiles.clear();
-                  });
+                  outputDataController.slectedFiles.clear();
+                  outputDataController.slectedFiles.add(widget.id);
+                  await outputDataController.plotRoads();
+                  outputDataController.slectedFiles.clear();
+                  Get.to(
+                    () => MapPage(),
+                    transition: Transition.cupertino,
+                  );
                 } catch (e) {
                   customGetSnackBar("Plotting Error",
                       "Error in plotting the road data", Icons.error_outline);
@@ -166,16 +162,20 @@ class _OutputDataItemState extends State<OutputDataItem> {
                 // Function to export the data
                 List<Map<String, dynamic>> query = await localDatabase
                     .queryRoadOutputData(journeyID: widget.id);
-                outputDataController.exportData(
-                  filename: widget.filename,
-                  vehicle: widget.vehicleType,
-                  time: widget.time,
-                  planned: widget.planned,
-                  jouneyData: query,
+                Map<String, dynamic> metaData = {
+                  'filename': widget.filename,
+                  'vehicleType': widget.vehicleType,
+                  'time': widget.time,
+                  'user': user,
+                };
+                outputDataController.exportJSON(
+                  query: query,
+                  metaData: metaData,
+                  exportGeoJSON: true,
                 );
               },
               child: Text(
-                "Export CSV",
+                "Export GeoJSON",
                 style: popUpMenuTextStyle,
               ),
             ),
@@ -190,7 +190,11 @@ class _OutputDataItemState extends State<OutputDataItem> {
                   'time': widget.time,
                   'user': user,
                 };
-                outputDataController.exportJSON(query, metaData);
+                outputDataController.exportJSON(
+                  query: query,
+                  metaData: metaData,
+                  exportGeoJSON: false,
+                );
               },
               child: Text(
                 "Export JSON",
