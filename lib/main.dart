@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +22,11 @@ import 'src/Presentation/Screens/SignUp/signup_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // debugRepaintRainbowEnabled = true;
+  // debugPaintSizeEnabled = false;
+
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   Get.lazyPut(() => LocationController(), fenix: true);
   Get.lazyPut(() => MapPageController(), fenix: true);
@@ -52,8 +56,6 @@ Future<void> main() async {
     return true;
   };
 
-  // debugRepaintRainbowEnabled = true;
-
   runApp(
     MainApp(
       isLoggedIn: isLoggedIn,
@@ -79,19 +81,12 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPaintSizeEnabled = false;
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-          statusBarColor: backgroundColor,
-          systemNavigationBarColor: backgroundColor,
-          systemNavigationBarIconBrightness: Brightness.dark),
-    );
     return GetMaterialApp(
+      // showPerformanceOverlay: true,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Inter',
