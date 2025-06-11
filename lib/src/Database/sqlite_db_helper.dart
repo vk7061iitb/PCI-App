@@ -121,6 +121,14 @@ class SQLDatabaseHelper {
     return path.path;
   }
 
+  Future<String> getTempDir() async {
+    String temDir = "temp";
+    Directory? externalDir = await getExternalStorageDirectory();
+    Directory dir = await Directory(join(externalDir!.path, temDir))
+        .create(recursive: true);
+    return dir.path;
+  }
+
   Future<void> insertToUnsendData({
     required List<AccData> accdata,
     required int id,
@@ -264,8 +272,9 @@ class SQLDatabaseHelper {
   Future<List<Map<String, dynamic>>> queryRoadOutputData(
       {required journeyID}) async {
     List<Map<String, dynamic>> roadOutputDataQuery = await _localDbInstance
-        .query('roadOutputData',
-            where: 'journeyID = ?', whereArgs: [journeyID]);
+        .query('roadOutputData', where: 'journeyID = ?', whereArgs: [
+      journeyID
+    ]);
     return roadOutputDataQuery;
   }
 
