@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pciapp/Utils/get_surface_type.dart';
 import 'package:pciapp/Utils/vel_to_pci.dart';
 import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
@@ -376,25 +377,4 @@ List<RoadPCIStatistics> _calculatePredictionBasedStats(
   }
 }
 
-String getSurfaceType(int roadType) {
-  String res;
-  switch (roadType) {
-    case -1:
-      res = "Measurement";
-      break;
-    case -2:
-      res = "Pause";
-    case 0:
-      res = "Paved";
-      break;
-    case 1:
-      res = "Un-Paved";
-      break;
-    case 2:
-      res = "Pedestrian";
-      break;
-    default:
-      res = "";
-  }
-  return res;
-}
+
