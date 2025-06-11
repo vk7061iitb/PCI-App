@@ -10,7 +10,7 @@ import '../Objects/data.dart';
 import '../src/Models/stats_data.dart';
 import '../Functions/avg.dart';
 
-/// Plots a map in an isolate with the given data.
+/// plot
 Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
   logger.d('Isolate started');
   final SendPort sendPort = isolateData['sendPort'];
@@ -54,7 +54,6 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
         double distance = 0.0;
         double time = 0.0;
         double totalD = 0.0;
-        double disP = 0.0;
 
         // points to map the end of a segment
         LatLng point2 = LatLng(labels[0]['latitude'], labels[0]['longitude']);
@@ -62,16 +61,20 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
 
         // Process road segments
         for (int k = 0; k < labels.length - 1; k++) {
-          if (k == 0) {
-            minimumLat = labels[0]['latitude'];
-            minimumLon = labels[0]['longitude'];
-            maximumLat = labels[0]['latitude'];
-            maximumLon = labels[0]['longitude'];
-          }
-          minimumLat = min(minimumLat, labels[k]['latitude']);
-          minimumLon = min(minimumLon, labels[k]['longitude']);
-          maximumLat = max(maximumLat, labels[k]['latitude']);
-          maximumLon = max(maximumLon, labels[k]['longitude']);
+
+          // update the box bound variable
+          minimumLat = (minimumLat == 0)
+              ? labels[k]['latitude']
+              : min(minimumLat, labels[k]['latitude']);
+          minimumLon = (minimumLon == 0)
+              ? labels[k]['longitude']
+              : min(minimumLon, labels[k]['longitude']);
+          maximumLat = (maximumLat == 0)
+              ? labels[k]['latitude']
+              : max(maximumLat, labels[k]['latitude']);
+          maximumLon = (maximumLon == 0)
+              ? labels[k]['longitude']
+              : max(maximumLon, labels[k]['longitude']);
 
           var firstLabel = labels[k];
           var secondLabel = labels[k + 1];
@@ -114,7 +117,6 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
           if (firstPointPCI != secondPointPCI) {
             point1 = point2;
             point2 = firstPoint;
-            disP += distance;
             Map<String, dynamic> polylineOnTapData = {
               'roadName': roadName,
               'filename': currJourney['filename'],
@@ -148,7 +150,6 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
         }
 
         if (points.length == 1) {
-          disP += distance;
           point1 = point2;
           point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
 
@@ -173,14 +174,13 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
                 polylineOnTapData: polylineOnTapData),
           );
         } else {
-          disP += distance;
           point1 = point2;
           point2 = LatLng(labels.last['latitude'], labels.last['longitude']);
 
           // add the last point in the points and create a new polyline
           points.add(LatLng(labels.last['latitude'], labels.last['longitude']));
           velocities.add(labels.last['velocity']);
-          
+
           Map<String, dynamic> polylineOnTapData = {
             'roadName': roadName,
             'filename': currJourney['filename'],
@@ -192,6 +192,7 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
             'end': totalD / 1000,
             'latlngs': [point1, point2]
           };
+
           pciPolylines.add(
             createPolyline(
                 pci: secondPointPCI,
@@ -200,7 +201,6 @@ Future<void> plotMapIsolate(Map<String, dynamic> isolateData) async {
                 polylineOnTapData: polylineOnTapData),
           );
         }
-        logger.i("Distance(Polylines): $disP");
         final completeStats = setRoadStatistics(
           journeyData: road,
           filename: currJourney['filename'],
