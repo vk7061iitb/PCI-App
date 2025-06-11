@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -6,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pciapp/src/Presentation/Controllers/output_data_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/OutputData/map_screenshot.dart';
-import '../../../../../Utils/set_road_stats.dart';
 import '../../../../../Objects/data.dart';
 import '../../../../Models/stats_data.dart';
 import '../../../Widgets/snackbar.dart';
@@ -32,35 +30,6 @@ class RoadStatistics extends StatelessWidget {
     MapPageController mapPageController = Get.find<MapPageController>();
     OutputDataController outputDataController =
         Get.find<OutputDataController>();
-    Future<List<Map<String, dynamic>>> getRoadStats(
-      int id,
-      String filename,
-    ) async {
-      mapPageController.roadOutputData = [];
-      List<Map<String, dynamic>> res =
-          await localDatabase.queryRoadOutputData(journeyID: id);
-
-      mapPageController.roadOutputData.add(res);
-      if (mapPageController.roadStats.isNotEmpty) {
-        mapPageController.roadStats.clear();
-        mapPageController.segStats.clear();
-      }
-      List<RoadStatsOverall> rs = [];
-      List<RoadStatsChainage> ss = [];
-      for (var journey in res) {
-        final completeStats =
-            setRoadStatistics(journeyData: journey, filename: filename);
-        for (var stats in completeStats[0]) {
-          rs.add(stats);
-        }
-        for (var stats in completeStats[1]) {
-          ss.add(stats);
-        }
-      }
-      mapPageController.roadStats.add(rs);
-      mapPageController.segStats.add(ss);
-      return res;
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -81,23 +50,24 @@ class RoadStatistics extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: OutlinedButton(
         onPressed: () async {
+          if (outputDataController.showProgressInStatsPage.value) {
+            return;
+          }
           outputDataController.slectedFiles.clear();
           outputDataController.slectedFiles.add(id);
           mapPageController.showPCIlabel = true;
-
           try {
-            outputDataController.plotRoads().then((_) {
-              Get.to(() => MapScreenshot(),
-                  transition: Transition.cupertino,
-                  arguments: {
-                    "id": id,
-                    "filename": filename,
-                    "planned": planned,
-                    "time": time,
-                    "vehicleType": vehicleType,
-                  });
-              outputDataController.slectedFiles.clear();
-            });
+            await outputDataController.plotRoads();
+            Get.to(() => MapScreenshot(),
+                transition: Transition.cupertino,
+                arguments: {
+                  "id": id,
+                  "filename": filename,
+                  "planned": planned,
+                  "time": time,
+                  "vehicleType": vehicleType,
+                });
+            outputDataController.slectedFiles.clear();
           } catch (e) {
             customGetSnackBar("Plotting Error",
                 "Error in plotting the road data", Icons.error_outline);
@@ -117,25 +87,24 @@ class RoadStatistics extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: FutureBuilder(
-            future: getRoadStats(id, filename),
+        child: FutureBuilder<dynamic>(
+            future: outputDataController.setRoadStats(
+                journeyID: id, filename: filename),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: activeColor,
+                  ),
                 );
               } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error loading files: ${snapshot.error}'),
-                );
+                return Text('Error: ${snapshot.error}');
               } else {
                 return Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal: MediaQuery.sizeOf(context).width * 0.05),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Gap(10),
                       RichText(
                         text: TextSpan(
                             text:
@@ -160,10 +129,11 @@ class RoadStatistics extends StatelessWidget {
                       const Gap(15),
                       Expanded(
                         child: PageView.builder(
-                            itemCount: mapPageController.roadStats.length,
-                            itemBuilder: (context, index) {
-                              return StatsPageView(index: index);
-                            }),
+                          itemCount: mapPageController.roadStats.length,
+                          itemBuilder: (context, index) {
+                            return StatsPageView(index: index);
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -187,9 +157,10 @@ class StatsPageView extends StatelessWidget {
         shrinkWrap: true,
         itemCount: mapPageController.roadStats[index].length,
         itemBuilder: (context, roadIndex) {
-          final outputStats =
-              mapPageController.roadStats[index][roadIndex].overallStatsPredictionBased;
-          final predSeg = mapPageController.segStats[index][0].chainageStatsPredictionBased;
+          final outputStats = mapPageController
+              .roadStats[index][roadIndex].overallStatsPredictionBased;
+          final predSeg =
+              mapPageController.segStats[index][0].chainageStatsPredictionBased;
           return Padding(
             padding: const EdgeInsets.only(bottom: 5.0),
             child: Column(
@@ -206,7 +177,9 @@ class StatsPageView extends StatelessWidget {
                   ),
                 ),
                 const Gap(10),
-                overallStatisticsTable(outputStats),
+                OverallStatisticsTable(
+                  statsList: outputStats,
+                ),
                 const Gap(20),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -220,7 +193,9 @@ class StatsPageView extends StatelessWidget {
                   ),
                 ),
                 const Gap(10),
-                chainageStatisticTable(predSeg),
+                ChainageStatisticTable(
+                  stats: predSeg,
+                ),
                 const Gap(60),
               ],
             ),
@@ -231,158 +206,167 @@ class StatsPageView extends StatelessWidget {
   }
 }
 
-Widget overallStatisticsTable(List<dynamic> statsList) {
-  final ScrollController scrollController = ScrollController();
+class OverallStatisticsTable extends StatelessWidget {
+  final List<dynamic> statsList;
+  const OverallStatisticsTable({super.key, required this.statsList});
 
-  TextStyle headerStyle = GoogleFonts.inter(
-    color: Colors.black,
-    fontWeight: FontWeight.w600,
-    fontSize: 16,
-  );
-
-  return Scrollbar(
-    controller: scrollController,
-    thumbVisibility: true,
-    trackVisibility: false,
-    child: SingleChildScrollView(
+  @override
+  Widget build(BuildContext context) {
+    TextStyle headerStyle = GoogleFonts.inter(
+      color: Colors.black,
+      fontWeight: FontWeight.w600,
+      fontSize: 16,
+    );
+    final ScrollController scrollController = ScrollController();
+    return Scrollbar(
       controller: scrollController,
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        // Rest of your code remains the same
-        clipBehavior: Clip.antiAlias,
-        columnSpacing: 20.0,
-        headingRowColor: WidgetStateProperty.resolveWith(
-            (states) => Colors.black.withValues(alpha: 0.05)),
-        border: TableBorder.symmetric(
-          inside: BorderSide(
-            color: Colors.black.withValues(alpha: 0.1),
-            width: 1.0,
+      thumbVisibility: true,
+      trackVisibility: false,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          // Rest of your code remains the same
+          clipBehavior: Clip.antiAlias,
+          columnSpacing: 20.0,
+          headingRowColor: WidgetStateProperty.resolveWith(
+              (states) => Colors.black.withValues(alpha: 0.05)),
+          border: TableBorder.symmetric(
+            inside: BorderSide(
+              color: Colors.black.withValues(alpha: 0.1),
+              width: 1.0,
+            ),
           ),
+          columns: <DataColumn>[
+            DataColumn(
+              label: Text('PCI', style: headerStyle),
+            ),
+            DataColumn(
+              label: Text('Distance(km)', style: headerStyle),
+            ),
+            DataColumn(
+              label: Text('Velocity(kmph)', style: headerStyle),
+            ),
+            DataColumn(
+              label: Text('No. of segments', style: headerStyle),
+            ),
+          ],
+          rows: <DataRow>[
+            for (var stats in statsList)
+              if (double.parse(stats.pci.toString()) > 0)
+                DataRow(
+                  cells: <DataCell>[
+                    DataCell(
+                      Text(
+                        stats.pci.toString(),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        (double.parse(stats.distanceTravelled) / 1000)
+                            .toStringAsFixed(3),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        (double.parse(stats.avgVelocity) * 3.6)
+                            .toStringAsFixed(3),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        stats.numberOfSegments.toString(),
+                      ),
+                    ),
+                  ],
+                ),
+          ],
         ),
-        columns: <DataColumn>[
-          DataColumn(
-            label: Text('PCI', style: headerStyle),
-          ),
-          DataColumn(
-            label: Text('Distance(km)', style: headerStyle),
-          ),
-          DataColumn(
-            label: Text('Velocity(kmph)', style: headerStyle),
-          ),
-          DataColumn(
-            label: Text('No. of segments', style: headerStyle),
-          ),
-        ],
-        rows: <DataRow>[
-          for (var stats in statsList)
-            if (double.parse(stats.pci.toString()) > 0)
-              DataRow(
-                cells: <DataCell>[
-                  DataCell(
-                    Text(
-                      stats.pci.toString(),
-                    ),
-                  ),
-                  DataCell(
-                    Text(
-                      (double.parse(stats.distanceTravelled) / 1000)
-                          .toStringAsFixed(3),
-                    ),
-                  ),
-                  DataCell(
-                    Text(
-                      (double.parse(stats.avgVelocity) * 3.6)
-                          .toStringAsFixed(3),
-                    ),
-                  ),
-                  DataCell(
-                    Text(
-                      stats.numberOfSegments.toString(),
-                    ),
-                  ),
-                ],
-              ),
-        ],
       ),
-    ),
-  );
+    );
+  }
 }
 
-Widget chainageStatisticTable(List<RoadChainageStatistics> stats) {
-  final ScrollController horizontalScrollController = ScrollController();
-  final ScrollController verticalScrollController = ScrollController();
+class ChainageStatisticTable extends StatelessWidget {
+  final List<RoadChainageStatistics> stats;
+  const ChainageStatisticTable({super.key, required this.stats});
 
-  TextStyle headerStyle = GoogleFonts.inter(
-    color: Colors.black,
-    fontWeight: FontWeight.w600,
-    fontSize: 16,
-  );
+  @override
+  Widget build(BuildContext context) {
+    final ScrollController horizontalScrollController = ScrollController();
+    final ScrollController verticalScrollController = ScrollController();
 
-  return Scrollbar(
-    controller: horizontalScrollController,
-    thumbVisibility: true,
-    trackVisibility: false,
-    child: SingleChildScrollView(
+    TextStyle headerStyle = GoogleFonts.inter(
+      color: Colors.black,
+      fontWeight: FontWeight.w600,
+      fontSize: 16,
+    );
+    return Scrollbar(
       controller: horizontalScrollController,
-      scrollDirection: Axis.horizontal,
-      child: Scrollbar(
-        controller: verticalScrollController,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
+      thumbVisibility: true,
+      trackVisibility: false,
+      child: SingleChildScrollView(
+        controller: horizontalScrollController,
+        scrollDirection: Axis.horizontal,
+        child: Scrollbar(
           controller: verticalScrollController,
-          child: DataTable(
-              clipBehavior: Clip.antiAlias,
-              columnSpacing: 20.0,
-              headingRowColor: WidgetStateProperty.resolveWith(
-                  (states) => Colors.black.withValues(alpha: 0.05)),
-              border: TableBorder.symmetric(
-                inside: BorderSide(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  width: 1.0,
-                ),
-              ),
-              columns: <DataColumn>[
-                DataColumn(
-                  label: Text('Road No.', style: headerStyle),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Seg No',
-                    style: headerStyle,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: verticalScrollController,
+            child: DataTable(
+                clipBehavior: Clip.antiAlias,
+                columnSpacing: 20.0,
+                headingRowColor: WidgetStateProperty.resolveWith(
+                    (states) => Colors.black.withValues(alpha: 0.05)),
+                border: TableBorder.symmetric(
+                  inside: BorderSide(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    width: 1.0,
                   ),
                 ),
-                DataColumn(
-                  label: Text('From', style: headerStyle),
-                ),
-                DataColumn(
-                  label: Text('To', style: headerStyle),
-                ),
-                DataColumn(
-                  label: Text('Distance (km)', style: headerStyle),
-                ),
-                DataColumn(
-                  label: Text('PCI', style: headerStyle),
-                ),
-                DataColumn(
-                  label: Text('Remark', style: headerStyle),
-                ),
-              ],
-              rows: <DataRow>[
-                for (var seg in stats)
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text(seg.roadNo)),
-                      DataCell(Text(seg.segmentNo)),
-                      DataCell(Text(seg.from)),
-                      DataCell(Text(seg.to)),
-                      DataCell(Text(seg.distance)),
-                      DataCell(Text((seg.pci < 0) ? "Pause" : '${seg.pci}')),
-                      DataCell(Text(seg.remarks)),
-                    ],
+                columns: <DataColumn>[
+                  DataColumn(
+                    label: Text('Road No.', style: headerStyle),
                   ),
-              ]),
+                  DataColumn(
+                    label: Text(
+                      'Seg No',
+                      style: headerStyle,
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text('From', style: headerStyle),
+                  ),
+                  DataColumn(
+                    label: Text('To', style: headerStyle),
+                  ),
+                  DataColumn(
+                    label: Text('Distance (km)', style: headerStyle),
+                  ),
+                  DataColumn(
+                    label: Text('PCI', style: headerStyle),
+                  ),
+                  DataColumn(
+                    label: Text('Remark', style: headerStyle),
+                  ),
+                ],
+                rows: <DataRow>[
+                  for (var seg in stats)
+                    DataRow(
+                      cells: <DataCell>[
+                        DataCell(Text(seg.roadNo)),
+                        DataCell(Text(seg.segmentNo)),
+                        DataCell(Text(seg.from)),
+                        DataCell(Text(seg.to)),
+                        DataCell(Text(seg.distance)),
+                        DataCell(Text((seg.pci < 0) ? "Pause" : '${seg.pci}')),
+                        DataCell(Text(seg.remarks)),
+                      ],
+                    ),
+                ]),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
