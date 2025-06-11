@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -25,6 +24,7 @@ class MapScreenshot extends StatelessWidget {
     Uint8List velBasedImdData = Uint8List.fromList([]);
     mapPageController.isPredPCICaptured.value = false;
     mapPageController.isVelPCICaptured.value = false;
+
     double w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
