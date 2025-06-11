@@ -1,19 +1,15 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/font_size.dart';
-import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/saved_file_controller.dart';
 import 'package:pciapp/src/Presentation/Screens/SavedFile/widget/history_data_tile.dart';
-
-String aboutPage = '''
-This page displays all recorded data. If any data was not submitted due to a network issue, you can resend it from here. 
-Note: Exported data will be in its raw, unprocessed format as originally recorded.
-''';
+import 'widget/about_page.dart';
+import 'widget/confirm_delete.dart';
+import 'widget/empty_page.dart';
 
 class HistoryDataPage extends StatefulWidget {
   const HistoryDataPage({super.key});
@@ -26,21 +22,22 @@ class HistoryDataPageState extends State<HistoryDataPage> {
   @override
   Widget build(BuildContext context) {
     SavedFileController savedFileController = Get.put(SavedFileController());
-    double w = MediaQuery.sizeOf(context).width;
-    FontSize fs = getFontSize(w);
-    IconsSize iS = getIconSize(w);
+    double screenWidth = MediaQuery.sizeOf(context).width;
+    FontSize fontSize = getFontSize(screenWidth);
+    IconsSize iconSize = getIconSize(screenWidth);
     TextStyle popUpMenuTextStyle = GoogleFonts.inter(
       color: textColor,
       fontWeight: FontWeight.normal,
-      fontSize: fs.bodyTextFontSize,
+      fontSize: fontSize.bodyTextFontSize,
     );
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: AutoSizeText(
           'Saved Files',
           style: GoogleFonts.inter(
-            fontSize: fs.appBarFontSize,
+            fontSize: fontSize.appBarFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
@@ -53,7 +50,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
           PopupMenuButton<int>(
             icon: Icon(
               Icons.filter_list,
-              size: iS.appBarIconSize,
+              size: iconSize.appBarIconSize,
               color: textColor,
             ),
             onSelected: (val) {
@@ -157,44 +154,30 @@ class HistoryDataPageState extends State<HistoryDataPage> {
 
           // about page
           PopupMenuButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              itemBuilder: (context) => [
-                    // info button
-                    PopupMenuItem(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('About the journey history',
-                                style: dialogTitleStyle),
-                            content: Text(aboutPage, style: dialogContentStyle),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  'OK',
-                                  style: dialogButtonStyle,
-                                ),
-                              )
-                            ],
-                          ),
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.info_outline_rounded),
-                          const Gap(8),
-                          Text(
-                            "About Page",
-                            style: popUpMenuTextStyle,
-                          ),
-                        ],
-                      ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            itemBuilder: (context) => [
+              // info button
+              PopupMenuItem(
+                onTap: () {
+                  showDialog(
+                      context: context, builder: (context) => AboutPage());
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.info_outline_rounded),
+                    const Gap(8),
+                    Text(
+                      "About Page",
+                      style: popUpMenuTextStyle,
                     ),
-                  ]),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: SafeArea(
@@ -208,7 +191,7 @@ class HistoryDataPageState extends State<HistoryDataPage> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
                   child: CircularProgressIndicator(
-                    color: Colors.blue.shade900,
+                    color: activeColor,
                   ),
                 );
               } else if (snapshot.hasError) {
@@ -216,24 +199,10 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                   child: Text('Error loading files: ${snapshot.error}'),
                 );
               } else if (snapshot.data!.isEmpty) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      assetsPath.emptyFile,
-                      width: iS.buttonIconSize,
-                    ),
-                    Center(
-                      child: Text(
-                        'There are no files to display',
-                        style: GoogleFonts.inter(
-                          fontSize: fs.bodyTextFontSize,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                    )
-                  ],
+                return EmptyPage(
+                  iconPath: assetsPath.emptyFile,
+                  fontSize: fontSize.bodyTextFontSize,
+                  iconSize: iconSize.buttonIconSize,
                 );
               } else {
                 List<Map<String, dynamic>> savedFiles = snapshot.data ?? [];
@@ -242,8 +211,8 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                   color: activeColor,
                   backgroundColor: backgroundColor,
                   onRefresh: () async {
-                    savedFileController.refreshData();
-                    savedFileController.loadSavedFiles();
+                    await savedFileController.refreshData();
+                    await savedFileController.loadSavedFiles();
                   },
                   child: ScrollbarTheme(
                     data: ScrollbarThemeData(
@@ -262,18 +231,17 @@ class HistoryDataPageState extends State<HistoryDataPage> {
                         physics: const BouncingScrollPhysics(
                             parent: AlwaysScrollableScrollPhysics()),
                         itemBuilder: (context, index) {
-                          Map<String, dynamic> file = savedFiles[index];
+                          Map<String, dynamic> savedFile = savedFiles[index];
                           return HistoryDataItem(
-                            file: file,
-                            deleteFile: () {
-                              _showDeleteDialog(context, w).then((value) {
-                                if (value != null && value) {
-                                  savedFileController.deleteFile(file);
-                                }
-                              });
+                            file: savedFile,
+                            deleteFile: () async {
+                              bool? value = await _showDeleteDialog(context);
+                              if (value != null && value) {
+                                savedFileController.deleteFile(savedFile);
+                              }
                             },
                             shareFile: () {
-                              savedFileController.shareFile(file);
+                              savedFileController.shareFile(savedFile);
                             },
                             unsentData: savedFileController.unsentFiles,
                           );
@@ -291,32 +259,11 @@ class HistoryDataPageState extends State<HistoryDataPage> {
   }
 }
 
-// Get alert dialog to confirm deletion of file
-Future<bool?> _showDeleteDialog(BuildContext context, double w) async {
-  return await showDialog<bool>(
+Future<bool?> _showDeleteDialog(BuildContext context) {
+  return showDialog(
     context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Delete File?'),
-        titleTextStyle: dialogTitleStyle,
-        content: const Text('Are you sure you want to delete this file?'),
-        contentTextStyle: dialogContentStyle,
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Get.back(result: false);
-            },
-            child: Text('No', style: dialogButtonStyle),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back(result: true);
-            },
-            child: Text('Yes',
-                style: dialogButtonStyle.copyWith(color: Colors.red)),
-          ),
-        ],
-      );
+    builder: (context) {
+      return const ConfirmDelete();
     },
   );
 }
