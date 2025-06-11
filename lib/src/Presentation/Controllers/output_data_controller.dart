@@ -9,6 +9,8 @@ import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pciapp/Utils/set_road_stats.dart';
+import 'package:pciapp/Utils/to_geojson.dart';
 import 'package:pciapp/src/Models/stats_data.dart';
 import 'package:pciapp/src/Presentation/Controllers/map_page_controller.dart';
 import 'package:pciapp/src/Presentation/Widgets/snackbar.dart';
@@ -20,33 +22,19 @@ import 'dart:ui' as ui;
 
 import '../../service/drive_helper.dart';
 
-/// Controller for managing output data(Jorney Data) in the PCI App.
-///
-/// This controller extends `GetxController` from the GetX package,
-/// providing reactive state management for the output data.
-///
-/// Example usage:
-/// ```dart
-/// final outputDataController = Get.put(OutputDataController());
-/// ```
-///
-/// See also:
-/// - [GetxController](https://pub.dev/documentation/get/latest/get/GetxController-class.html)
-/// - [GetX package](https://pub.dev/packages/get)
-///
+/// Controller for managing output data(Jorney Data)
 class OutputDataController extends GetxController {
+  // the output data file stores all the journey metadata from local db,
+  // this used in showing this list tile in jounrney page
   var outputDataFile = <Map<String, dynamic>>[].obs;
-  RxSet<int> slectedFiles = <int>{}.obs;
+  RxSet<int> slectedFiles =
+      <int>{}.obs; // store the current slected file(s) to be plotted on the map
   var isLoading = true.obs;
+  RxBool showProgressInStatsPage = true.obs;
   GlobalKey repaintKey = GlobalKey();
   Uint8List screenShotBytes = Uint8List.fromList([]);
   final MapPageController _mapPageController = Get.find<MapPageController>();
 
-  /// This method retrieves the data related to the user's journey
-  /// from the local storage. It ensures that the data is up-to-date
-  /// and available for further processing or display within the app.
-  ///
-  /// Returns a Future that completes with the user's journey data.
   /// Fetches the user's jouney data from the local database
   Future<List<Map<String, dynamic>>> fetchData() async {
     String tableToFetch = 'outputData';
@@ -173,12 +161,34 @@ class OutputDataController extends GetxController {
     });
   }
 
-  Future<void> exportJSON(
-      List<Map<String, dynamic>> query, Map<String, dynamic> metaData) async {
-    final data = {"data": query, "info": metaData};
-    final tempDir = await getTemporaryDirectory();
-    String path = '${tempDir.path}/${metaData['filename']}.json';
+  Future<void> exportJSON({
+    required List<Map<String, dynamic>> query,
+    required Map<String, dynamic> metaData,
+    bool exportGeoJSON = false,
+  }) async {
+    List<Map<String, dynamic>> finalData = query.map((row) {
+      return {
+        ...row,
+        "labels":
+            row["labels"] is String ? jsonDecode(row["labels"]) : row["labels"],
+        "stats":
+            row["stats"] is String ? jsonDecode(row["stats"]) : row["stats"],
+      };
+    }).toList();
+
+    Map<String, dynamic> data;
+    if (exportGeoJSON) {
+      data = toGeoJSON(finalData, metaData);
+    } else {
+      data = {"data": finalData, "info": metaData};
+    }
+
+    final fileExtensionName = (exportGeoJSON) ? ".geojson" : ".json";
+    // make a temporary direnctory
+    final tempDir = await localDatabase.getTempDir();
+    String path = '$tempDir/${metaData['filename']}$fileExtensionName';
     File file = File(path);
+
     file.writeAsString(jsonEncode(data));
     XFile fileToShare = XFile(path);
     await fileToShare.readAsString();
@@ -286,12 +296,14 @@ class OutputDataController extends GetxController {
   /// Note: Ensure that the map is initialized before calling this method.
   Future<void> plotRoads() async {
     _mapPageController.clearData();
+    // note: if user selects multiple files at the same time, then plot all of them
     for (int id in slectedFiles) {
-      List<Map<String, dynamic>> roadOutputDataQuery =
-          await localDatabase.queryRoadOutputData(journeyID: id);
+      List<Map<String, dynamic>> roadOutputDataQuery = await localDatabase
+          .queryRoadOutputData(journeyID: id); // get pci data for a road
 
       Map<String, dynamic> currRoadData = {};
       for (var road in outputDataFile) {
+        // get the id for metadata
         if (road["id"] == id) {
           currRoadData = road;
           break;
@@ -364,10 +376,8 @@ class OutputDataController extends GetxController {
       for (var road in outputData) {
         RoadData roadData = RoadData(
           roadName: road['roadName'],
-          labels: (jsonDecode(road['labels']) as List<dynamic>)
-              .map((label) => label as Map<String, dynamic>)
-              .toList(),
-          stats: jsonDecode(road['stats']) as Map<String, dynamic>,
+          labels: parseLabels(road['labels']),
+          stats: parseStats(road['stats']),
         );
         roadOutputData.add(
           RoadOutputData(
@@ -391,8 +401,36 @@ class OutputDataController extends GetxController {
     }
   }
 
-  Future<void> uploadToDrive(List<Map<String, dynamic>> query,
-      Map<String, dynamic> metaData, int id) async {
+  List<Map<String, dynamic>> parseLabels(dynamic raw) {
+    if (raw is List) {
+      return raw.map((e) => e as Map<String, dynamic>).toList();
+    }
+
+    if (raw is String) {
+      // Decode once
+      final decoded = jsonDecode(raw);
+
+      if (decoded is String) {
+        // Double-encoded: decode again
+        return (jsonDecode(decoded) as List<dynamic>)
+            .map((e) => e as Map<String, dynamic>)
+            .toList();
+      }
+
+      return (decoded as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    }
+
+    throw FormatException("Unsupported labels format");
+  }
+
+  Map<String, dynamic> parseStats(dynamic raw) {
+    if (raw is String) return jsonDecode(raw);
+    return raw as Map<String, dynamic>;
+  }
+
+  Future<void> uploadToDrive(Map<String, dynamic> metaData, int id) async {
     try {
       DriveHelper driveHelper = DriveHelper();
       String? appFolderID = await driveHelper.createAppFolder();
@@ -401,6 +439,8 @@ class OutputDataController extends GetxController {
       }
       String? journeyfolderID =
           await driveHelper.createFolder("journeys", appFolderID);
+      List<Map<String, dynamic>> query =
+          await localDatabase.queryRoadOutputData(journeyID: id);
       final data = {"data": query, "info": metaData};
       final tempDir = await getTemporaryDirectory();
       String path = '${tempDir.path}/${metaData['filename']}.json';
@@ -411,7 +451,6 @@ class OutputDataController extends GetxController {
       if (fileID == null) {
         return;
       }
-
       await localDatabase.updateJourneyData(fileID, id);
       Get.showSnackbar(
         customGetSnackBar(
@@ -420,9 +459,34 @@ class OutputDataController extends GetxController {
     } catch (error, stackTrace) {
       logger.f(error);
       logger.d(stackTrace);
+      customGetSnackBar(
+        "Eror",
+        error.toString(),
+        Icons.error_outline,
+      );
     } finally {
       await fetchData();
     }
+  }
+
+  // fundtion to update the stats as soon as user go to see the statistics
+  Future<int> setRoadStats({
+    required int journeyID,
+    required String filename,
+  }) async {
+    showProgressInStatsPage.value = true;
+    // show progress indicator
+    await Future.delayed(const Duration(seconds: 1));
+    List<Map<String, dynamic>> query =
+        await localDatabase.queryRoadOutputData(journeyID: journeyID);
+    for (var journeyData in query) {
+      final completStats =
+          setRoadStatistics(journeyData: journeyData, filename: filename);
+      _mapPageController.roadStats.add(completStats[0]);
+      _mapPageController.segStats.add(completStats[1]);
+    }
+    showProgressInStatsPage.value = false;
+    return 0;
   }
 
   @override
