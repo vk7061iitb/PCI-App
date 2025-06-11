@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:pciapp/Objects/data.dart';
 import 'package:pciapp/Utils/text_styles.dart';
 import 'package:pciapp/src/Presentation/Controllers/location_permission.dart';
+import 'package:pciapp/src/Presentation/Screens/base_scaffold.dart';
 import '../SensorPage/sensor_screen.dart';
 import '../SavedFile/saved_files_page.dart';
 import '../../../../Utils/assets.dart';
@@ -46,8 +47,7 @@ class HomeScreen extends StatelessWidget {
           exit(0);
         }
       },
-      child: Scaffold(
-        backgroundColor: backgroundColor,
+      child: BaseScaffold(
         body: SafeArea(
           child: Obx(() {
             return _widgetOptions
