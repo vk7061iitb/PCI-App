@@ -82,5 +82,7 @@ lib/
     │   ├── Controllers/ # getX controllers for different screens
     │   └── Screens/
     └── service/
-
 ```
+
+## 5 Licence
+This project is licensed under the Apache License - see the [LICENSE](LICENSE) file for details.
